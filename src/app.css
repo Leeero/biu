@@ -1,9 +1,10 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@import "./ui/tokens/index.css";
 
-@plugin './hero.ts';
+@plugin "./hero.ts";
 @plugin "@tailwindcss/typography";
 
-@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -33,7 +34,19 @@
   text-autospace: normal;
 }
 
-html, body, #root {
+body {
+  background: rgb(var(--biu-color-canvas));
+  color: rgb(var(--biu-color-text-primary));
+}
+
+:focus-visible:not(input, textarea) {
+  outline: 2px solid var(--biu-color-focus);
+  outline-offset: 2px;
+}
+
+html,
+body,
+#root {
   height: 100%;
   overflow: hidden;
 }
@@ -47,9 +60,10 @@ html, body, #root {
   display: none;
 }
 
-.suggest_high_light,.keyword {
+.suggest_high_light,
+.keyword {
   font-style: normal;
-  color: #F54180;
+  color: var(--biu-color-brand);
 }
 
 .os-scrollbar {

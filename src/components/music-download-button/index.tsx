@@ -86,7 +86,14 @@ const MusicDownloadButton = () => {
 
   if (playItem?.sid) {
     return (
-      <AsyncButton isIconOnly size="sm" variant="light" className="hover:text-primary" onPress={downloadAudio}>
+      <AsyncButton
+        isIconOnly
+        aria-label="下载当前歌曲"
+        size="sm"
+        variant="light"
+        className="hover:text-primary"
+        onPress={downloadAudio}
+      >
         <RiDownload2Fill size={18} />
       </AsyncButton>
     );
@@ -147,7 +154,7 @@ const MusicDownloadButton = () => {
         </Listbox>
       }
     >
-      <IconButton>
+      <IconButton aria-label="下载当前歌曲">
         <RiDownload2Fill size={18} />
       </IconButton>
     </Tooltip>

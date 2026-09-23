@@ -5,6 +5,7 @@ import { Tabs, Tab } from "@heroui/react";
 import Empty from "@/components/empty";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
 import { useSearchHistory } from "@/store/search-history";
+import { PageHeader } from "@/ui/patterns/page-header";
 
 import { SearchType, SearchTypeOptions } from "./search-type";
 import UserList from "./user-list";
@@ -21,16 +22,22 @@ const Search = () => {
 
   return (
     <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
-      <div className="px-4">
-        <h1>搜索【{keyword}】的结果</h1>
-        <div className="flex items-center justify-between py-4">
+      <div className="mx-auto w-full max-w-[var(--biu-content-max-width)] px-6 pt-5 pb-8">
+        <PageHeader
+          title={`“${keyword}”的搜索结果`}
+          description="结果来自 B 站搜索，可按音乐视频或创作者查看。"
+          className="mb-4"
+        />
+        <div className="mb-5 flex items-center justify-between border-b border-[rgb(var(--biu-color-border)/0.06)] pb-3">
           <Tabs
-            variant="solid"
-            radius="md"
+            aria-label="搜索结果类型"
+            variant="light"
+            radius="full"
             classNames={{
-              cursor: "rounded-medium",
+              tabList: "gap-1 bg-[rgb(var(--biu-color-surface-hover))] p-1 rounded-full",
+              cursor: "rounded-full bg-[rgb(var(--biu-color-surface-raised))] shadow-sm",
+              tabContent: "group-data-[selected=true]:text-primary font-medium",
             }}
-            className="-ml-1"
             items={SearchTypeOptions}
             selectedKey={searchType}
             onSelectionChange={v => {
@@ -40,8 +47,6 @@ const Search = () => {
             {item => <Tab key={item.value} title={item.label} />}
           </Tabs>
         </div>
-      </div>
-      <>
         {searchType === SearchType.Video && (
           <VideoList
             keyword={keyword}
@@ -54,7 +59,7 @@ const Search = () => {
             getScrollElement={() => scrollerRef.current?.osInstance()?.elements().viewport || null}
           />
         )}
-      </>
+      </div>
     </ScrollContainer>
   );
 };

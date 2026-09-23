@@ -15,18 +15,12 @@ import IconButton from "../icon-button";
 import LyricsSearchModal from "../lyrics-search-modal";
 import FontSizeControl from "./font-size-control";
 import { getLyricsByBili } from "./get-lyrics";
+import { getActiveLyricIndex, parseLyrics, type LyricLine } from "./model";
 import OffsetControl from "./offset-control";
-
-type LyricLine = {
-  time: number; // milliseconds
-  text: string;
-};
 
 type PlayItem = ReturnType<ReturnType<typeof usePlayList.getState>["getPlayItem"]>;
 
 const activeTextBase = "text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.35)]";
-
-const timeTagPattern = /\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\]/g;
 
 const DEFAULT_FONT_SIZE = 20;
 const DEFAULT_OFFSET = 0;
@@ -51,34 +45,6 @@ const Lyrics = ({ color, centered, showControls }: { color?: string; centered?: 
     onClose: onCloseSearch,
     onOpenChange: setIsSearchOpen,
   } = useDisclosure();
-
-  const parseLrc = useCallback((raw?: string | null) => {
-    if (!raw) return [] as LyricLine[];
-
-    const result: LyricLine[] = [];
-    const lines = raw.split(/\r?\n/);
-
-    lines.forEach(line => {
-      const text = line.replace(timeTagPattern, "").trim();
-      if (!text) return;
-
-      let match: RegExpExecArray | null;
-      while ((match = timeTagPattern.exec(line)) !== null) {
-        const minutes = Number(match[1]);
-        const seconds = Number(match[2]);
-        const millis = match[3] ? Number(match[3].padEnd(3, "0")) : 0;
-
-        if (Number.isNaN(minutes) || Number.isNaN(seconds) || Number.isNaN(millis)) continue;
-
-        const time = Math.max(0, minutes * 60 * 1000 + seconds * 1000 + millis);
-        result.push({ time, text });
-      }
-
-      timeTagPattern.lastIndex = 0;
-    });
-
-    return result.toSorted((a, b) => a.time - b.time);
-  }, []);
 
   const tryLoadCachedLyrics = useCallback(async () => {
     const playItem = usePlayList.getState().getPlayItem();
@@ -124,8 +90,8 @@ const Lyrics = ({ color, centered, showControls }: { color?: string; centered?: 
           const hasLyrics = Boolean(cached.lyrics);
           const hasTranslated = Boolean(cached.tLyrics);
           if (hasLyrics || hasTranslated) {
-            setLyrics(parseLrc(cached.lyrics));
-            setTranslatedLyrics(parseLrc(cached.tLyrics));
+            setLyrics(parseLyrics(cached.lyrics));
+            setTranslatedLyrics(parseLyrics(cached.tLyrics));
             return;
           }
         }
@@ -167,7 +133,7 @@ const Lyrics = ({ color, centered, showControls }: { color?: string; centered?: 
     return () => {
       canceled = true;
     };
-  }, [parseLrc, playId, tryLoadCachedLyrics]);
+  }, [playId, tryLoadCachedLyrics]);
 
   const translationMap = useMemo(() => {
     if (!translatedLyrics?.length) return new Map<number, string>();
@@ -179,11 +145,7 @@ const Lyrics = ({ color, centered, showControls }: { color?: string; centered?: 
   }, [translatedLyrics]);
 
   const activeIndex = useMemo(() => {
-    if (!lyrics.length) return -1;
-    for (let i = lyrics.length - 1; i >= 0; i -= 1) {
-      if (currentMs >= lyrics[i].time) return i;
-    }
-    return 0;
+    return getActiveLyricIndex(lyrics, currentMs);
   }, [currentMs, lyrics]);
 
   const persistLyricsCache = useMemo(
@@ -270,11 +232,11 @@ const Lyrics = ({ color, centered, showControls }: { color?: string; centered?: 
     (nextLyrics?: string, nextTLyrics?: string) => {
       onCloseSearch();
       if (nextLyrics) {
-        setLyrics(parseLrc(nextLyrics));
-        setTranslatedLyrics(nextTLyrics ? parseLrc(nextTLyrics) : []);
+        setLyrics(parseLyrics(nextLyrics));
+        setTranslatedLyrics(nextTLyrics ? parseLyrics(nextTLyrics) : []);
       }
     },
-    [onCloseSearch, parseLrc],
+    [onCloseSearch],
   );
 
   useEffect(() => {
@@ -371,14 +333,15 @@ const Lyrics = ({ color, centered, showControls }: { color?: string; centered?: 
               {lyrics.map((line, index) => renderLine(line, index))}
             </div>
           ) : (
-            <div className="text-foreground/70 flex h-full items-center justify-center">
-              {isLoading ? "歌词加载中..." : "暂无歌词"}
+            <div className="text-foreground/70 flex h-full flex-col items-center justify-center gap-2 text-center">
+              <span className="text-lg font-medium">{isLoading ? "歌词加载中…" : "暂无歌词"}</span>
+              {!isLoading && <span className="text-xs opacity-65">可使用右侧按钮搜索并匹配歌词</span>}
             </div>
           )}
         </div>
 
         {showControls && (
-          <div className="text-foreground/80 pointer-events-none absolute right-6 bottom-6 flex flex-col items-center space-y-3 text-sm transition-opacity duration-200">
+          <div className="text-foreground/80 pointer-events-none absolute right-6 bottom-6 flex flex-col items-center gap-2 rounded-full border border-white/10 bg-black/15 p-1.5 text-sm shadow-[var(--biu-shadow-card)] backdrop-blur-xl transition-opacity duration-200">
             <div className="pointer-events-auto">
               <FontSizeControl value={fontSize} onChange={handleFontSizeChange} onOpenChange={() => {}} />
             </div>
@@ -388,6 +351,8 @@ const Lyrics = ({ color, centered, showControls }: { color?: string; centered?: 
             <div className="pointer-events-auto">
               <IconButton
                 type="button"
+                aria-label="搜索歌词"
+                tooltip="搜索歌词"
                 onPress={onOpenSearch}
                 className="bg-foreground/20 text-foreground hover:bg-foreground/30 min-w-0 rounded-full text-xs font-semibold"
               >

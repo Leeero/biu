@@ -12,6 +12,8 @@ import { useSearchHistory } from "@/store/search-history";
 import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 
+import { normalizeSearchKeyword, shouldSubmitSearch } from "./model";
+
 interface SearchInputProps {
   onFocusChange?: (focused: boolean) => void;
 }
@@ -39,21 +41,22 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
 
   const { data: suggestionsData } = useRequest(
     async () => {
-      if (!value?.trim()) {
+      if (!shouldSubmitSearch(value)) {
         return [];
       }
 
-      const res = await getSearchSuggestMain({ term: value, userid: user?.mid });
+      const res = await getSearchSuggestMain({ term: normalizeSearchKeyword(value), userid: user?.mid });
       return res?.result?.tag || [];
     },
     { debounceWait: 300, refreshDeps: [value] },
   );
 
   const submitSearch = (keyword: string) => {
-    if (!keyword?.trim()) {
+    if (!shouldSubmitSearch(keyword)) {
       return;
     }
-    addSearchHistory(keyword);
+    const normalizedKeyword = normalizeSearchKeyword(keyword);
+    addSearchHistory(normalizedKeyword);
     if (location.pathname !== "/search") {
       navigate("/search");
     }
@@ -70,7 +73,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
   };
 
   return (
-    <div ref={containerRef} className="relative w-[280px]">
+    <div ref={containerRef} className="relative w-[min(32vw,360px)] min-w-[280px]">
       <Input
         ref={inputRef}
         value={value}
@@ -88,18 +91,21 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
           onFocusChange?.(true);
         }}
         onClick={() => setOpen(true)}
-        placeholder="搜索"
+        aria-label="搜索音乐视频或创作者"
+        placeholder="搜索音乐视频或创作者"
         isClearable
         startContent={<RiSearchLine size={16} />}
         className="window-no-drag w-full"
         classNames={{
+          input:
+            "text-sm outline-none focus-visible:outline-none placeholder:text-[rgb(var(--biu-color-text-tertiary))]",
           inputWrapper:
-            "bg-default-400/20 dark:bg-default-500/20 hover:bg-default-400/30 dark:hover:bg-default-500/30 group-data-[focus=true]:bg-default-400/30 dark:group-data-[focus=true]:bg-default-500/30",
+            "h-10 rounded-full border border-transparent bg-[rgb(var(--biu-color-surface-hover))] px-4 shadow-none outline-none transition-[background-color,border-color,box-shadow] group-data-[focus=true]:border-primary/35 group-data-[focus=true]:bg-[rgb(var(--biu-color-surface-raised))] group-data-[focus=true]:shadow-[0_0_0_3px_hsl(var(--heroui-primary)/0.10)] group-data-[focus-visible=true]:ring-0 group-data-[focus-visible=true]:outline-none data-[hover=true]:bg-[rgb(var(--biu-color-surface-pressed))]",
         }}
       />
       <div
         className={classNames(
-          "bg-content2 rounded-medium absolute top-full left-0 z-100 mt-1 h-auto max-h-[80dvh] w-[360px] overflow-hidden shadow-2xl",
+          "absolute top-full left-0 z-100 mt-2 h-auto max-h-[80dvh] w-full min-w-[360px] overflow-hidden rounded-[var(--biu-radius-lg)] border border-[rgb(var(--biu-color-border)/0.08)] bg-[rgb(var(--biu-color-surface-raised))] shadow-[var(--biu-shadow-floating)]",
           {
             hidden: !open,
             "flex flex-col": open,
@@ -123,9 +129,10 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
               searchHistoryItems.length > 0 && (
                 <>
                   <div className="mb-1 flex items-center justify-between px-1">
-                    <span className="text-sm">搜索历史</span>
-                    <span
-                      className="text-foreground-400 hover:text-foreground-600 cursor-pointer text-xs"
+                    <span className="text-sm font-medium">搜索历史</span>
+                    <button
+                      type="button"
+                      className="cursor-pointer text-xs text-[rgb(var(--biu-color-text-tertiary))] hover:text-[rgb(var(--biu-color-text-primary))]"
                       onMouseDown={e => e.preventDefault()}
                       onClick={e => {
                         e.stopPropagation();
@@ -135,7 +142,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
                       }}
                     >
                       清除全部
-                    </span>
+                    </button>
                   </div>
                   <div className="mb-1 flex flex-wrap gap-2">
                     {searchHistoryItems.slice(0, 10).map(item => (

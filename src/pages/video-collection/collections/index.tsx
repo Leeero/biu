@@ -1,24 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
 
-import { addToast } from "@heroui/react";
 import { useRequest } from "ahooks";
 
 import { CollectionType } from "@/common/constants/collection";
-import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
+import { type ScrollRefObject } from "@/components/scroll-container";
+import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
+import { PlaylistDetail } from "@/features/playlist/playlist-detail";
+import { PlaylistTrackView } from "@/features/playlist/playlist-track-view";
+import { adaptCollectionMediaToTrack } from "@/features/playlist/tracks";
+import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
 import { postFavSeasonFav } from "@/service/fav-season-fav";
 import { postFavSeasonUnfav } from "@/service/fav-season-unfav";
-import { getUserVideoArchivesList, type Media } from "@/service/user-video-archives-list";
+import { getUserVideoArchivesList } from "@/service/user-video-archives-list";
 import { useFavoritesStore } from "@/store/favorite";
-import { useModalStore } from "@/store/modal";
-import { usePlayList } from "@/store/play-list";
-import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 
 import Header from "../header";
 import Operations from "../operation";
-import SeriesGridList from "./grid-list";
-import SeriesList from "./list";
+import { getContextMenus } from "./menu";
 
 /** 视频合集 */
 const VideoCollections = () => {
@@ -27,9 +27,6 @@ const VideoCollections = () => {
   const collectedFavorites = useFavoritesStore(state => state.collectedFavorites);
   const addCollectedFavorite = useFavoritesStore(state => state.addCollectedFavorite);
   const rmCollectedFavorite = useFavoritesStore(state => state.rmCollectedFavorite);
-  const displayMode = useSettings(state => state.displayMode);
-  const playList = usePlayList(state => state.playList);
-  const addList = usePlayList(state => state.addList);
   const isFavorite = collectedFavorites?.some(item => item.id === Number(id));
 
   const [keyword, setKeyword] = useState<string>();
@@ -89,33 +86,11 @@ const VideoCollections = () => {
   }, [data?.medias, keyword, order]);
 
   const onPlayAll = () => {
-    if (filteredMedias.length > 0) {
-      playList(
-        filteredMedias.map(item => ({
-          type: "mv",
-          bvid: item.bvid,
-          title: item.title,
-          cover: item.cover,
-          ownerMid: item.upper?.mid,
-          ownerName: item.upper?.name,
-        })),
-      );
-    }
+    void executePlaylistBulkAction("play-all", filteredMedias.map(adaptCollectionMediaToTrack));
   };
 
   const addToPlayList = () => {
-    if (filteredMedias.length > 0) {
-      addList(
-        filteredMedias.map(item => ({
-          type: "mv",
-          bvid: item.bvid,
-          title: item.title,
-          cover: item.cover,
-          ownerMid: item.upper?.mid,
-          ownerName: item.upper?.name,
-        })),
-      );
-    }
+    void executePlaylistBulkAction("add-all", filteredMedias.map(adaptCollectionMediaToTrack));
   };
 
   const toggleFavorite = async () => {
@@ -148,125 +123,64 @@ const VideoCollections = () => {
     }
   };
 
-  const handleMenuAction = async (key: string, item: Media) => {
-    switch (key) {
-      case "play-next":
-        usePlayList.getState().addToNext({
-          type: "mv",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-          sid: item.id,
-          ownerName: item.upper?.name,
-          ownerMid: item.upper?.mid,
-        });
-        break;
-      case "add-to-playlist":
-        usePlayList.getState().addList([
-          {
-            type: "mv",
-            title: item.title,
-            cover: item.cover,
-            bvid: item.bvid,
-            sid: item.id,
-            ownerName: item.upper?.name,
-            ownerMid: item.upper?.mid,
-          },
-        ]);
-        break;
-      case "favorite":
-        useModalStore.getState().onOpenFavSelectModal({
-          rid: item.id,
-          type: 2,
-          title: item.title,
-        });
-        break;
-      case "download-audio":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "audio",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-        });
-        addToast({
-          title: "已添加下载任务",
-          color: "success",
-        });
-        break;
-      case "download-video":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "video",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-        });
-        addToast({
-          title: "已添加下载任务",
-          color: "success",
-        });
-        break;
-      case "bililink":
-        window.electron.openExternal(`https://www.bilibili.com/video/${item.bvid}`);
-        break;
-      default:
-        break;
-    }
-  };
-
   const isCreatedBySelf = data?.info?.upper?.mid === user?.mid;
 
   const getScrollElement = useCallback(() => {
     return scrollRef.current?.osInstance()?.elements().viewport as HTMLElement | null;
   }, []);
+  const trackEntries = filteredMedias.map(item => ({
+    id: `bilibili-video:${item.bvid}`,
+    track: adaptCollectionMediaToTrack(item),
+    source: item,
+    timestamp: item.pubtime,
+  }));
 
   return (
-    <ScrollContainer enableBackToTop ref={scrollRef} resetOnChange={id} className="h-full w-full px-4 pb-6">
-      <Header
-        type={CollectionType.VideoCollections}
-        cover={data?.info?.cover}
-        title={data?.info?.title}
-        desc={data?.info?.intro}
-        upMid={data?.info?.upper?.mid}
-        mediaCount={data?.info?.media_count}
-      />
-
-      <Operations
+    <PlaylistDetail
+      scrollRef={scrollRef}
+      resetKey={id}
+      header={
+        <Header
+          type={CollectionType.VideoCollections}
+          cover={data?.info?.cover}
+          title={data?.info?.title}
+          desc={data?.info?.intro}
+          upMid={data?.info?.upper?.mid}
+          mediaCount={data?.info?.media_count}
+        />
+      }
+      actions={
+        <Operations
+          loading={loading}
+          type={CollectionType.VideoCollections}
+          order={order}
+          onKeywordSearch={setKeyword}
+          onOrderChange={setOrder}
+          orderOptions={[
+            { key: "pubtime", label: "最近投稿" },
+            { key: "play", label: "最多播放" },
+            { key: "collect", label: "最多收藏" },
+          ]}
+          mediaCount={data?.info?.media_count}
+          isFavorite={isFavorite}
+          isCreatedBySelf={isCreatedBySelf}
+          onToggleFavorite={toggleFavorite}
+          onPlayAll={onPlayAll}
+          onAddToPlayList={addToPlayList}
+        />
+      }
+    >
+      <PlaylistTrackView
+        entries={trackEntries}
         loading={loading}
-        type={CollectionType.VideoCollections}
-        order={order}
-        onKeywordSearch={setKeyword}
-        onOrderChange={setOrder}
-        orderOptions={[
-          { key: "pubtime", label: "最近投稿" },
-          { key: "play", label: "最多播放" },
-          { key: "collect", label: "最多收藏" },
-        ]}
-        mediaCount={data?.info?.media_count}
-        isFavorite={isFavorite}
-        isCreatedBySelf={isCreatedBySelf}
-        onToggleFavorite={toggleFavorite}
-        onPlayAll={onPlayAll}
-        onAddToPlayList={addToPlayList}
+        getScrollElement={getScrollElement}
+        getActions={getContextMenus}
+        onAction={(key, entry) =>
+          void executeTrackAction(key === "bililink" ? "open-source" : (key as TrackActionKey), entry.track)
+        }
+        onPlay={entry => void executeTrackAction("play", entry.track)}
       />
-
-      {displayMode === "card" ? (
-        <SeriesGridList
-          className="min-h-0 flex-1"
-          data={filteredMedias}
-          loading={loading}
-          getScrollElement={getScrollElement}
-          onMenuAction={handleMenuAction}
-        />
-      ) : (
-        <SeriesList
-          className="min-h-0 flex-1"
-          data={filteredMedias}
-          loading={loading}
-          getScrollElement={getScrollElement}
-          onMenuAction={handleMenuAction}
-        />
-      )}
-    </ScrollContainer>
+    </PlaylistDetail>
   );
 };
 

@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { Tab, Tabs } from "@heroui/react";
+import { Card, CardBody, Tab, Tabs } from "@heroui/react";
+import {
+  RiDownloadCloud2Line,
+  RiInformationLine,
+  RiKeyboardLine,
+  RiMusic2Line,
+  RiSettings3Line,
+  RiToolsLine,
+} from "@remixicon/react";
 import { useShallow } from "zustand/react/shallow";
 
 import ScrollContainer from "@/components/scroll-container";
@@ -116,26 +124,86 @@ const useSystemSettingsForm = () => {
 const SettingsPage = () => {
   const system = useSystemSettingsForm();
 
+  const tabTitle = (icon: React.ReactNode, label: string) => (
+    <div className="flex w-36 items-center gap-3 px-2">
+      {icon}
+      <span>{label}</span>
+    </div>
+  );
+
   return (
     <ScrollContainer enableBackToTop className="h-full w-full">
-      <div className="m-auto mb-6 max-w-[900px] px-8 py-4">
-        <div className="space-y-6">
-          <h1>设置</h1>
-          <Tabs aria-label="设置选项" classNames={{ panel: "px-1 py-0", cursor: "rounded-medium" }}>
-            <Tab key="system" title="常规设置">
-              <SystemSettingsTab {...system} />
-            </Tab>
-            <Tab key="menu" title="菜单设置">
-              <MenuSettings control={system.control} />
-            </Tab>
-            <Tab key="shortcut" title="快捷键设置">
-              <ShortcutSettingsPage />
-            </Tab>
-            <Tab key="proxy" title="代理设置">
-              <ProxySettings control={system.control} />
-            </Tab>
-          </Tabs>
+      <div className="mx-auto w-full max-w-[1180px] px-8 py-7">
+        <div className="mb-7">
+          <h1 className="text-2xl font-semibold">设置</h1>
+          <p className="text-default-500 mt-1 text-sm">管理 Biu 的界面、播放与本地应用偏好</p>
         </div>
+        <Tabs
+          disableAnimation
+          aria-label="设置分类"
+          placement="start"
+          variant="light"
+          classNames={{
+            base: "items-start",
+            tabList: "sticky top-4 w-44 gap-1 bg-transparent p-0",
+            tab: "h-11 justify-start px-1",
+            cursor: "rounded-lg",
+            panel: "min-w-0 flex-1 px-7 py-0",
+          }}
+        >
+          <Tab key="general" title={tabTitle(<RiSettings3Line size={19} />, "常规")}>
+            <Card shadow="none" className="border-divider bg-content1/70 border">
+              <CardBody className="gap-8 p-6">
+                <SystemSettingsTab {...system} section="general" />
+                <div className="border-divider border-t pt-6">
+                  <MenuSettings control={system.control} />
+                </div>
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="playback" title={tabTitle(<RiMusic2Line size={19} />, "播放")}>
+            <Card shadow="none" className="border-divider bg-content1/70 border">
+              <CardBody className="p-6">
+                <SystemSettingsTab {...system} section="playback" />
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="download" title={tabTitle(<RiDownloadCloud2Line size={19} />, "下载与本地")}>
+            <Card shadow="none" className="border-divider bg-content1/70 border">
+              <CardBody className="p-6">
+                <SystemSettingsTab {...system} section="download" />
+                <p className="text-default-500 border-divider mt-6 border-t pt-5 text-sm">
+                  本地音乐目录仍在“本地音乐”页面中管理，已有目录配置保持不变。
+                </p>
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="shortcut" title={tabTitle(<RiKeyboardLine size={19} />, "快捷键")}>
+            <Card shadow="none" className="border-divider bg-content1/70 border">
+              <CardBody className="p-6">
+                <ShortcutSettingsPage />
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="advanced" title={tabTitle(<RiToolsLine size={19} />, "高级")}>
+            <Card shadow="none" className="border-divider bg-content1/70 border">
+              <CardBody className="gap-5 p-6">
+                <div>
+                  <h2>网络代理</h2>
+                  <p className="text-default-500 mt-1 text-sm">为应用访问在线服务配置代理连接</p>
+                </div>
+                <ProxySettings control={system.control} />
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="about" title={tabTitle(<RiInformationLine size={19} />, "关于")}>
+            <Card shadow="none" className="border-divider bg-content1/70 border">
+              <CardBody className="p-6">
+                <SystemSettingsTab {...system} section="about" />
+              </CardBody>
+            </Card>
+          </Tab>
+        </Tabs>
       </div>
     </ScrollContainer>
   );

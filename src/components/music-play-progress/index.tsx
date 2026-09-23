@@ -4,6 +4,7 @@ import { Slider } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 import { formatDuration } from "@/common/utils/time";
+import { usePlayerActions } from "@/features/player/use-player-actions";
 import { usePlayList } from "@/store/play-list";
 import { usePlayProgress } from "@/store/play-progress";
 
@@ -17,13 +18,13 @@ const MusicPlayProgress = memo(({ isDisabled, className, trackClassName }: Props
   const [hovered, setHovered] = useState(false);
   const currentTime = usePlayProgress(s => s.currentTime);
   const duration = usePlayList(s => s.duration);
-  const seek = usePlayList(s => s.seek);
+  const { seek } = usePlayerActions();
 
   const showThumb = !isDisabled && hovered;
 
   return (
-    <div className={twMerge("flex w-3/4 items-center space-x-2", className)}>
-      <div className="flex justify-center text-sm whitespace-nowrap opacity-70">
+    <div className={twMerge("flex w-3/4 items-center gap-2", className)}>
+      <div className="flex w-10 justify-end text-[11px] whitespace-nowrap text-[rgb(var(--biu-color-text-tertiary))] tabular-nums">
         {currentTime ? formatDuration(currentTime) : "-:--"}
       </div>
       <Slider
@@ -40,11 +41,12 @@ const MusicPlayProgress = memo(({ isDisabled, className, trackClassName }: Props
         onMouseLeave={() => setHovered(false)}
         className="flex-1"
         classNames={{
-          track: twMerge("h-[4px] cursor-pointer", trackClassName),
-          thumb: "w-4 h-4 bg-primary after:hidden",
+          track: twMerge("h-[3px] cursor-pointer", trackClassName),
+          filler: "bg-primary",
+          thumb: "w-3 h-3 bg-primary after:hidden shadow-sm",
         }}
       />
-      <span className="flex justify-center text-sm whitespace-nowrap opacity-70">
+      <span className="flex w-10 justify-start text-[11px] whitespace-nowrap text-[rgb(var(--biu-color-text-tertiary))] tabular-nums">
         {duration ? formatDuration(duration) : "-:--"}
       </span>
     </div>

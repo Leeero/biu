@@ -88,6 +88,22 @@ const UserProfile = () => {
 
   const tabs = [
     {
+      label: "音乐内容",
+      key: "video",
+      content: <VideoPost getScrollElement={() => scrollRef.current?.osInstance()?.elements().viewport || null} />,
+    },
+    {
+      label: "播放列表",
+      key: "union",
+      content: <VideoSeries getScrollElement={() => scrollRef.current?.osInstance()?.elements().viewport || null} />,
+    },
+    {
+      label: "收藏",
+      key: "collection",
+      hidden: !isSelf && !spacePrivacy?.fav_video,
+      content: <Favorites getScrollElement={() => scrollRef.current?.osInstance()?.elements().viewport || null} />,
+    },
+    {
       label: "动态",
       key: "dynamic",
       content: (
@@ -96,22 +112,6 @@ const UserProfile = () => {
           getScrollElement={() => scrollRef.current?.osInstance()?.elements().viewport || null}
         />
       ),
-    },
-    {
-      label: "投稿",
-      key: "video",
-      content: <VideoPost getScrollElement={() => scrollRef.current?.osInstance()?.elements().viewport || null} />,
-    },
-    {
-      label: "收藏夹",
-      key: "collection",
-      hidden: !isSelf && !spacePrivacy?.fav_video,
-      content: <Favorites getScrollElement={() => scrollRef.current?.osInstance()?.elements().viewport || null} />,
-    },
-    {
-      label: "合集",
-      key: "union",
-      content: <VideoSeries getScrollElement={() => scrollRef.current?.osInstance()?.elements().viewport || null} />,
     },
   ].filter(item => !item.hidden);
 
@@ -132,12 +132,19 @@ const UserProfile = () => {
         refreshRelation={refreshRelation}
       />
       {relationWithMe !== UserRelation.Blocked && (
-        <div className="p-4">
+        <div className="mx-auto w-full max-w-[1440px] px-6 py-5 lg:px-8">
           <Tabs
             radius="md"
-            classNames={{ cursor: "rounded-medium", panel: "px-0 py-4" }}
-            aria-label="个人资料栏目"
-            variant="solid"
+            classNames={{
+              tabList: "gap-6 border-b border-divider px-0",
+              cursor: "w-full bg-primary",
+              tab: "h-11 px-1",
+              tabContent:
+                "text-default-500 group-data-[selected=true]:text-foreground group-data-[selected=true]:font-medium",
+              panel: "px-0 py-6",
+            }}
+            aria-label="创作者内容栏目"
+            variant="underlined"
           >
             {tabs.map(item => (
               <Tab key={item.key} title={item.label}>

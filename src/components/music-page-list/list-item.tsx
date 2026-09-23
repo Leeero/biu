@@ -7,7 +7,8 @@ import { twMerge } from "tailwind-merge";
 
 import { formatDuration } from "@/common/utils/time";
 import Image from "@/components/image";
-import { usePlayList, type PlayData } from "@/store/play-list";
+import { usePlayerActions } from "@/features/player/use-player-actions";
+import { type PlayData } from "@/store/play-list";
 
 import Menus from "./menu";
 import { getDisplayCover, getDisplayTitle } from "./utils";
@@ -22,22 +23,25 @@ interface Props {
 }
 
 const ListItem = ({ data, isActive, onPressItem, hideCover, className, titleClassName }: Props) => {
-  const playListItem = usePlayList(state => state.playListItem);
+  const { playQueueItem } = usePlayerActions();
 
   return (
     <Button
       as="div"
+      role="button"
+      aria-label={`${isActive ? "正在播放" : "播放分集"} ${getDisplayTitle(data)}`}
+      tabIndex={0}
       key={data.id}
       fullWidth
       disableAnimation
       variant={isActive ? "flat" : "light"}
       color={isActive ? "primary" : "default"}
       onPress={() => {
-        playListItem(data.id);
+        playQueueItem(data.id);
         onPressItem?.();
       }}
       className={twMerge(
-        "group flex h-auto min-h-auto w-full min-w-auto items-center justify-between space-y-2 rounded-md p-2",
+        "group flex h-auto min-h-auto w-full min-w-auto items-center justify-between rounded-[var(--biu-radius-md)] p-2",
         className,
       )}
     >

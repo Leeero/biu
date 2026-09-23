@@ -43,16 +43,16 @@ const WindowAction = () => {
     <div className="window-no-drag flex items-center justify-center">
       {!isFullScreen && (
         <>
-          <IconButton title="切换到迷你播放器" onPress={toggleMiniMode}>
+          <IconButton aria-label="切换到迷你播放器" tooltip="迷你播放器" onPress={toggleMiniMode}>
             <RiPictureInPicture2Line size={16} />
           </IconButton>
-          <IconButton onPress={handleMinimize}>
+          <IconButton aria-label="最小化窗口" onPress={handleMinimize}>
             <RiSubtractLine size={18} />
           </IconButton>
-          <IconButton onPress={handleMaximize}>
+          <IconButton aria-label={isMaximized ? "还原窗口" : "最大化窗口"} onPress={handleMaximize}>
             {isMaximized ? <RiFullscreenExitLine size={14} /> : <RiFullscreenLine size={14} />}
           </IconButton>
-          <IconButton onPress={handleClose}>
+          <IconButton aria-label="关闭窗口" onPress={handleClose}>
             <RiCloseLine size={18} />
           </IconButton>
         </>

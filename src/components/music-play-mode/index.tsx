@@ -4,13 +4,14 @@ import { Tooltip, Switch } from "@heroui/react";
 
 import { getPlayModeList, PlayMode } from "@/common/constants/audio";
 import IconButton from "@/components/icon-button";
+import { usePlayerActions } from "@/features/player/use-player-actions";
 import { usePlayList } from "@/store/play-list";
 
 const PlayModeList = getPlayModeList(18);
 
 const MusicPlayMode = () => {
   const playMode = usePlayList(s => s.playMode);
-  const togglePlayMode = usePlayList(s => s.togglePlayMode);
+  const { togglePlayMode } = usePlayerActions();
   const shouldKeepPagesOrderInRandomPlayMode = usePlayList(s => s.shouldKeepPagesOrderInRandomPlayMode);
   const setShouldKeepPagesOrderInRandomPlayMode = usePlayList(s => s.setShouldKeepPagesOrderInRandomPlayMode);
   const [isOpen, setIsOpen] = React.useState(false);

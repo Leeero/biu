@@ -15,14 +15,14 @@ const MenuGroup = ({ title, titleExtra, items, collapsed, className, renderItem 
   return (
     <>
       {!collapsed && Boolean(title) && (
-        <div className="flex items-center justify-between p-2 text-sm text-zinc-500">
+        <div className="flex items-center justify-between px-2 pt-5 pb-2 text-xs font-medium tracking-wide text-[rgb(var(--biu-color-text-tertiary))]">
           <span>{title}</span>
           {titleExtra}
         </div>
       )}
       <div
         className={clx(
-          "flex flex-col items-stretch",
+          "flex flex-col items-stretch gap-1",
           {
             "px-2": collapsed,
           },

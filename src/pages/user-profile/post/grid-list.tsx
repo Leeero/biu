@@ -2,9 +2,10 @@ import React, { useCallback } from "react";
 
 import type { SpaceArcVListItem } from "@/service/space-wbi-arc-search";
 
+import { adaptCreatorPostToTrack } from "@/adapters/track/creator";
 import MusicCard from "@/components/music-card";
 import VirtualGridPageList from "@/components/virtual-grid-page-list";
-import { usePlayList } from "@/store/play-list";
+import { executeTrackAction } from "@/features/track/actions";
 
 import { getContextMenus } from "./menu";
 
@@ -42,14 +43,7 @@ const PostGridList: React.FC<PostGridListProps> = ({
             onMenuAction(key, item);
           }}
           onPress={() => {
-            usePlayList.getState().play({
-              type: "mv",
-              bvid: item.bvid,
-              title: item.title,
-              cover: item.pic,
-              ownerName: item.author,
-              ownerMid: item.mid,
-            });
+            void executeTrackAction("play", adaptCreatorPostToTrack(item));
           }}
         />
       );

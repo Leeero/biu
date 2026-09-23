@@ -1,20 +1,20 @@
 import React, { useCallback } from "react";
 
-import { formatSecondsToDate } from "@/common/utils/time";
-import { formatUrlProtocol } from "@/common/utils/url";
-import MusicListItem from "@/components/music-list-item";
+import type { Track } from "@/domain/track";
+
+import { toPlayItem } from "@/adapters/track/actions";
 import MusicListHeader from "@/components/music-list-item/header";
 import VirtualPageList from "@/components/virtual-page-list";
-import { type SearchVideoItem } from "@/service/web-interface-search-type";
 import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
+import { TrackRow } from "@/ui/patterns/track-row";
 
 import { getContextMenus } from "./menu";
 
 interface ListProps {
-  items: SearchVideoItem[];
+  items: Track[];
   getScrollElement: () => HTMLElement | null;
-  onMenuAction: (key: string, item: SearchVideoItem) => void;
+  onMenuAction: (key: string, item: Track) => void;
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
@@ -24,19 +24,12 @@ const List: React.FC<ListProps> = ({ items, getScrollElement, onMenuAction, load
   const displayMode = useSettings(state => state.displayMode);
   const isCompact = displayMode === "compact";
 
-  const handlePress = useCallback((item: SearchVideoItem) => {
-    usePlayList.getState().play({
-      type: "mv",
-      bvid: item.bvid,
-      title: item.title,
-      cover: formatUrlProtocol(item.pic),
-      ownerName: item.author,
-      ownerMid: item.mid,
-    });
+  const handlePress = useCallback((item: Track) => {
+    usePlayList.getState().play(toPlayItem(item));
   }, []);
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
       <MusicListHeader />
       <VirtualPageList
         items={items}
@@ -47,21 +40,13 @@ const List: React.FC<ListProps> = ({ items, getScrollElement, onMenuAction, load
         rowHeight={isCompact ? 36 : 64}
         renderItem={(item, index) => {
           return (
-            <MusicListItem
-              key={item.aid}
+            <TrackRow
+              key={item.id}
               index={index + 1}
-              title={<span dangerouslySetInnerHTML={{ __html: item.title }} />}
-              type="mv"
-              bvid={item.bvid}
-              cover={formatUrlProtocol(item.pic)}
-              upName={item.author}
-              upMid={item.mid}
-              playCount={item.play}
-              duration={item.duration}
-              pubTime={formatSecondsToDate(item.pubdate)}
-              onPress={() => handlePress(item)}
-              menus={getContextMenus()}
-              onMenuAction={key => onMenuAction(key, item)}
+              track={item}
+              onPlay={() => handlePress(item)}
+              actions={getContextMenus()}
+              onAction={key => onMenuAction(key, item)}
             />
           );
         }}

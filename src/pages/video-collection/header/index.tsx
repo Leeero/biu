@@ -39,8 +39,8 @@ const Header = memo(({ loading, type, attr, cover, title, desc, upMid, mediaCoun
 
   if (loading) {
     return (
-      <div className="mb-4 flex space-x-4">
-        <Skeleton className="h-[168px] w-[200px] rounded-md" />
+      <div className="mb-6 flex space-x-5">
+        <Skeleton className="h-44 w-44 rounded-[var(--biu-radius-lg)]" />
         <div className="flex min-w-0 flex-col items-start space-y-4">
           <Skeleton className="h-[24px] w-[200px] rounded-md" />
           <Skeleton className="h-[16px] w-[200px] rounded-md" />
@@ -52,18 +52,21 @@ const Header = memo(({ loading, type, attr, cover, title, desc, upMid, mediaCoun
 
   return (
     <>
-      <div className="mb-4 flex space-x-4">
+      <header className="mb-6 flex items-end gap-6">
         <div className="group relative flex-none">
           <Image
             radius="md"
             src={cover}
             alt={title}
-            width={200}
-            height={168}
-            params="672w_378h_1c.avif"
-            className={clx({
-              "border-content3 border": !cover,
-            })}
+            width={176}
+            height={176}
+            params="400w_400h_1c.avif"
+            className={clx(
+              {
+                "border-content3 border": !cover,
+              },
+              "h-44 w-44 object-cover shadow-[var(--biu-shadow-card)]",
+            )}
           />
           {typeof onEdit === "function" && (
             <div
@@ -81,19 +84,24 @@ const Header = memo(({ loading, type, attr, cover, title, desc, upMid, mediaCoun
             </div>
           )}
         </div>
-        <div className="flex min-w-0 flex-col items-start space-y-4">
-          <h1 className="text-3xl font-bold">{title}</h1>
-          {Boolean(desc) && <p className="text-foreground-400 line-clamp-1 text-sm">{desc}</p>}
-          <div className="text-foreground-400 flex items-center space-x-1 text-sm">
+        <div className="flex min-w-0 flex-1 flex-col items-start pb-1">
+          <span className="mb-2 text-xs font-medium tracking-wide text-[rgb(var(--biu-color-text-tertiary))]">
+            播放列表
+          </span>
+          <h1 className="line-clamp-2 text-3xl font-bold tracking-[-0.03em]">{title}</h1>
+          {Boolean(desc) && (
+            <p className="mt-3 line-clamp-2 max-w-3xl text-sm text-[rgb(var(--biu-color-text-secondary))]">{desc}</p>
+          )}
+          <div className="mt-3 flex items-center space-x-1 text-sm text-[rgb(var(--biu-color-text-tertiary))]">
             <span>
               {type === CollectionType.Favorite
                 ? `${attr ? (isPrivateFav(attr as number) ? "私密" : "公开") : ""}收藏夹`
                 : type === CollectionType.VideoSeries
-                  ? "视频系列"
-                  : "视频合集"}
+                  ? "系列"
+                  : "合集"}
             </span>
             <span>•</span>
-            <span>{mediaCount} 条视频</span>
+            <span>{mediaCount ?? 0} 首内容</span>
           </div>
           <User
             avatarProps={{
@@ -105,10 +113,10 @@ const Header = memo(({ loading, type, attr, cover, title, desc, upMid, mediaCoun
                 {upInfo?.card?.name}
               </Link>
             }
-            className="justify-start"
+            className="mt-3 justify-start"
           />
         </div>
-      </div>
+      </header>
     </>
   );
 });

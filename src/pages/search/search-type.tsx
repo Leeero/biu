@@ -5,11 +5,11 @@ export enum SearchType {
 
 export const SearchTypeOptions = [
   {
-    label: "视频",
+    label: "音乐视频",
     value: SearchType.Video,
   },
   {
-    label: "用户",
+    label: "创作者",
     value: SearchType.User,
   },
 ];

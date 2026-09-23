@@ -4,6 +4,10 @@ import { Card, Spinner, addToast } from "@heroui/react";
 import { RiArrowLeftSLine, RiArrowRightSLine, RiMusic2Line, RiPlayFill } from "@remixicon/react";
 import log from "electron-log/renderer";
 
+import type { Track } from "@/domain/track";
+
+import { toPlayItem } from "@/adapters/track/actions";
+import { adaptNewMusicBannerToTrack, adaptNewMusicToTrack, dedupeTracks } from "@/adapters/track/recommendation";
 import { formatNumber } from "@/common/utils/number";
 import IconButton from "@/components/icon-button";
 import Image from "@/components/image";
@@ -11,40 +15,22 @@ import { getNewMusic } from "@/service/web-interface-new-music";
 import { getNewMusicBanner } from "@/service/web-interface-new-music-banner";
 import { usePlayList } from "@/store/play-list";
 
-type UnifiedItem = {
-  key: string;
-  title: string;
-  cover?: string;
-  bvid?: string;
-  jump_url?: string;
-  total_vv?: number;
-  wish_count?: number;
-  author?: string;
-  date?: string;
-};
-
 type NewMusicTopProps = {
   onLayoutChange?: () => void;
 };
 
 const NewMusicTop = ({ onLayoutChange }: NewMusicTopProps) => {
-  const [items, setItems] = useState<UnifiedItem[]>([]);
+  const [items, setItems] = useState<Track[]>([]);
   const [newLoading, setNewLoading] = useState(true);
   const [newPage, setNewPage] = useState(1);
   const gridRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [colCount, setColCount] = useState(2);
 
-  const handlePlay = React.useCallback((item: UnifiedItem) => {
+  const handlePlay = React.useCallback((item: Track) => {
     usePlayList
       .getState()
-      .play({
-        type: "mv",
-        bvid: item.bvid,
-        title: item.title,
-        cover: item.cover,
-        ownerName: item.author,
-      })
+      .play(toPlayItem(item))
       .catch(error => {
         log.error("[new-music-top] play error", error);
         addToast({ title: "播放失败", color: "danger" });
@@ -58,44 +44,10 @@ const NewMusicTop = ({ onLayoutChange }: NewMusicTopProps) => {
       const bannerList = bannerRes?.data?.list ?? [];
       const musicList = listRes?.data?.list ?? [];
 
-      const normalizedBanner: UnifiedItem[] = bannerList.map(b => ({
-        key: b.bvid || b.music_id || b.jump_url || (b.cover ? `cover:${b.cover}` : `banner:${Math.random()}`),
-        title: b.archive_title || "",
-        cover: b.cover,
-        bvid: b.bvid,
-        jump_url: b.jump_url,
-        author: b.author,
-        date: b.publish_time ? String(b.publish_time).slice(0, 10) : undefined,
-      }));
+      const normalizedBanner = bannerList.map((item, index) => adaptNewMusicBannerToTrack(item, `banner-${index}`));
+      const normalizedMusic = musicList.map((item, index) => adaptNewMusicToTrack(item, `music-${index}`));
 
-      const normalizedMusic: UnifiedItem[] = musicList.map(m => ({
-        key:
-          m.bvid ||
-          (typeof m.id === "number" ? String(m.id) : "") ||
-          m.music_id ||
-          m.jump_url ||
-          (m.cover ? `cover:${m.cover}` : `music:${Math.random()}`),
-        title: m.music_title || "",
-        cover: m.cover,
-        bvid: m.bvid,
-        jump_url: m.jump_url,
-        total_vv: m.total_vv,
-        wish_count: m.wish_count,
-        author: m.author,
-        date: m.publish_time || undefined,
-      }));
-
-      const seen = new Set<string>();
-      const merged: UnifiedItem[] = [];
-      [...normalizedBanner, ...normalizedMusic].forEach(it => {
-        const k = it.key || Math.random().toString();
-        if (!seen.has(k)) {
-          seen.add(k);
-          merged.push(it);
-        }
-      });
-
-      setItems(merged);
+      setItems(dedupeTracks([...normalizedBanner, ...normalizedMusic]));
       setNewPage(1);
     } catch (error) {
       log.error("[new-music-top] fetchNewMusic error", error);
@@ -171,25 +123,36 @@ const NewMusicTop = ({ onLayoutChange }: NewMusicTopProps) => {
   }, [items, newPage, pageSize]);
 
   return (
-    <div ref={containerRef} className="mb-4 space-y-3">
+    <section ref={containerRef} aria-labelledby="new-music-heading" className="mb-8 space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <RiMusic2Line className="text-primary" />
-          <h1>新歌速递</h1>
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary mt-0.5 flex h-9 w-9 items-center justify-center rounded-full">
+            <RiMusic2Line size={20} />
+          </div>
+          <div>
+            <h2 id="new-music-heading" className="text-xl font-semibold tracking-[-0.01em]">
+              新歌速递
+            </h2>
+            <p className="mt-0.5 text-xs text-[rgb(var(--biu-color-text-tertiary))]">当前可获取的新歌与音乐内容</p>
+          </div>
         </div>
         {newLoading ? null : (
           <div className="flex items-center gap-2">
             <IconButton
               isDisabled={newPage <= 1 || totalPages === 0}
+              aria-label="上一页新歌"
+              tooltip="上一页"
               onPress={() => setNewPage(p => Math.max(1, p - 1))}
               variant="flat"
               className="bg-foreground/10 hover:bg-foreground/20 shadow-none"
             >
               <RiArrowLeftSLine size={16} />
             </IconButton>
-            <span className="text-foreground text-sm">{`${newPage} / ${totalPages}`}</span>
+            <span className="min-w-10 text-center text-xs text-[rgb(var(--biu-color-text-secondary))] tabular-nums">{`${newPage} / ${totalPages}`}</span>
             <IconButton
               isDisabled={newPage >= totalPages || totalPages === 0}
+              aria-label="下一页新歌"
+              tooltip="下一页"
               onPress={() => setNewPage(p => Math.min(totalPages, p + 1))}
               variant="flat"
               className="bg-foreground/10 hover:bg-foreground/20 shadow-none"
@@ -209,18 +172,25 @@ const NewMusicTop = ({ onLayoutChange }: NewMusicTopProps) => {
           className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
         >
           {pageItems.length === 0 ? (
-            <Card className="rounded-medium col-span-full flex h-[200px] items-center justify-center">
+            <Card className="col-span-full flex h-[200px] items-center justify-center rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface))]">
               <span className="text-foreground-500">暂无数据</span>
             </Card>
           ) : (
             pageItems.map(item => {
               return (
                 <div
-                  key={item.key}
+                  key={item.id}
                   role="button"
                   tabIndex={0}
+                  aria-label={`播放 ${item.title}`}
                   onClick={() => handlePlay(item)}
-                  className="group w-full cursor-pointer select-none"
+                  onKeyDown={event => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handlePlay(item);
+                    }
+                  }}
+                  className="group w-full cursor-pointer rounded-[var(--biu-radius-lg)] p-1.5 transition-colors select-none hover:bg-[rgb(var(--biu-color-surface-hover))]"
                 >
                   <div className="relative aspect-square w-full">
                     <Image
@@ -231,28 +201,28 @@ const NewMusicTop = ({ onLayoutChange }: NewMusicTopProps) => {
                       params="672w_378h_1c.avif"
                       emptyPlaceholder={<RiMusic2Line />}
                       removeWrapper
-                      className="rounded-medium shadow-md"
+                      className="rounded-[var(--biu-radius-lg)] shadow-[var(--biu-shadow-card)]"
                     />
-                    {typeof item.total_vv === "number" && (
+                    {typeof item.playCount === "number" && (
                       <div className="absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/40 to-transparent p-2 text-white">
-                        <div className="line-clamp-1 text-xs">{`${formatNumber(item.total_vv ?? 0)}播放`}</div>
+                        <div className="line-clamp-1 text-xs">{`${formatNumber(item.playCount ?? 0)}播放`}</div>
                       </div>
                     )}
-                    <div className="pointer-events-none absolute right-2 bottom-8 z-40 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100">
-                      <div className="bg-primary rounded-full shadow-2xl">
+                    <div className="pointer-events-none absolute right-2 bottom-2 z-40 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">
+                      <div className="bg-primary rounded-full shadow-[var(--biu-shadow-floating)]">
                         <div className="flex h-10 w-10 items-center justify-center">
                           <RiPlayFill className="text-black" size={26} />
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 text-left">
-                    <div className="group-hover:text-primary line-clamp-1 text-base font-medium transition-colors">
+                  <div className="mt-2 px-0.5 text-left">
+                    <div className="group-hover:text-primary line-clamp-1 text-sm font-medium transition-colors">
                       {item.title}
                     </div>
-                    {(item.author || item.date) && (
-                      <div className="text-foreground-500 group-hover:text-primary mt-1 text-xs transition-colors">
-                        {`${item.author ?? ""}${item.author && item.date ? " · " : ""}${item.date ?? ""}`}
+                    {(item.creator?.name || item.publishedAt) && (
+                      <div className="mt-1 truncate text-xs text-[rgb(var(--biu-color-text-secondary))] transition-colors">
+                        {`${item.creator?.name ?? ""}${item.creator?.name && item.publishedAt ? " · " : ""}${item.publishedAt?.slice(0, 10) ?? ""}`}
                       </div>
                     )}
                   </div>
@@ -262,7 +232,7 @@ const NewMusicTop = ({ onLayoutChange }: NewMusicTopProps) => {
           )}
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

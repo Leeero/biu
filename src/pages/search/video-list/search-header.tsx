@@ -35,8 +35,9 @@ export default function SearchHeader({
   playAllDisabled,
 }: SearchHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-4 pb-4">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <Tabs
+        aria-label="音乐视频排序"
         variant="light"
         radius="md"
         classNames={{
@@ -55,15 +56,15 @@ export default function SearchHeader({
         <AsyncButton
           color="primary"
           size="sm"
+          radius="full"
           startContent={<RiPlayFill size={18} />}
           isDisabled={playAllDisabled}
           onPress={onPlayAll}
-          className="dark:text-black"
         >
           全部播放
         </AsyncButton>
-        <Switch isSelected={musicOnly} onValueChange={onMusicOnlyChange} size="sm">
-          仅音乐分区
+        <Switch aria-label="仅显示音乐分区" isSelected={musicOnly} onValueChange={onMusicOnlyChange} size="sm">
+          仅显示音乐分区
         </Switch>
       </div>
     </div>

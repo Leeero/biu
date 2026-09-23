@@ -9,9 +9,9 @@ const Control = () => {
   const isEmptyPlayList = list.length === 0;
 
   return (
-    <div className="flex h-full flex-col items-center justify-center space-y-0.5 overflow-hidden px-6">
+    <div className="flex h-full min-w-0 flex-col items-center justify-center gap-1 overflow-hidden px-6">
       <MusicPlayControl />
-      <MusicPlayProgress isDisabled={isEmptyPlayList} />
+      <MusicPlayProgress isDisabled={isEmptyPlayList} className="w-full max-w-[620px]" />
     </div>
   );
 };

@@ -5,14 +5,14 @@ export const Themes: ConfigThemes = {
     extend: "dark",
     colors: {
       background: "#17181a",
-      primary: "#1ed760",
+      primary: "#ec4141",
     },
   },
   light: {
     extend: "light",
     colors: {
       background: "#ffffff",
-      primary: "#1ed760",
+      primary: "#ec4141",
     },
   },
 };

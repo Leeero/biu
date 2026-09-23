@@ -2,7 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import { addToast, Spinner } from "@heroui/react";
 
-import { formatUrlProtocol } from "@/common/utils/url";
+import type { Track } from "@/domain/track";
+
+import { getTrackSourceUrl, toFavoriteSelection, toMediaDownloadInfo, toPlayItem } from "@/adapters/track/actions";
+import { adaptSearchVideoToTrack } from "@/adapters/track/search";
 import Empty from "@/components/empty";
 import { getWebInterfaceWbiSearchType, type SearchVideoItem } from "@/service/web-interface-search-type";
 import { useModalStore } from "@/store/modal";
@@ -23,7 +26,7 @@ export default function SearchVideo({ keyword, getScrollElement }: SearchVideoPr
 
   const [musicOnly, setMusicOnly] = useState(true);
   const [order, setOrder] = useState<SortOrder>("totalrank");
-  const [list, setList] = useState<SearchVideoItem[]>([]);
+  const [list, setList] = useState<Track[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(false);
@@ -39,7 +42,7 @@ export default function SearchVideo({ keyword, getScrollElement }: SearchVideoPr
         order,
         ...(musicOnly && { tids: 3 }), // 音乐分区ID为3
       });
-      const items = res?.data?.result ?? [];
+      const items = (res?.data?.result ?? []).map(adaptSearchVideoToTrack);
       const total = res?.data?.numResults ?? 0;
       return { items, total };
     },
@@ -87,77 +90,52 @@ export default function SearchVideo({ keyword, getScrollElement }: SearchVideoPr
   }, [retryInitial]);
 
   const handlePlayAll = useCallback(async () => {
-    const items = list.map(item => ({
-      type: "mv" as const,
-      bvid: item.bvid,
-      title: item.title,
-      cover: formatUrlProtocol(item.pic),
-      ownerName: item.author,
-      ownerMid: item.mid,
-    }));
+    const items = list.map(toPlayItem);
 
     await usePlayList.getState().addList(items);
     addToast({ title: `已添加 ${items.length} 首到播放列表`, color: "success" });
   }, [list]);
 
-  const handleMenuAction = useCallback(async (key: string, item: SearchVideoItem) => {
-    const musicItem = {
-      type: "mv" as const,
-      bvid: item.bvid,
-      title: item.title,
-      cover: formatUrlProtocol(item.pic),
-      ownerName: item.author,
-      ownerMid: item.mid,
-    };
-
+  const handleMenuAction = useCallback(async (key: string, item: Track) => {
     switch (key) {
       case "play-next":
-        usePlayList.getState().addToNext(musicItem);
+        usePlayList.getState().addToNext(toPlayItem(item));
         addToast({ title: "已添加到下一首播放", color: "success" });
         break;
       case "add-to-playlist":
-        usePlayList.getState().addList([musicItem]);
+        usePlayList.getState().addList([toPlayItem(item)]);
         addToast({ title: "已添加到播放列表", color: "success" });
         break;
-      case "favorite":
-        useModalStore.getState().onOpenFavSelectModal({
-          rid: item.aid,
-          type: 2,
-          title: (
-            <div>
-              收藏
-              <span dangerouslySetInnerHTML={{ __html: item.title }} />
-            </div>
-          ),
-        });
+      case "favorite": {
+        const selection = toFavoriteSelection(item);
+        if (selection) useModalStore.getState().onOpenFavSelectModal(selection);
         break;
-      case "download-audio":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "audio",
-          title: item.title,
-          cover: formatUrlProtocol(item.pic),
-          bvid: item.bvid,
-        });
+      }
+      case "download-audio": {
+        const audioTask = toMediaDownloadInfo(item, "audio");
+        if (!audioTask) return;
+        await window.electron.addMediaDownloadTask(audioTask);
         addToast({
           title: "已添加下载任务",
           color: "success",
         });
         break;
-      case "download-video":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "video",
-          title: item.title,
-          cover: formatUrlProtocol(item.pic),
-          bvid: item.bvid,
-        });
+      }
+      case "download-video": {
+        const videoTask = toMediaDownloadInfo(item, "video");
+        if (!videoTask) return;
+        await window.electron.addMediaDownloadTask(videoTask);
         addToast({
           title: "已添加下载任务",
           color: "success",
         });
         break;
-      case "bililink":
-        window.electron.openExternal(`https://www.bilibili.com/video/${item.bvid}`);
+      }
+      case "bililink": {
+        const url = getTrackSourceUrl(item);
+        if (url) window.electron.openExternal(url);
         break;
+      }
       default:
         break;
     }

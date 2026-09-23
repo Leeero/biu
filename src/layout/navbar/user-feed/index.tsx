@@ -36,7 +36,7 @@ const UserFeed = () => {
 
   const handleOpen = () => {
     setUpdateCount(0);
-    navigate("/dynamic-feed");
+    navigate("/follow?tab=updates");
   };
 
   const button = (
@@ -47,7 +47,7 @@ const UserFeed = () => {
 
   return (
     <>
-      <Tooltip closeDelay={0} content="动态">
+      <Tooltip closeDelay={0} content="关注动态">
         {updateCount > 0 ? (
           <Badge
             isDot

@@ -2,11 +2,12 @@ import React, { useCallback, useMemo, useRef } from "react";
 
 import { addToast, Drawer, DrawerBody, DrawerContent, DrawerHeader } from "@heroui/react";
 import { RiDeleteBinLine, RiFocus3Line } from "@remixicon/react";
-import { uniqBy } from "es-toolkit/array";
 
 import { openBiliVideoLink } from "@/common/utils/url";
 import { type ScrollRefObject } from "@/components/scroll-container";
 import { VirtualList } from "@/components/virtual-list";
+import { getUniqueQueueItems } from "@/features/player/queue";
+import { usePlayerActions } from "@/features/player/use-player-actions";
 import { useModalStore } from "@/store/modal";
 import { isSame, usePlayList, type PlayData } from "@/store/play-list";
 import { useUser } from "@/store/user";
@@ -15,7 +16,7 @@ import Empty from "../empty";
 import IconButton from "../icon-button";
 import ListItem from "./list-item";
 
-const RowHeight = 64;
+const RowHeight = 68;
 
 const PlayListDrawer = () => {
   const scrollRef = useRef<ScrollRefObject | null>(null);
@@ -23,16 +24,11 @@ const PlayListDrawer = () => {
   const setOpen = useModalStore(s => s.setPlayListDrawerOpen);
   const list = usePlayList(s => s.list);
   const playId = usePlayList(s => s.playId);
-  const clear = usePlayList(s => s.clear);
   const user = useUser(s => s.user);
-  const playListItem = usePlayList(state => state.playListItem);
+  const { clearQueue, playQueueItem } = usePlayerActions();
 
   const playItem = useMemo(() => list.find(item => item.id === playId), [list, playId]);
-  const pureList = useMemo(() => {
-    return uniqBy(list, item =>
-      item.source === "local" ? `local:${item.id}` : item.type === "mv" ? `mv:${item.bvid}` : `audio:${item.sid}`,
-    );
-  }, [list]);
+  const pureList = useMemo(() => getUniqueQueueItems(list), [list]);
 
   const handleAction = useCallback(async (key: string, item: PlayData) => {
     switch (key) {
@@ -112,8 +108,8 @@ const PlayListDrawer = () => {
 
   return (
     <Drawer
-      radius="md"
-      shadow="md"
+      radius="none"
+      shadow="lg"
       backdrop="transparent"
       size="sm"
       hideCloseButton
@@ -123,21 +119,29 @@ const PlayListDrawer = () => {
       classNames={{
         backdrop: "z-200 window-no-drag",
         wrapper: "z-200 window-no-drag",
-        base: "data-[placement=right]:mb-22",
+        base: "border-l border-[rgb(var(--biu-color-border)/0.08)] bg-[rgb(var(--biu-color-surface-raised))] data-[placement=right]:mb-[var(--biu-player-height)]",
       }}
     >
-      <DrawerContent>
-        <DrawerHeader className="border-divider/40 flex flex-row items-center justify-between space-x-2 border-b px-4 py-3">
-          <h3>
-            播放列表<span className="text-default-500 text-sm">({pureList?.length || 0})</span>
-          </h3>
+      <DrawerContent className="outline-none focus-visible:outline-none">
+        <DrawerHeader className="flex flex-row items-center justify-between gap-3 border-b border-[rgb(var(--biu-color-border)/0.08)] px-5 py-4">
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold tracking-[-0.01em]">播放列表</h2>
+            <p className="mt-0.5 text-xs font-normal text-[rgb(var(--biu-color-text-tertiary))]">
+              {pureList?.length || 0} 首歌曲
+            </p>
+          </div>
           <div className="flex items-center">
             {Boolean(pureList?.length) && (
               <>
-                <IconButton tooltip="定位当前播放" onPress={scrollToPlayItem}>
+                <IconButton aria-label="定位当前播放" tooltip="定位当前播放" onPress={scrollToPlayItem}>
                   <RiFocus3Line size={16} />
                 </IconButton>
-                <IconButton tooltip="清空播放列表" onPress={clear} className="hover:text-danger">
+                <IconButton
+                  aria-label="清空播放列表"
+                  tooltip="清空播放列表"
+                  onPress={clearQueue}
+                  className="hover:text-danger"
+                >
                   <RiDeleteBinLine size={16} />
                 </IconButton>
               </>
@@ -145,9 +149,9 @@ const PlayListDrawer = () => {
           </div>
         </DrawerHeader>
         {list.length ? (
-          <DrawerBody className="overflow-hidden px-0">
+          <DrawerBody className="overflow-hidden px-0 py-2">
             <VirtualList
-              className="h-full w-full px-2"
+              className="h-full w-full px-3"
               scrollRef={scrollRef}
               data={pureList}
               itemHeight={RowHeight}
@@ -157,7 +161,7 @@ const PlayListDrawer = () => {
                   isLogin={Boolean(user?.isLogin)}
                   isPlaying={playItem?.source === "local" ? playItem?.id === item.id : isSame(playItem, item)}
                   onClose={() => setOpen(false)}
-                  onPress={() => playListItem(item.id)}
+                  onPress={() => playQueueItem(item.id)}
                   onAction={key => handleAction(key, item)}
                 />
               )}

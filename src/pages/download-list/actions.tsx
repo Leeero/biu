@@ -11,6 +11,7 @@ import {
 } from "@remixicon/react";
 
 import AsyncButton from "@/components/async-button";
+import { getDownloadTaskCapabilities } from "@/features/downloads/model";
 import { useModalStore } from "@/store/modal";
 
 interface Props {
@@ -21,6 +22,7 @@ type ActionKey = "open" | "pause" | "resume" | "retry" | "delete";
 
 const DownloadActions = ({ data }: Props) => {
   const onOpenConfirmModal = useModalStore(s => s.onOpenConfirmModal);
+  const capabilities = getDownloadTaskCapabilities(data);
 
   const [pendingAction, setPendingAction] = useState<ActionKey | null>(null);
   const pendingTimeoutRef = useRef<number | null>(null);
@@ -73,7 +75,7 @@ const DownloadActions = ({ data }: Props) => {
       key: "open",
       label: "打开文件",
       icon: data.outputFileType === "audio" ? <RiFileMusicLine size={18} /> : <RiFileVideoLine size={18} />,
-      show: data.status === "completed",
+      show: capabilities.canOpen,
       onPress: async () => {
         if (!data.savePath) {
           addToast({ title: "文件路径不存在", color: "danger" });
@@ -93,7 +95,7 @@ const DownloadActions = ({ data }: Props) => {
       icon: <RiPauseLine size={18} />,
       tooltipColor: "warning" as const,
       className: "hover:text-warning",
-      show: data.status === "downloading",
+      show: capabilities.canPause,
       onPress: async () => {
         if (pendingAction) return;
         lockAction("pause");
@@ -106,7 +108,7 @@ const DownloadActions = ({ data }: Props) => {
       icon: <RiPlayLine size={18} />,
       tooltipColor: "success" as const,
       className: "hover:text-success",
-      show: ["downloadPaused", "mergePaused", "convertPaused"].includes(data.status),
+      show: capabilities.canResume,
       onPress: async () => {
         if (pendingAction) return;
         lockAction("resume");
@@ -117,7 +119,7 @@ const DownloadActions = ({ data }: Props) => {
       key: "retry",
       label: "重试",
       icon: <RiRefreshLine size={16} />,
-      show: data.status === "failed",
+      show: capabilities.canRetry,
       onPress: async () => {
         if (pendingAction) return;
         lockAction("retry");
@@ -128,17 +130,13 @@ const DownloadActions = ({ data }: Props) => {
       key: "delete",
       label: "删除",
       icon: <RiDeleteBinLine size={16} />,
-      show: true,
+      show: capabilities.canDelete,
       tooltipColor: "danger" as const,
       className: "hover:text-danger",
       onPress: async () => {
         if (pendingAction) return;
 
-        if (
-          ["downloading", "downloadPaused", "merging", "mergePaused", "converting", "convertPaused"].includes(
-            data.status,
-          )
-        ) {
+        if (capabilities.confirmBeforeDelete) {
           onOpenConfirmModal({
             title: "确认删除吗？",
             description: "当前任务未下载完成，确认删除后将无法恢复",

@@ -18,6 +18,8 @@ import {
   RiProfileLine,
   RiRefreshLine,
   RiSettings3Line,
+  RiTeamLine,
+  RiHistoryLine,
 } from "@remixicon/react";
 import { twMerge } from "tailwind-merge";
 
@@ -101,6 +103,20 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
       onPress: () => navigate(`/user/${user?.mid}`),
     },
     {
+      key: "following",
+      label: "关注与动态",
+      startContent: <RiTeamLine size={18} />,
+      hidden: !user?.isLogin,
+      onPress: () => navigate("/follow"),
+    },
+    {
+      key: "history",
+      label: "B站历史",
+      startContent: <RiHistoryLine size={18} />,
+      hidden: !user?.isLogin,
+      onPress: () => navigate("/history"),
+    },
+    {
       key: "settings",
       label: "设置",
       startContent: <RiSettings3Line size={18} />,
@@ -135,7 +151,7 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
       label: "问题反馈",
       startContent: <RiFeedbackLine size={18} />,
       endContent: <RiExternalLinkLine size={18} />,
-      onPress: () => window.electron.openExternal("https://github.com/wood3n/biu/issues"),
+      onPress: () => window.electron.openExternal("https://github.com/Leeero/biu/issues"),
     },
     {
       key: "logout",

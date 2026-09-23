@@ -13,6 +13,14 @@ export type GlassBackgroundLayer = {
   gradientBackground: string;
 };
 
+const dominantColorCache = new Map<string, Rgb>();
+const MAX_COLOR_CACHE_SIZE = 100;
+
+export function getOptimizedBackgroundImageUrl(src?: string) {
+  if (!src || !src.includes("/bfs/") || src.includes("@")) return src;
+  return `${src}@672w_378h_1c.avif`;
+}
+
 function clamp01(n: number) {
   return Math.min(1, Math.max(0, n));
 }
@@ -60,6 +68,9 @@ function hexToRgb(hex: string): Rgb | null {
 }
 
 async function extractDominantColorFromImage(src: string): Promise<Rgb> {
+  const cached = dominantColorCache.get(src);
+  if (cached) return cached;
+
   return await new Promise((resolve, reject) => {
     const img = new window.Image();
     img.crossOrigin = "anonymous";
@@ -115,7 +126,13 @@ async function extractDominantColorFromImage(src: string): Promise<Rgb> {
         return;
       }
 
-      resolve({ r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) });
+      const result = { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) };
+      if (dominantColorCache.size >= MAX_COLOR_CACHE_SIZE) {
+        const oldestKey = dominantColorCache.keys().next().value;
+        if (oldestKey) dominantColorCache.delete(oldestKey);
+      }
+      dominantColorCache.set(src, result);
+      resolve(result);
     };
     img.onerror = () => reject(new Error("Image load failed"));
     img.src = src;
@@ -148,6 +165,7 @@ rgb(0 0 0 / ${overlayAlpha})`;
 
 export function useGlassmorphism(coverSrc: string | undefined, fallbackHex: string, enabled: boolean = true) {
   const [dominantRgb, setDominantRgb] = useState<Rgb | null>(null);
+  const backgroundCoverSrc = useMemo(() => getOptimizedBackgroundImageUrl(coverSrc), [coverSrc]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -159,14 +177,14 @@ export function useGlassmorphism(coverSrc: string | undefined, fallbackHex: stri
       if (!cancelled) setDominantRgb(normalizeGlowColor(rgb));
     };
 
-    if (!coverSrc) {
+    if (!backgroundCoverSrc) {
       fallback();
       return () => {
         cancelled = true;
       };
     }
 
-    extractDominantColorFromImage(coverSrc)
+    extractDominantColorFromImage(backgroundCoverSrc)
       .then(rgb => {
         if (!cancelled) setDominantRgb(normalizeGlowColor(rgb));
       })
@@ -177,7 +195,7 @@ export function useGlassmorphism(coverSrc: string | undefined, fallbackHex: stri
     return () => {
       cancelled = true;
     };
-  }, [coverSrc, fallbackHex, enabled]);
+  }, [backgroundCoverSrc, fallbackHex, enabled]);
 
   const effectsProfile = useMemo(() => getEffectsProfile(), []);
 
@@ -194,11 +212,17 @@ export function useGlassmorphism(coverSrc: string | undefined, fallbackHex: stri
   const gradientBackground = useMemo(() => buildGradientBackground(glowRgb, overlayAlpha), [glowRgb, overlayAlpha]);
 
   const bgKey = useMemo(() => {
-    return `${coverSrc || ""}:${glowRgb.r},${glowRgb.g},${glowRgb.b}:${overlayAlpha.toFixed(2)}`;
-  }, [coverSrc, glowRgb.b, glowRgb.g, glowRgb.r, overlayAlpha]);
+    return `${backgroundCoverSrc || ""}:${glowRgb.r},${glowRgb.g},${glowRgb.b}:${overlayAlpha.toFixed(2)}`;
+  }, [backgroundCoverSrc, glowRgb.b, glowRgb.g, glowRgb.r, overlayAlpha]);
 
-  const [bgLayerA, setBgLayerA] = useState<GlassBackgroundLayer>(() => ({ coverSrc, gradientBackground }));
-  const [bgLayerB, setBgLayerB] = useState<GlassBackgroundLayer>(() => ({ coverSrc, gradientBackground }));
+  const [bgLayerA, setBgLayerA] = useState<GlassBackgroundLayer>(() => ({
+    coverSrc: backgroundCoverSrc,
+    gradientBackground,
+  }));
+  const [bgLayerB, setBgLayerB] = useState<GlassBackgroundLayer>(() => ({
+    coverSrc: backgroundCoverSrc,
+    gradientBackground,
+  }));
   const [activeBgLayer, setActiveBgLayer] = useState<"a" | "b">("a");
   const lastBgKeyRef = useRef(bgKey);
 
@@ -206,7 +230,7 @@ export function useGlassmorphism(coverSrc: string | undefined, fallbackHex: stri
     if (lastBgKeyRef.current === bgKey) return;
     lastBgKeyRef.current = bgKey;
 
-    const next = { coverSrc, gradientBackground };
+    const next = { coverSrc: backgroundCoverSrc, gradientBackground };
     if (activeBgLayer === "a") {
       setBgLayerB(next);
       setActiveBgLayer("b");
@@ -214,7 +238,7 @@ export function useGlassmorphism(coverSrc: string | undefined, fallbackHex: stri
       setBgLayerA(next);
       setActiveBgLayer("a");
     }
-  }, [activeBgLayer, bgKey, coverSrc, gradientBackground]);
+  }, [activeBgLayer, bgKey, backgroundCoverSrc, gradientBackground]);
 
   const cssVars = useMemo(() => {
     return {

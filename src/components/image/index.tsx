@@ -11,7 +11,17 @@ interface Props extends ImageProps {
   emptyPlaceholder?: React.ReactNode;
 }
 
-const Image = ({ params, width, height, src, className, emptyPlaceholder, ...rest }: Props) => {
+const Image = ({
+  params,
+  width,
+  height,
+  src,
+  className,
+  emptyPlaceholder,
+  loading = "lazy",
+  decoding = "async",
+  ...rest
+}: Props) => {
   const [isError, setIsError] = useState(false);
   const formatSrc = formatUrlProtocol(src);
   const finalSrc =
@@ -35,6 +45,8 @@ const Image = ({ params, width, height, src, className, emptyPlaceholder, ...res
       width={width}
       height={height}
       src={finalSrc}
+      loading={loading}
+      decoding={decoding}
       onError={() => {
         setIsError(true);
       }}

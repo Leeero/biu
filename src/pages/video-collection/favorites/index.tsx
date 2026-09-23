@@ -4,11 +4,15 @@ import { useParams } from "react-router";
 import { addToast, useDisclosure } from "@heroui/react";
 import { useRequest } from "ahooks";
 
+import { adaptFavoriteResourceToTrack } from "@/adapters/track/favorite";
 import { CollectionType } from "@/common/constants/collection";
-import { getAllFavMedia } from "@/common/utils/fav";
-import { openBiliVideoLink } from "@/common/utils/url";
+import { getAllFavTracks } from "@/common/utils/fav";
 import FavoritesEditModal from "@/components/favorites-edit-modal";
-import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
+import { type ScrollRefObject } from "@/components/scroll-container";
+import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
+import { PlaylistDetail } from "@/features/playlist/playlist-detail";
+import { PlaylistTrackView } from "@/features/playlist/playlist-track-view";
+import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
 import { postFavFolderFav } from "@/service/fav-folder-fav";
 import { getFavFolderInfo } from "@/service/fav-folder-info";
 import { postFavFolderUnfav } from "@/service/fav-folder-unfav";
@@ -20,13 +24,11 @@ import { useFavoritesStore } from "@/store/favorite";
 import { useModalStore } from "@/store/modal";
 import { useMusicFavStore } from "@/store/music-fav";
 import { isSame, usePlayList } from "@/store/play-list";
-import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 
 import Header from "../header";
 import Operations from "../operation";
-import FavoriteGridList from "./grid-list";
-import FavoriteList from "./list";
+import { getContextMenus } from "./menu";
 
 /** 收藏夹详情 TODO:加上创建的视频合集 */
 const Favorites = () => {
@@ -34,11 +36,6 @@ const Favorites = () => {
   const user = useUser(state => state.user);
   const addCollectedFavorite = useFavoritesStore(state => state.addCollectedFavorite);
   const rmCollectedFavorite = useFavoritesStore(state => state.rmCollectedFavorite);
-  const displayMode = useSettings(state => state.displayMode);
-
-  const playList = usePlayList(state => state.playList);
-  const addToPlayList = usePlayList(state => state.addList);
-
   const items = useFavFolderItemsStore(state => state.items);
   const setItems = useFavFolderItemsStore(state => state.setItems);
   const appendItems = useFavFolderItemsStore(state => state.appendItems);
@@ -192,18 +189,6 @@ const Favorites = () => {
     [loadPage, order],
   );
 
-  const handleItemPress = useCallback((item: FavMedia) => {
-    usePlayList.getState().play({
-      type: item.type === 2 ? "mv" : "audio",
-      bvid: item.type === 2 ? item.bvid : undefined,
-      sid: item.type === 12 ? item.id : undefined,
-      title: item.title,
-      cover: item.cover,
-      ownerName: item.upper?.name,
-      ownerMid: item.upper?.mid,
-    });
-  }, []);
-
   const onPlayAll = async () => {
     if (!favFolderId) {
       addToast({ title: "收藏夹 ID 无效", color: "danger" });
@@ -217,12 +202,12 @@ const Favorites = () => {
     }
 
     try {
-      const allMedias = await getAllFavMedia({
+      const allTracks = await getAllFavTracks({
         id: favFolderId,
       });
 
-      if (allMedias.length) {
-        playList(allMedias);
+      if (allTracks.length) {
+        await executePlaylistBulkAction("play-all", allTracks);
       } else {
         addToast({ title: "无法获取收藏夹全部歌曲", color: "danger" });
       }
@@ -243,13 +228,12 @@ const Favorites = () => {
     }
 
     try {
-      const allMedias = await getAllFavMedia({
+      const allTracks = await getAllFavTracks({
         id: favFolderId,
       });
 
-      if (allMedias.length) {
-        addToPlayList(allMedias);
-        addToast({ title: `已添加 ${allMedias.length} 首到播放列表`, color: "success" });
+      if (allTracks.length) {
+        await executePlaylistBulkAction("add-all", allTracks);
       } else {
         addToast({ title: "无法获取收藏夹全部歌曲", color: "danger" });
       }
@@ -313,13 +297,10 @@ const Favorites = () => {
   const isCreatedBySelf = Boolean(favInfo?.upper) && Boolean(user?.mid) && user?.mid === favInfo?.upper?.mid;
 
   const handleMenuAction = useCallback(
-    async (key: string, item: FavMedia) => {
+    async (key: string, item: FavMedia, track: NonNullable<ReturnType<typeof adaptFavoriteResourceToTrack>>) => {
       switch (key) {
         case "favorite":
-          useModalStore.getState().onOpenFavSelectModal({
-            rid: item.id,
-            type: item.type,
-            title: item.title,
+          await executeTrackAction("favorite", track, {
             onSuccess: selectedIds => {
               if (isCreatedBySelf && !selectedIds.includes(Number(favFolderId))) {
                 handleRemoveItem(item.id);
@@ -369,126 +350,69 @@ const Favorites = () => {
             },
           });
           break;
-        case "play-next":
-          usePlayList.getState().addToNext({
-            type: item.type === 2 ? "mv" : "audio",
-            title: item.title,
-            cover: item.cover,
-            bvid: item.bvid,
-            sid: item.id,
-            ownerName: item.upper?.name,
-            ownerMid: item.upper?.mid,
-          });
-          break;
-        case "add-to-playlist":
-          usePlayList.getState().addList([
-            {
-              type: item.type === 2 ? "mv" : "audio",
-              title: item.title,
-              cover: item.cover,
-              bvid: item.bvid,
-              sid: item.id,
-              ownerName: item.upper?.name,
-              ownerMid: item.upper?.mid,
-            },
-          ]);
-          break;
-        case "download-audio":
-          await window.electron.addMediaDownloadTask({
-            outputFileType: "audio",
-            title: item.title,
-            cover: item.cover,
-            bvid: item.bvid,
-            sid: item.type === 12 ? item.id : undefined,
-          });
-          addToast({
-            title: "已添加下载任务",
-            color: "success",
-          });
-          break;
-        case "download-video":
-          await window.electron.addMediaDownloadTask({
-            outputFileType: "video",
-            title: item.title,
-            cover: item.cover,
-            bvid: item.bvid,
-          });
-          addToast({
-            title: "已添加下载任务",
-            color: "success",
-          });
-          break;
-        case "bililink":
-          openBiliVideoLink({
-            type: item.type === 2 ? "mv" : "audio",
-            bvid: item.bvid,
-            sid: item.type === 12 ? item.id : undefined,
-          });
-          break;
         default:
+          await executeTrackAction(key === "bililink" ? "open-source" : (key as TrackActionKey), track);
           break;
       }
     },
     [favFolderId, isCreatedBySelf, handleRemoveItem, refreshInfo],
   );
 
-  return (
-    <ScrollContainer enableBackToTop ref={scrollRef} resetOnChange={favFolderId} className="h-full w-full px-4 pb-6">
-      <Header
-        loading={loading}
-        type={CollectionType.Favorite}
-        cover={favInfo?.cover}
-        attr={favInfo?.attr}
-        title={favInfo?.title}
-        desc={favInfo?.intro}
-        upMid={favInfo?.upper?.mid}
-        mediaCount={favInfo?.media_count}
-        onEdit={isCreatedBySelf ? onEditOpen : undefined}
-      />
-      <Operations
-        loading={loading}
-        type={CollectionType.Favorite}
-        order={order}
-        onOrderChange={handleOrderChange}
-        onKeywordSearch={handleKeywordSearch}
-        orderOptions={[
-          { key: "mtime", label: "最近收藏" },
-          { key: "view", label: "最多播放" },
-          { key: "pubtime", label: "最近投稿" },
-        ]}
-        mediaCount={favInfo?.media_count}
-        attr={favInfo?.attr}
-        isFavorite={isFavorite}
-        isCreatedBySelf={isCreatedBySelf}
-        onToggleFavorite={toggleFavorite}
-        onPlayAll={onPlayAll}
-        onAddToPlayList={addAllMedia}
-        onClearInvalid={clearInvalid}
-      />
+  const trackEntries = items.flatMap(item => {
+    const track = adaptFavoriteResourceToTrack(item);
+    return track ? [{ id: track.id, track, source: item, timestamp: item.fav_time }] : [];
+  });
 
-      {displayMode === "card" ? (
-        <FavoriteGridList
-          items={items}
-          hasMore={hasMore}
-          loading={listLoading}
-          getScrollElement={() => (scrollRef.current?.osInstance()?.elements().viewport as HTMLElement | null) ?? null}
-          onLoadMore={handleLoadMore}
-          isCreatedBySelf={isCreatedBySelf}
-          onMenuAction={handleMenuAction}
-          onItemPress={handleItemPress}
+  return (
+    <PlaylistDetail
+      scrollRef={scrollRef}
+      resetKey={favFolderId}
+      header={
+        <Header
+          loading={loading}
+          type={CollectionType.Favorite}
+          cover={favInfo?.cover}
+          attr={favInfo?.attr}
+          title={favInfo?.title}
+          desc={favInfo?.intro}
+          upMid={favInfo?.upper?.mid}
+          mediaCount={favInfo?.media_count}
+          onEdit={isCreatedBySelf ? onEditOpen : undefined}
         />
-      ) : (
-        <FavoriteList
-          items={items}
-          hasMore={hasMore}
-          loading={listLoading}
-          onLoadMore={handleLoadMore}
-          getScrollElement={() => (scrollRef.current?.osInstance()?.elements().viewport as HTMLElement | null) ?? null}
+      }
+      actions={
+        <Operations
+          loading={loading}
+          type={CollectionType.Favorite}
+          order={order}
+          onOrderChange={handleOrderChange}
+          onKeywordSearch={handleKeywordSearch}
+          orderOptions={[
+            { key: "mtime", label: "最近收藏" },
+            { key: "view", label: "最多播放" },
+            { key: "pubtime", label: "最近投稿" },
+          ]}
+          mediaCount={favInfo?.media_count}
+          attr={favInfo?.attr}
+          isFavorite={isFavorite}
           isCreatedBySelf={isCreatedBySelf}
-          onMenuAction={handleMenuAction}
-          onItemPress={handleItemPress}
+          onToggleFavorite={toggleFavorite}
+          onPlayAll={onPlayAll}
+          onAddToPlayList={addAllMedia}
+          onClearInvalid={clearInvalid}
         />
-      )}
+      }
+    >
+      <PlaylistTrackView
+        entries={trackEntries}
+        hasMore={hasMore}
+        loading={listLoading}
+        onLoadMore={handleLoadMore}
+        getScrollElement={() => (scrollRef.current?.osInstance()?.elements().viewport as HTMLElement | null) ?? null}
+        getActions={entry => getContextMenus({ isCreatedBySelf, type: entry.source.type })}
+        onAction={(key, entry) => void handleMenuAction(key, entry.source, entry.track)}
+        onPlay={entry => void executeTrackAction("play", entry.track)}
+      />
       <FavoritesEditModal
         mid={Number(favFolderId)}
         isOpen={isEditOpen}
@@ -502,7 +426,7 @@ const Favorites = () => {
           });
         }}
       />
-    </ScrollContainer>
+    </PlaylistDetail>
   );
 };
 

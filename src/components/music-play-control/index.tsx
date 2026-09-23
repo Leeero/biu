@@ -3,28 +3,46 @@ import React from "react";
 import { RiPauseCircleFill, RiPlayCircleFill, RiSkipBackFill, RiSkipForwardFill } from "@remixicon/react";
 
 import IconButton from "@/components/icon-button";
+import { usePlayerActions } from "@/features/player/use-player-actions";
 import { usePlayList } from "@/store/play-list";
 
 const MusicPlayControl = () => {
-  const prev = usePlayList(state => state.prev);
-  const next = usePlayList(state => state.next);
   const list = usePlayList(state => state.list);
-  const togglePlay = usePlayList(state => state.togglePlay);
   const isPlaying = usePlayList(state => state.isPlaying);
+  const { previous, next, togglePlay } = usePlayerActions();
 
   const isEmptyPlayList = list.length === 0;
   const isSingle = list.length === 1;
 
   return (
-    <div className="flex items-center justify-center space-x-6">
-      <IconButton radius="md" onPress={prev} isDisabled={isEmptyPlayList || isSingle}>
-        <RiSkipBackFill size={22} />
+    <div className="flex items-center justify-center gap-5">
+      <IconButton
+        aria-label="上一首"
+        tooltip="上一首"
+        radius="full"
+        onPress={previous}
+        isDisabled={isEmptyPlayList || isSingle}
+      >
+        <RiSkipBackFill size={20} />
       </IconButton>
-      <IconButton isDisabled={isEmptyPlayList} radius="full" onPress={togglePlay} className="size-12 min-w-12">
-        {isPlaying ? <RiPauseCircleFill size={48} /> : <RiPlayCircleFill size={48} />}
+      <IconButton
+        aria-label={isPlaying ? "暂停" : "播放"}
+        tooltip={isPlaying ? "暂停" : "播放"}
+        isDisabled={isEmptyPlayList}
+        radius="full"
+        onPress={togglePlay}
+        className="text-primary size-10 min-w-10 transition-transform hover:scale-105"
+      >
+        {isPlaying ? <RiPauseCircleFill size={40} /> : <RiPlayCircleFill size={40} />}
       </IconButton>
-      <IconButton radius="md" onPress={next} isDisabled={isEmptyPlayList || isSingle}>
-        <RiSkipForwardFill size={22} />
+      <IconButton
+        aria-label="下一首"
+        tooltip="下一首"
+        radius="full"
+        onPress={next}
+        isDisabled={isEmptyPlayList || isSingle}
+      >
+        <RiSkipForwardFill size={20} />
       </IconButton>
     </div>
   );

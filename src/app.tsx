@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useHref, useNavigate, useRoutes } from "react-router";
 
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
@@ -145,7 +145,7 @@ export function App() {
     return () => {
       removeListener();
     };
-  }, []);
+  }, [setUpdate]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -175,7 +175,17 @@ export function App() {
           },
         }}
       />
-      <Theme>{routeElement}</Theme>
+      <Theme>
+        <Suspense
+          fallback={
+            <div className="flex h-full min-h-40 items-center justify-center" role="status" aria-label="页面加载中">
+              <span className="text-default-500 text-sm">正在加载…</span>
+            </div>
+          }
+        >
+          {routeElement}
+        </Suspense>
+      </Theme>
     </HeroUIProvider>
   );
 }

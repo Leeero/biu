@@ -6,6 +6,7 @@ interface State {
   isPlaying: boolean;
   isSingle: boolean;
   title?: string;
+  artist?: string;
   cover?: string;
   duration: number;
   playMode?: PlayMode;

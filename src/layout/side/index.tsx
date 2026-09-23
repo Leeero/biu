@@ -11,10 +11,13 @@ import { useSettings } from "@/store/settings";
 import Collection from "./collection";
 import DefaultMenus from "./default-menu";
 import Logo from "./logo";
-
-const COLLAPSED_WIDTH = 72;
-const MIN_WIDTH = 160;
-const MAX_WIDTH = 480;
+import {
+  getSidebarResizeResult,
+  getSidebarWidth,
+  SIDEBAR_COLLAPSED_WIDTH,
+  SIDEBAR_MAX_WIDTH,
+  SIDEBAR_MIN_WIDTH,
+} from "./model";
 
 const SideNav = () => {
   const sideMenuCollapsed = useSettings(state => state.sideMenuCollapsed);
@@ -46,17 +49,11 @@ const SideNav = () => {
     onOpenChangeFavoritesEditModal();
   };
 
-  const sidebarWidth = (() => {
-    if (sideMenuCollapsed) return COLLAPSED_WIDTH;
-    const width = sideMenuWidth ?? 200;
-    if (width < MIN_WIDTH) return MIN_WIDTH;
-    if (width > MAX_WIDTH) return MAX_WIDTH;
-    return width;
-  })();
+  const sidebarWidth = getSidebarWidth(sideMenuCollapsed, sideMenuWidth);
 
   const [renderWidth, setRenderWidth] = useState(sidebarWidth);
   const [isDragging, setIsDragging] = useState(false);
-  const isCollapsedVisual = isDragging ? renderWidth < MIN_WIDTH : sideMenuCollapsed;
+  const isCollapsedVisual = isDragging ? renderWidth < SIDEBAR_MIN_WIDTH : sideMenuCollapsed;
 
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
@@ -85,19 +82,13 @@ const SideNav = () => {
   };
 
   const computeWidth = (delta: number) => {
-    const rawWidth = Math.max(COLLAPSED_WIDTH, startWidthRef.current + delta);
-    const cappedWidth = Math.min(rawWidth, MAX_WIDTH);
-    const willCollapse = cappedWidth < MIN_WIDTH;
-    const widthForView = willCollapse ? COLLAPSED_WIDTH : Math.max(MIN_WIDTH, cappedWidth);
-    const widthToPersist = Math.max(MIN_WIDTH, cappedWidth);
-
-    return { willCollapse, widthForView, widthToPersist };
+    return getSidebarResizeResult(startWidthRef.current, delta);
   };
 
   useEffect(() => {
     // re-clamp render width if max width shrinks while not dragging
     if (!isDragging) {
-      setRenderWidth(prev => Math.min(Math.max(prev, COLLAPSED_WIDTH), MAX_WIDTH));
+      setRenderWidth(prev => Math.min(Math.max(prev, SIDEBAR_COLLAPSED_WIDTH), SIDEBAR_MAX_WIDTH));
     }
   }, [isDragging]);
 
@@ -106,7 +97,7 @@ const SideNav = () => {
       if (!isDraggingRef.current) return;
 
       const delta = event.clientX - startXRef.current;
-      const { widthForView } = computeWidth(delta);
+      const { renderWidth: widthForView } = computeWidth(delta);
 
       setRenderWidth(widthForView);
     };
@@ -121,7 +112,7 @@ const SideNav = () => {
       }
 
       const delta = event.clientX - startXRef.current;
-      const { willCollapse, widthForView, widthToPersist } = computeWidth(delta);
+      const { isCollapsed: willCollapse, renderWidth: widthForView, savedWidth: widthToPersist } = computeWidth(delta);
 
       setRenderWidth(widthForView);
       updateSettings({ sideMenuCollapsed: willCollapse, sideMenuWidth: widthToPersist });
@@ -141,11 +132,15 @@ const SideNav = () => {
 
   return (
     <>
-      <div
-        className={clx("border-divider/30 relative flex h-full flex-none flex-col border-r-1", {
-          "transition-[width] duration-200": !isDragging,
-          "transition-none": isDragging,
-        })}
+      <aside
+        aria-label="主导航"
+        className={clx(
+          "relative flex h-full flex-none flex-col border-r border-[rgb(var(--biu-color-border)/0.06)] bg-[rgb(var(--biu-color-surface)/0.72)] backdrop-blur-xl",
+          {
+            "transition-[width] duration-200": !isDragging,
+            "transition-none": isDragging,
+          },
+        )}
         style={{ width: `${renderWidth}px` }}
       >
         <Logo isCollapsed={isCollapsedVisual} />
@@ -163,12 +158,13 @@ const SideNav = () => {
           />
         </ScrollContainer>
         <Button
+          aria-label={isCollapsedVisual ? "展开侧栏" : "收起侧栏"}
           size="sm"
           isIconOnly
           fullWidth
           radius="none"
           onPress={onToggleCollapsed}
-          className="bg-background border-divider/30 h-auto w-full flex-none border-y py-1"
+          className="h-8 w-full flex-none rounded-none border-y border-[rgb(var(--biu-color-border)/0.06)] bg-transparent text-[rgb(var(--biu-color-text-secondary))] hover:bg-[rgb(var(--biu-color-surface-hover))]"
         >
           {isCollapsedVisual ? <RiArrowRightDoubleLine size={16} /> : <RiArrowLeftDoubleLine size={16} />}
         </Button>
@@ -176,7 +172,7 @@ const SideNav = () => {
           className="hover:bg-foreground/10 absolute top-0 right-0 h-full w-2 cursor-col-resize bg-transparent"
           onMouseDown={onStartResize}
         />
-      </div>
+      </aside>
       <FavoritesEditModal
         mid={editingFavoriteId}
         isOpen={isFavoritesEditModalOpen}

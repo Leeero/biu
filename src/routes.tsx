@@ -1,20 +1,23 @@
-import type { RouteObject } from "react-router";
+import { lazy } from "react";
+import { Navigate, type RouteObject } from "react-router";
 
 import Layout from "./layout";
-import DownloadList from "./pages/download-list";
-import DynamicFeed from "./pages/dynamic-feed";
 import EmptyPage from "./pages/empty";
-import FollowList from "./pages/follow-list";
-import History from "./pages/history";
-import Later from "./pages/later";
-import LocalMusicPage from "./pages/local-music";
-import MiniPlayer from "./pages/mini-player";
 import MusicRecommend from "./pages/music-recommend";
 import NotFound from "./pages/not-found";
-import Search from "./pages/search";
-import Settings from "./pages/settings";
-import UserProfile from "./pages/user-profile";
-import Folder from "./pages/video-collection";
+
+const DesignSystemPage = lazy(() => import("./pages/design-system"));
+const DownloadList = lazy(() => import("./pages/download-list"));
+const History = lazy(() => import("./pages/history"));
+const Later = lazy(() => import("./pages/later"));
+const Library = lazy(() => import("./pages/library"));
+const LocalMusicPage = lazy(() => import("./pages/local-music"));
+const MiniPlayer = lazy(() => import("./pages/mini-player"));
+const Search = lazy(() => import("./pages/search"));
+const Settings = lazy(() => import("./pages/settings"));
+const SocialPage = lazy(() => import("./pages/social"));
+const UserProfile = lazy(() => import("./pages/user-profile"));
+const Folder = lazy(() => import("./pages/video-collection"));
 
 const routes: RouteObject[] = [
   {
@@ -26,6 +29,10 @@ const routes: RouteObject[] = [
         element: <MusicRecommend />,
       },
       {
+        path: "library",
+        element: <Library />,
+      },
+      {
         path: "later",
         element: <Later />,
       },
@@ -35,7 +42,7 @@ const routes: RouteObject[] = [
       },
       {
         path: "follow",
-        element: <FollowList />,
+        element: <SocialPage />,
       },
       {
         path: "collection/:id",
@@ -55,7 +62,7 @@ const routes: RouteObject[] = [
       },
       {
         path: "dynamic-feed",
-        element: <DynamicFeed />,
+        element: <Navigate to="/follow?tab=updates" replace />,
       },
       {
         path: "local-music",
@@ -69,6 +76,14 @@ const routes: RouteObject[] = [
         path: "empty",
         element: <EmptyPage />,
       },
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: "design-system",
+              element: <DesignSystemPage />,
+            },
+          ]
+        : []),
     ],
   },
   {

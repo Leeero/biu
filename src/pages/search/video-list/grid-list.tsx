@@ -1,17 +1,18 @@
 import React, { useCallback } from "react";
 
-import { stripHtml } from "@/common/utils/str";
+import type { Track } from "@/domain/track";
+
+import { toPlayItem } from "@/adapters/track/actions";
 import MusicCard from "@/components/music-card";
 import VirtualGridPageList from "@/components/virtual-grid-page-list";
-import { type SearchVideoItem } from "@/service/web-interface-search-type";
 import { usePlayList } from "@/store/play-list";
 
 import { getContextMenus } from "./menu";
 
 interface GridListProps {
-  items: SearchVideoItem[];
+  items: Track[];
   getScrollElement: () => HTMLElement | null;
-  onMenuAction: (key: string, item: SearchVideoItem) => void;
+  onMenuAction: (key: string, item: Track) => void;
   loading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
@@ -19,30 +20,23 @@ interface GridListProps {
 
 const GridList: React.FC<GridListProps> = ({ items, getScrollElement, onMenuAction, loading, hasMore, onLoadMore }) => {
   const renderGridItem = useCallback(
-    (item: SearchVideoItem) => {
+    (item: Track) => {
       return (
         <MusicCard
-          key={item.aid}
-          title={<span dangerouslySetInnerHTML={{ __html: item.title }} />}
-          cover={item.pic}
-          playCount={item.play}
+          key={item.id}
+          title={item.title}
+          cover={item.cover || ""}
+          playCount={item.playCount}
           duration={item.duration}
-          ownerName={item.author}
-          ownerMid={item.mid}
-          time={item.pubdate}
+          ownerName={item.creator?.name}
+          ownerMid={item.creator?.id ? Number(item.creator.id) || undefined : undefined}
+          time={item.publishedAt ? Date.parse(item.publishedAt) / 1000 : undefined}
           menus={getContextMenus()}
           onMenuAction={key => {
             onMenuAction(key, item);
           }}
           onPress={() => {
-            usePlayList.getState().play({
-              type: "mv",
-              bvid: item.bvid,
-              title: stripHtml(item.title),
-              cover: item.pic,
-              ownerName: item.author,
-              ownerMid: item.mid,
-            });
+            usePlayList.getState().play(toPlayItem(item));
           }}
         />
       );
@@ -53,13 +47,12 @@ const GridList: React.FC<GridListProps> = ({ items, getScrollElement, onMenuActi
   return (
     <VirtualGridPageList
       items={items}
-      itemKey="aid"
+      itemKey="id"
       renderItem={renderGridItem}
       getScrollElement={getScrollElement}
       loading={loading}
       hasMore={hasMore}
       onLoadMore={onLoadMore}
-      className="px-4"
     />
   );
 };

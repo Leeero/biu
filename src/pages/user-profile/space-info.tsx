@@ -1,7 +1,6 @@
-import { Fragment } from "react";
 import { useParams } from "react-router";
 
-import { Avatar, Divider, Image, Tooltip } from "@heroui/react";
+import { Avatar, Image, Tooltip } from "@heroui/react";
 import { RiAddLine, RiCheckLine, RiFlashlightFill } from "@remixicon/react";
 
 import { UserRelation } from "@/common/constants/relation";
@@ -39,7 +38,7 @@ const SpaceInfo = ({ spaceInfo, relationStats, relationWithMe, refreshRelation }
       value: formatNumber(relationStats?.follower),
     },
     {
-      title: "等  级",
+      title: "等级",
       value: `Lv${spaceInfo?.level ?? 0}`,
     },
   ].filter(item => !item.hidden);
@@ -80,63 +79,67 @@ const SpaceInfo = ({ spaceInfo, relationStats, relationWithMe, refreshRelation }
 
   return (
     <div
-      className="flex h-[200px] items-end justify-between space-x-8 bg-cover bg-center px-8 py-4 text-white bg-blend-multiply"
+      className="relative min-h-[248px] overflow-hidden bg-cover bg-center text-white bg-blend-multiply"
       style={{
-        background: `linear-gradient(rgba(0,0,0,${overlayOpacity}), rgba(0,0,0,${overlayOpacity})), url(${spaceInfo?.top_photo_v2?.l_200h_img}) center/cover no-repeat`,
+        background: `linear-gradient(to bottom, rgba(0,0,0,${overlayOpacity * 0.75}), rgba(0,0,0,${Math.min(overlayOpacity + 0.32, 0.82)})), url(${spaceInfo?.top_photo_v2?.l_200h_img}) center/cover no-repeat`,
       }}
     >
-      <div className="flex min-w-0 grow items-end space-x-4">
-        <Avatar src={spaceInfo?.face} alt={spaceInfo?.name} className="h-[140px] w-[140px] flex-none shadow-lg" />
-        <div className="flex min-w-0 flex-1 flex-col space-y-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-2">
+      <div className="mx-auto flex min-h-[248px] w-full max-w-[1440px] items-end justify-between gap-8 px-6 py-7 lg:px-8">
+        <div className="flex min-w-0 grow items-end gap-5">
+          <Avatar
+            src={spaceInfo?.face}
+            alt={spaceInfo?.name}
+            className="h-[112px] w-[112px] flex-none border-2 border-white/70 shadow-xl"
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-2 pb-1">
+            <span className="text-xs font-medium tracking-[0.18em] text-white/65">创作者</span>
+            <div className="flex items-center gap-2">
+              <h1 className="truncate text-2xl font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                {spaceInfo?.name}
+              </h1>
               {Boolean(spaceInfo?.official?.role) && (
                 <Tooltip closeDelay={0} content={spaceInfo?.official?.title}>
-                  <div className="bg-primary flex h-5 w-5 items-center justify-center rounded-full text-white ring-2 ring-white">
+                  <div className="bg-primary flex h-5 w-5 flex-none items-center justify-center rounded-full text-white ring-2 ring-white/80">
                     <RiFlashlightFill size={12} />
                   </div>
                 </Tooltip>
               )}
-              <h1 className="text-xl font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{spaceInfo?.name}</h1>
+              {Boolean(spaceInfo?.vip?.status) && (
+                <Image
+                  height={22}
+                  src={spaceInfo?.vip?.label?.img_label_uri_hans_static}
+                  alt={spaceInfo?.vip?.label?.text}
+                />
+              )}
             </div>
-            {Boolean(spaceInfo?.vip?.status) && (
-              <Image
-                height={24}
-                src={spaceInfo?.vip?.label?.img_label_uri_hans_static}
-                alt={spaceInfo?.vip?.label?.text}
-              />
-            )}
+            <p className="line-clamp-2 max-w-2xl text-sm leading-6 text-white/75 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {spaceInfo?.sign || "这个创作者还没有填写简介"}
+            </p>
           </div>
-          <p className="line-clamp-2 text-sm text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-            {spaceInfo?.sign}
-          </p>
         </div>
-      </div>
-      <div className="flex flex-none items-center space-x-4">
-        {Boolean(user?.isLogin) && !isSelf && (
-          <AsyncButton
-            variant="shadow"
-            color={isFollow ? "success" : "default"}
-            startContent={isFollow ? <RiCheckLine size={18} /> : <RiAddLine size={18} />}
-            onPress={toggleFollow}
-            className="mt-2"
-          >
-            {isFollow ? "已关注" : "关注"}
-          </AsyncButton>
-        )}
-        {user?.isLogin
-          ? stats.map((item, idx) => (
-              <Fragment key={idx}>
-                <div className="flex flex-col items-center justify-center">
-                  <span className="text-lg font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{item.value}</span>
-                  <span className="text-sm whitespace-nowrap text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                    {item.title}
-                  </span>
+        <div className="flex flex-none flex-col items-end gap-4 pb-1">
+          {Boolean(user?.isLogin) && !isSelf && (
+            <AsyncButton
+              variant={isFollow ? "flat" : "solid"}
+              color={isFollow ? "default" : "primary"}
+              startContent={isFollow ? <RiCheckLine size={18} /> : <RiAddLine size={18} />}
+              onPress={toggleFollow}
+              className={isFollow ? "bg-white/15 text-white backdrop-blur-md" : "dark:text-black"}
+            >
+              {isFollow ? "已关注" : "关注"}
+            </AsyncButton>
+          )}
+          {user?.isLogin && (
+            <div className="flex items-center gap-1 rounded-xl bg-black/20 p-1 backdrop-blur-md">
+              {stats.map(item => (
+                <div key={item.title} className="flex min-w-20 flex-col items-center gap-0 px-3 py-1 text-white">
+                  <span className="text-base font-semibold">{item.value ?? "--"}</span>
+                  <span className="text-xs text-white/65">{item.title}</span>
                 </div>
-                {idx !== stats.length - 1 && <Divider orientation="vertical" className="h-4" />}
-              </Fragment>
-            ))
-          : null}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

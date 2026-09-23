@@ -14,39 +14,20 @@ interface Props {
   data: LocalMusicItem;
   isPlaying: boolean;
   index: number;
-  onAddToNext: () => void;
-  onAddToPlayList: () => void;
   onPlay: () => void;
-  onOpen: () => void;
-  onDelete: () => void;
+  onAction: (key: string) => void;
 }
 
 const menus: LocalOperationItem[] = [
-  { key: "nextplay", label: "下一首播放", icon: <RiPlayCircleLine size={18} /> },
-  { key: "play", label: "添加到播放列表", icon: <RiPlayListAddLine size={18} /> },
+  { key: "play-next", label: "下一首播放", icon: <RiPlayCircleLine size={18} /> },
+  { key: "add-to-playlist", label: "添加到播放列表", icon: <RiPlayListAddLine size={18} /> },
   { key: "open", label: "打开文件", icon: <RiFileMusicLine size={18} /> },
   { key: "delete", label: "删除文件", color: "danger", className: "text-danger", icon: <RiDeleteBinLine size={18} /> },
 ];
 
-const LocalMusicItemRow = ({
-  data,
-  isPlaying,
-  index,
-  onAddToNext,
-  onAddToPlayList,
-  onPlay,
-  onOpen,
-  onDelete,
-}: Props) => {
+const LocalMusicItemRow = ({ data, isPlaying, index, onPlay, onAction }: Props) => {
   const [isOpOpen, setIsOpOpen] = React.useState(false);
   const items = isPlaying ? menus.filter(m => m.key !== "delete") : menus;
-
-  const onAction = (key: string) => {
-    if (key === "nextplay") onAddToNext();
-    if (key === "play") onAddToPlayList();
-    if (key === "open") onOpen();
-    if (key === "delete") onDelete();
-  };
 
   return (
     <ContextMenu items={items} onAction={onAction} contentClassName="w-[160px]" disabled={isOpOpen}>

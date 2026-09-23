@@ -1,0 +1,66 @@
+:root,
+.light {
+  --biu-color-canvas: 248 248 250;
+  --biu-color-surface: 255 255 255;
+  --biu-color-surface-raised: 255 255 255;
+  --biu-color-surface-hover: 244 244 246;
+  --biu-color-surface-pressed: 238 238 241;
+  --biu-color-border: 0 0 0;
+  --biu-color-text-primary: 24 24 27;
+  --biu-color-text-secondary: 113 113 122;
+  --biu-color-text-tertiary: 161 161 170;
+  --biu-shadow-card: 0 1px 2px rgb(0 0 0 / 5%), 0 8px 28px rgb(0 0 0 / 5%);
+  --biu-shadow-floating: 0 14px 44px rgb(0 0 0 / 14%);
+}
+
+.dark {
+  --biu-color-canvas: 18 18 20;
+  --biu-color-surface: 28 28 31;
+  --biu-color-surface-raised: 35 35 39;
+  --biu-color-surface-hover: 43 43 47;
+  --biu-color-surface-pressed: 51 51 56;
+  --biu-color-border: 255 255 255;
+  --biu-color-text-primary: 250 250 250;
+  --biu-color-text-secondary: 161 161 170;
+  --biu-color-text-tertiary: 113 113 122;
+  --biu-shadow-card: 0 1px 2px rgb(0 0 0 / 24%), 0 12px 32px rgb(0 0 0 / 22%);
+  --biu-shadow-floating: 0 18px 54px rgb(0 0 0 / 42%);
+}
+
+:root {
+  --biu-color-brand: hsl(var(--heroui-primary));
+  --biu-color-focus: hsl(var(--heroui-primary) / 72%);
+  --biu-color-danger: hsl(var(--heroui-danger));
+  --biu-color-warning: hsl(var(--heroui-warning));
+  --biu-color-success: hsl(var(--heroui-success));
+  --biu-space-1: 4px;
+  --biu-space-2: 8px;
+  --biu-space-3: 12px;
+  --biu-space-4: 16px;
+  --biu-space-5: 20px;
+  --biu-space-6: 24px;
+  --biu-space-8: 32px;
+  --biu-space-10: 40px;
+  --biu-radius-sm: max(4px, calc(var(--heroui-radius-medium) - 4px));
+  --biu-radius-md: var(--heroui-radius-medium);
+  --biu-radius-lg: calc(var(--heroui-radius-medium) + 4px);
+  --biu-radius-xl: calc(var(--heroui-radius-medium) + 8px);
+  --biu-radius-round: 999px;
+  --biu-duration-fast: 120ms;
+  --biu-duration-normal: 180ms;
+  --biu-duration-slow: 280ms;
+  --biu-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --biu-ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --biu-topbar-height: 64px;
+  --biu-player-height: 84px;
+  --biu-sidebar-width: 220px;
+  --biu-content-max-width: 1440px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --biu-duration-fast: 0ms;
+    --biu-duration-normal: 0ms;
+    --biu-duration-slow: 0ms;
+  }
+}

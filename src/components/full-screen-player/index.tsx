@@ -244,8 +244,8 @@ const FullScreenPlayer = () => {
                           backgroundImage: `url(${bgLayerA.coverSrc})`,
                           filter: `blur(${effectsProfile.blurPx}px)`,
                           opacity: 0.92,
-                          willChange: "transform, filter, opacity",
-                          transition: `filter ${effectsProfile.transitionMs}ms ease, opacity ${effectsProfile.transitionMs}ms ease`,
+                          willChange: "opacity",
+                          transition: `opacity ${effectsProfile.transitionMs}ms ease`,
                         }}
                       />
                     )}
@@ -272,8 +272,8 @@ const FullScreenPlayer = () => {
                           backgroundImage: `url(${bgLayerB.coverSrc})`,
                           filter: `blur(${effectsProfile.blurPx}px)`,
                           opacity: 0.92,
-                          willChange: "transform, filter, opacity",
-                          transition: `filter ${effectsProfile.transitionMs}ms ease, opacity ${effectsProfile.transitionMs}ms ease`,
+                          willChange: "opacity",
+                          transition: `opacity ${effectsProfile.transitionMs}ms ease`,
                         }}
                       />
                     )}
@@ -288,13 +288,20 @@ const FullScreenPlayer = () => {
                 </div>
               )}
               <div
-                className={`absolute top-0 right-0 z-20 flex w-full justify-between px-6 py-4 transition-opacity duration-200 ${isUiVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                className={`absolute top-0 right-0 z-20 flex w-full justify-between bg-gradient-to-b from-black/25 to-transparent px-6 py-4 transition-opacity duration-200 ${isUiVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
               >
-                <div className="window-no-drag top-0 right-0 left-0 flex w-full max-w-2/5 items-center space-x-2">
-                  <IconButton title="关闭弹窗" onPress={onClose} className="">
+                <div className="window-no-drag top-0 right-0 left-0 flex w-full max-w-2/5 items-center gap-2">
+                  <IconButton aria-label="收起全屏播放器" tooltip="收起" onPress={onClose}>
                     <RiArrowDownSLine size={28} />
                   </IconButton>
-                  <h2 className="truncate text-xl select-none">{playItem.pageTitle || playItem.title}</h2>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate text-base font-semibold select-none">
+                      {playItem.pageTitle || playItem.title}
+                    </h2>
+                    <p className="truncate text-xs opacity-65 select-none">
+                      {playItem.source === "local" ? "本地音乐" : playItem.ownerName || "未知"}
+                    </p>
+                  </div>
                   <Popover
                     isOpen={isSettingsOpen && isUiVisible}
                     onOpenChange={open => {
@@ -310,7 +317,7 @@ const FullScreenPlayer = () => {
                     placement="bottom-start"
                   >
                     <PopoverTrigger>
-                      <IconButton title="设置" tooltip="设置">
+                      <IconButton aria-label="全屏播放器设置" tooltip="设置">
                         <RiSettings3Line size={22} />
                       </IconButton>
                     </PopoverTrigger>
@@ -391,9 +398,9 @@ const FullScreenPlayer = () => {
                     : "pointer-events-none translate-y-full opacity-0",
                 )}
               >
-                <div className="mx-auto mb-4 flex w-full max-w-6xl flex-col items-center gap-2 px-12">
-                  <MusicPlayProgress className="w-full" trackClassName="h-[6px]" />
-                  <div className="flex w-full items-center justify-center space-x-4">
+                <div className="mx-auto mb-5 flex w-[min(920px,calc(100%_-_48px))] flex-col items-center gap-3 rounded-[var(--biu-radius-xl)] border border-white/10 bg-black/15 px-6 py-4 shadow-[var(--biu-shadow-floating)] backdrop-blur-xl">
+                  <MusicPlayProgress className="w-full max-w-none" trackClassName="h-[4px]" />
+                  <div className="flex w-full items-center justify-center gap-4">
                     <MusicPlayMode />
                     <MusicPlayControl />
                     <OpenPlaylistDrawerButton />
@@ -404,6 +411,7 @@ const FullScreenPlayer = () => {
               {isUiVisible && playItem.hasMultiPart && !isPageListOpen && (
                 <div className="absolute top-1/2 right-0 z-20 -translate-y-1/2">
                   <IconButton
+                    aria-label="显示分集列表"
                     className="h-24 w-6 min-w-0 rounded-l-xl rounded-r-none bg-white/10 px-0 backdrop-blur-md transition-colors hover:bg-white/20"
                     onPress={() => setIsPageListOpen(!isPageListOpen)}
                     tooltip="显示分集列表"

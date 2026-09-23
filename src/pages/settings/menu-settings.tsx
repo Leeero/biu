@@ -17,7 +17,10 @@ const MenuSettings: React.FC<MenuSettingsProps> = ({ control }) => {
 
   return (
     <div className="space-y-6">
-      <h2>设置侧边菜单项显示和隐藏</h2>
+      <div>
+        <h2>侧边栏显示</h2>
+        <p className="text-default-500 mt-1 text-sm">选择需要固定显示在侧边栏中的入口与收藏列表</p>
+      </div>
       <div className="w-full space-y-8">
         <div className="flex w-full items-start space-x-[100px]">
           <div className="text-medium font-medium">系统默认菜单</div>

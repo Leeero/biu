@@ -415,12 +415,12 @@ const Collection = ({ isCollapsed, onOpenAddFavorite, onOpenEditFavorite }: Prop
     }
 
     const header = !isCollapsed ? (
-      <div className="flex items-center justify-between p-2 text-sm text-zinc-500">
+      <div className="flex items-center justify-between px-2 pt-5 pb-2 text-xs font-medium tracking-wide text-[rgb(var(--biu-color-text-tertiary))]">
         <button
           type="button"
           aria-expanded={!isFolded}
           onClick={onToggleFolded}
-          className="hover:text-foreground flex items-center gap-1 text-sm text-zinc-500 transition-colors"
+          className="flex items-center gap-1 text-xs text-[rgb(var(--biu-color-text-tertiary))] transition-colors hover:text-[rgb(var(--biu-color-text-primary))]"
         >
           <RiArrowDownSLine size={16} className={`transition-transform ${isFolded ? "-rotate-90" : "rotate-0"}`} />
           <span className="whitespace-nowrap">{title}</span>
@@ -477,7 +477,7 @@ const Collection = ({ isCollapsed, onOpenAddFavorite, onOpenEditFavorite }: Prop
       title: item.title,
       href: `/collection/${item.id}?mid=${item?.mid}`,
       cover: item.cover,
-      className: "px-2 py-1 h-auto",
+      className: "px-2 py-1 h-auto min-h-11",
       type: item.type,
       mid: item.mid,
     }));
@@ -489,7 +489,8 @@ const Collection = ({ isCollapsed, onOpenAddFavorite, onOpenEditFavorite }: Prop
           variant="light"
           radius="md"
           size="sm"
-          className="h-auto w-auto min-w-auto p-1"
+          aria-label="新建收藏夹"
+          className="h-7 w-7 min-w-7 p-1 text-[rgb(var(--biu-color-text-secondary))]"
           onPress={onOpenAddFavorite}
         >
           <RiAddLine size={16} />
@@ -520,7 +521,7 @@ const Collection = ({ isCollapsed, onOpenAddFavorite, onOpenEditFavorite }: Prop
       title: item.title,
       href: `/collection/${item.id}?type=${item.type}&mid=${item?.mid}`,
       cover: item.cover,
-      className: "px-2 py-1 h-auto",
+      className: "px-2 py-1 h-auto min-h-11",
       type: item.type,
       mid: item.mid,
     }));

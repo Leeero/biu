@@ -4,6 +4,7 @@ import { Outlet, useLocation } from "react-router";
 
 import log from "electron-log/renderer";
 
+import { AppShell } from "@/app/shell";
 import ConfirmModal from "@/components/confirm-modal";
 import Fallback from "@/components/error-fallback";
 import FavoritesSelectModal from "@/components/favorites-select-modal";
@@ -23,7 +24,7 @@ const Layout = () => {
 
   useEffect(() => {
     updateUser();
-  }, []);
+  }, [updateUser]);
 
   return (
     <ErrorBoundary
@@ -33,22 +34,9 @@ const Layout = () => {
         log.error("[ErrorBoundary]", error, info);
       }}
     >
-      <div className="flex h-full flex-col">
-        <div className="flex min-h-0 w-full flex-1">
-          <SideNav />
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <div className="h-16 flex-none">
-              <Navbar />
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <Outlet />
-            </div>
-          </div>
-        </div>
-        <div className="relative z-50 h-[88px] w-full flex-none shadow-2xl">
-          <PlayBar />
-        </div>
-      </div>
+      <AppShell sidebar={<SideNav />} topbar={<Navbar />} player={<PlayBar />}>
+        <Outlet />
+      </AppShell>
       <FavoritesSelectModal />
       <ConfirmModal />
       <VideoPagesDownloadSelectModal />

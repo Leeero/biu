@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Checkbox, addToast } from "@heroui/react";
 import clx from "classnames";
 
+import type { Track } from "@/domain/track";
+
+import { toMediaDownloadInfo } from "@/adapters/track/actions";
 import { CollectionType } from "@/common/constants/collection";
-import { getAllFavMedia } from "@/common/utils/fav";
 import Image from "@/components/image";
 import ScrollContainer from "@/components/scroll-container";
-import { getUserVideoArchivesList } from "@/service/user-video-archives-list";
+import { loadAllPlaylistTracks, type PlaylistTrackSource } from "@/features/playlist/load-tracks";
 
 interface DownloadSelectModalProps {
   type: CollectionType;
@@ -18,72 +20,33 @@ interface DownloadSelectModalProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
-interface MediaData {
-  id: string;
-  type: "mv" | "audio";
-  bvid?: string;
-  sid?: number | string;
-  title: string;
-  cover: string;
-}
-
 const DownloadSelectModal = ({ type, outputFileType, mediaCount, isOpen, onOpenChange }: DownloadSelectModalProps) => {
   const { id } = useParams();
-  const [list, setList] = useState<MediaData[]>([]);
+  const [list, setList] = useState<Track[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const getMedias = async () => {
-    if (type === CollectionType.Favorite) {
-      const res = await getAllFavMedia({
-        id: id!,
-      });
-
-      if (res?.length) {
-        const medias = res
-          .filter(item => (outputFileType === "video" ? item.type === "mv" : true))
-          .map((item, index) => ({
-            id: String(index),
-            type: item.type,
-            bvid: item.bvid,
-            sid: item.sid,
-            title: item.title,
-            cover: item.cover,
-          }));
-        setList(medias);
-        setSelectedIds(medias.map(item => item.id));
-      }
-    } else {
-      const res = await getUserVideoArchivesList({
-        season_id: Number(id),
-      });
-
-      if (res.code === 0) {
-        const medias = res.data.medias.map((item, index) => ({
-          id: String(index),
-          type: "mv" as const,
-          bvid: item.bvid,
-          title: item.title,
-          cover: item.cover,
-        }));
-        setList(medias);
-        setSelectedIds(medias.map(item => item.id));
-      }
-    }
-  };
+  const getMedias = useCallback(async () => {
+    if (!id) return;
+    const source: PlaylistTrackSource =
+      type === CollectionType.Favorite
+        ? "favorite-folder"
+        : type === CollectionType.VideoCollections
+          ? "season"
+          : "series";
+    const tracks = await loadAllPlaylistTracks(source, id);
+    const downloadable = tracks.filter(track => outputFileType !== "video" || track.source === "bilibili-video");
+    setList(downloadable);
+    setSelectedIds(downloadable.map(track => track.id));
+  }, [id, outputFileType, type]);
 
   const handleDownload = async () => {
     if (selectedIds.length) {
       await window.electron.addMediaDownloadTaskList(
-        selectedIds.map(id => {
-          const media = list.find(item => item.id === id);
-          return {
-            outputFileType,
-            bvid: media?.bvid,
-            sid: media?.sid,
-            title: media?.title as string,
-            cover: media?.cover,
-          };
-        }),
+        selectedIds
+          .map(id => list.find(item => item.id === id))
+          .filter((track): track is Track => Boolean(track))
+          .map(track => toMediaDownloadInfo(track, outputFileType))
+          .filter((task): task is MediaDownloadInfo => Boolean(task)),
       );
 
       onOpenChange(false);
@@ -98,7 +61,7 @@ const DownloadSelectModal = ({ type, outputFileType, mediaCount, isOpen, onOpenC
     if (isOpen) {
       getMedias();
     }
-  }, [isOpen, type, mediaCount]);
+  }, [getMedias, isOpen, mediaCount]);
 
   return (
     <Modal radius="md" disableAnimation scrollBehavior="inside" isOpen={isOpen} onOpenChange={onOpenChange}>

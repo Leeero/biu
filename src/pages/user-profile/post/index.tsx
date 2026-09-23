@@ -4,11 +4,12 @@ import { useParams } from "react-router";
 import { addToast, Spinner } from "@heroui/react";
 import { RiPlayFill } from "@remixicon/react";
 
+import { adaptCreatorPostToTrack } from "@/adapters/track/creator";
 import AsyncButton from "@/components/async-button";
 import SearchWithSort from "@/components/search-with-sort";
+import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
+import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
 import { getSpaceWbiArcSearch, type SpaceArcVListItem } from "@/service/space-wbi-arc-search";
-import { useModalStore } from "@/store/modal";
-import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
 
 import PostGridList from "./grid-list";
@@ -96,61 +97,10 @@ const VideoPost: React.FC<VideoPostProps> = ({ getScrollElement }) => {
   }, [loadingMore, hasMore, fetchData]);
 
   const handleMenuAction = useCallback((key: string, item: SpaceArcVListItem) => {
-    switch (key) {
-      case "play-next":
-        usePlayList.getState().addToNext({
-          type: "mv",
-          title: item.title,
-          cover: item.pic,
-          bvid: item.bvid,
-          ownerName: item.author,
-          ownerMid: item.mid,
-        });
-        break;
-      case "add-to-playlist":
-        usePlayList.getState().addList([
-          {
-            type: "mv",
-            title: item.title,
-            cover: item.pic,
-            bvid: item.bvid,
-            ownerName: item.author,
-            ownerMid: item.mid,
-          },
-        ]);
-        break;
-      case "download-audio":
-        window.electron?.addMediaDownloadTask({
-          outputFileType: "audio",
-          title: item.title,
-          cover: item.pic,
-          bvid: item.bvid,
-        });
-        addToast({
-          title: "已添加下载任务",
-          color: "success",
-        });
-        break;
-      case "download-video":
-        window.electron?.addMediaDownloadTask({
-          outputFileType: "video",
-          title: item.title,
-          cover: item.pic,
-          bvid: item.bvid,
-        });
-        addToast({
-          title: "已添加下载任务",
-          color: "success",
-        });
-        break;
-      case "favorite":
-        useModalStore.getState().onOpenFavSelectModal({
-          rid: item.aid,
-          type: 2,
-          title: item.title,
-        });
-        break;
-    }
+    void executeTrackAction(
+      key === "bililink" ? "open-source" : (key as TrackActionKey),
+      adaptCreatorPostToTrack(item),
+    );
   }, []);
 
   const handlePlayAll = useCallback(async () => {
@@ -204,26 +154,17 @@ const VideoPost: React.FC<VideoPostProps> = ({ getScrollElement }) => {
       }
 
       const limited = collected.slice(0, maxItems);
-      const playItems = limited
-        .map(item => ({
-          type: "mv" as const,
-          bvid: item.bvid,
-          title: item.title,
-          cover: item.pic,
-          ownerName: item.author,
-          ownerMid: item.mid,
-        }))
-        .filter(item => Boolean(item.bvid));
+      const tracks = limited.map(adaptCreatorPostToTrack).filter(item => Boolean(item.sourceRef.bvid));
 
-      if (!playItems.length) {
+      if (!tracks.length) {
         addToast({ title: "暂无可播放内容", color: "warning" });
         return;
       }
 
-      await usePlayList.getState().playList(playItems);
+      await executePlaylistBulkAction("play-all", tracks);
       addToast({
-        title: `已添加 ${playItems.length} 个投稿到播放列表`,
-        description: "播放内容只获取最多 200 条数据",
+        title: `已添加 ${tracks.length} 首内容到播放列表`,
+        description: "单次最多加载 200 首内容",
         color: "success",
       });
     } catch {
@@ -242,9 +183,9 @@ const VideoPost: React.FC<VideoPostProps> = ({ getScrollElement }) => {
             onPress={handlePlayAll}
             className="dark:text-black"
           >
-            播放
+            播放全部
           </AsyncButton>
-          <div className="text-default-500 pl-2 text-sm">共 {total} 条</div>
+          <div className="text-default-500 pl-2 text-sm">共 {total} 首内容</div>
         </div>
         <div className="flex items-center gap-3">
           <SearchWithSort

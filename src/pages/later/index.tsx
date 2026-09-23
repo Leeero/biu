@@ -217,7 +217,10 @@ const Later = () => {
     <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full px-4">
       <div className="mb-2">
         <div className="flex items-center justify-between">
-          <h1>稍后再看</h1>
+          <div>
+            <h1>稍后播放</h1>
+            <p className="text-foreground-500 mt-1 text-sm">内容同步自 B 站稍后再看列表</p>
+          </div>
           <Button variant="flat" size="sm" startContent={<RiDeleteBinLine size={18} />} onPress={handleClear}>
             清除已看完
           </Button>
@@ -233,7 +236,7 @@ const Later = () => {
         )}
 
         {/* 空状态 */}
-        {isEmpty && <div className="flex h-[40vh] items-center justify-center text-gray-500">暂无稍后再看内容</div>}
+        {isEmpty && <div className="flex h-[40vh] items-center justify-center text-gray-500">暂无稍后播放内容</div>}
 
         {/* 列表内容 */}
         {list.length > 0 && (

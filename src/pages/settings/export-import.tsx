@@ -2,11 +2,12 @@ import React, { useRef } from "react";
 
 import { Button, addToast } from "@heroui/react";
 import { RiExportFill, RiImportFill } from "@remixicon/react";
-import { merge } from "es-toolkit/object";
 
 import { useSettings } from "@/store/settings";
 import { defaultAppSettings } from "@shared/settings/app-settings";
 import { StoreNameMap } from "@shared/store";
+
+import { mergeImportedSettings } from "./import-settings";
 
 const ImportExport = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,14 +44,8 @@ const ImportExport = () => {
     if (!file) return;
     try {
       const text = await file.text();
-      const data = JSON.parse(text) as Record<string, unknown>;
-
-      const patch: Record<string, unknown> = {};
-      for (const key of Object.keys(defaultAppSettings)) {
-        patch[key] = data[key];
-      }
-
-      const merged = merge(getSettings(), patch);
+      const data: unknown = JSON.parse(text);
+      const merged = mergeImportedSettings(getSettings(), data);
 
       updateSettings(merged);
       addToast({ title: "已导入配置", description: "设置已应用", color: "success" });

@@ -1,31 +1,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
 
-import { addToast } from "@heroui/react";
 import { useRequest } from "ahooks";
 
 import type { Media } from "@/service/user-video-archives-list";
 
 import { CollectionType } from "@/common/constants/collection";
-import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
+import { type ScrollRefObject } from "@/components/scroll-container";
+import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
+import { PlaylistDetail } from "@/features/playlist/playlist-detail";
+import { PlaylistTrackView } from "@/features/playlist/playlist-track-view";
+import { adaptCollectionMediaToTrack } from "@/features/playlist/tracks";
+import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
 import { getSeriesArchives } from "@/service/series-archives";
 import { getSeriesInfo } from "@/service/series-info";
-import { useModalStore } from "@/store/modal";
-import { usePlayList } from "@/store/play-list";
-import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 
+import { getContextMenus } from "../collections/menu";
 import Header from "../header";
 import Operations from "../operation";
-import SeriesGridList from "./grid-list";
-import SeriesList from "./list";
 
 const Series = () => {
   const { id } = useParams();
   const user = useUser(state => state.user);
-  const displayMode = useSettings(state => state.displayMode);
-  const playList = usePlayList(state => state.playList);
-  const addList = usePlayList(state => state.addList);
 
   const [keyword, setKeyword] = useState<string>();
   const [order, setOrder] = useState("pubtime");
@@ -119,98 +116,11 @@ const Series = () => {
   }, [medias, keyword, order]);
 
   const onPlayAll = () => {
-    if (filteredMedias.length > 0) {
-      playList(
-        filteredMedias.map(item => ({
-          type: "mv",
-          bvid: item.bvid,
-          title: item.title,
-          cover: item.cover,
-          ownerMid: item.upper?.mid,
-          ownerName: item.upper?.name,
-        })),
-      );
-    }
+    void executePlaylistBulkAction("play-all", filteredMedias.map(adaptCollectionMediaToTrack));
   };
 
   const addToPlayList = () => {
-    if (filteredMedias.length > 0) {
-      addList(
-        filteredMedias.map(item => ({
-          type: "mv",
-          bvid: item.bvid,
-          title: item.title,
-          cover: item.cover,
-          ownerMid: item.upper?.mid,
-          ownerName: item.upper?.name,
-        })),
-      );
-    }
-  };
-
-  const handleMenuAction = async (key: string, item: Media) => {
-    switch (key) {
-      case "play-next":
-        usePlayList.getState().addToNext({
-          type: "mv",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-          sid: item.id,
-          ownerName: item.upper?.name,
-          ownerMid: item.upper?.mid,
-        });
-        break;
-      case "add-to-playlist":
-        usePlayList.getState().addList([
-          {
-            type: "mv",
-            title: item.title,
-            cover: item.cover,
-            bvid: item.bvid,
-            sid: item.id,
-            ownerName: item.upper?.name,
-            ownerMid: item.upper?.mid,
-          },
-        ]);
-        break;
-      case "favorite":
-        useModalStore.getState().onOpenFavSelectModal({
-          rid: item.id,
-          type: 2,
-          title: item.title,
-        });
-        break;
-      case "download-audio":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "audio",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-        });
-        addToast({
-          title: "已添加下载任务",
-          color: "success",
-        });
-        break;
-      case "download-video":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "video",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-        });
-        addToast({
-          title: "已添加下载任务",
-          color: "success",
-        });
-        break;
-      case "bililink":
-        window.electron.openExternal(`https://www.bilibili.com/video/${item.bvid}`);
-        break;
-      default:
-        break;
-    }
+    void executePlaylistBulkAction("add-all", filteredMedias.map(adaptCollectionMediaToTrack));
   };
 
   const getScrollElement = useCallback(() => {
@@ -223,56 +133,58 @@ const Series = () => {
   }, [medias.length, totalCount, meta?.total]);
 
   const initialLoading = infoLoading || (medias.length === 0 && loadingMore);
+  const trackEntries = filteredMedias.map(item => ({
+    id: `bilibili-video:${item.bvid}`,
+    track: adaptCollectionMediaToTrack(item),
+    source: item,
+    timestamp: item.pubtime,
+  }));
 
   return (
-    <ScrollContainer enableBackToTop ref={scrollRef} resetOnChange={id} className="h-full w-full px-4 pb-6">
-      <Header
-        type={CollectionType.VideoSeries}
-        cover={medias?.[0]?.cover}
-        title={meta?.name}
-        desc={meta?.description}
-        upMid={meta?.mid}
-        mediaCount={meta?.total}
-      />
-
-      <Operations
-        loading={initialLoading}
-        type={CollectionType.VideoSeries}
-        order={order}
-        onKeywordSearch={setKeyword}
-        onOrderChange={setOrder}
-        orderOptions={[
-          { key: "pubtime", label: "最近投稿" },
-          { key: "play", label: "最多播放" },
-        ]}
-        mediaCount={meta?.total}
-        isCreatedBySelf={isCreatedBySelf}
-        onPlayAll={onPlayAll}
-        onAddToPlayList={addToPlayList}
-      />
-
-      {displayMode === "card" ? (
-        <SeriesGridList
-          className="min-h-0 flex-1"
-          data={filteredMedias}
-          loading={loadingMore}
-          getScrollElement={getScrollElement}
-          onMenuAction={handleMenuAction}
-          hasMore={hasMore}
-          onLoadMore={fetchArchives}
+    <PlaylistDetail
+      scrollRef={scrollRef}
+      resetKey={id}
+      header={
+        <Header
+          type={CollectionType.VideoSeries}
+          cover={medias?.[0]?.cover}
+          title={meta?.name}
+          desc={meta?.description}
+          upMid={meta?.mid}
+          mediaCount={meta?.total}
         />
-      ) : (
-        <SeriesList
-          className="min-h-0 flex-1"
-          data={filteredMedias}
-          loading={loadingMore}
-          getScrollElement={getScrollElement}
-          onMenuAction={handleMenuAction}
-          hasMore={hasMore}
-          onLoadMore={fetchArchives}
+      }
+      actions={
+        <Operations
+          loading={initialLoading}
+          type={CollectionType.VideoSeries}
+          order={order}
+          onKeywordSearch={setKeyword}
+          onOrderChange={setOrder}
+          orderOptions={[
+            { key: "pubtime", label: "最近投稿" },
+            { key: "play", label: "最多播放" },
+          ]}
+          mediaCount={meta?.total}
+          isCreatedBySelf={isCreatedBySelf}
+          onPlayAll={onPlayAll}
+          onAddToPlayList={addToPlayList}
         />
-      )}
-    </ScrollContainer>
+      }
+    >
+      <PlaylistTrackView
+        entries={trackEntries}
+        loading={initialLoading || loadingMore}
+        getScrollElement={getScrollElement}
+        getActions={getContextMenus}
+        onAction={(key, entry) =>
+          void executeTrackAction(key === "bililink" ? "open-source" : (key as TrackActionKey), entry.track)
+        }
+        onPlay={entry => void executeTrackAction("play", entry.track)}
+        hasMore={hasMore}
+        onLoadMore={fetchArchives}
+      />
+    </PlaylistDetail>
   );
 };
 

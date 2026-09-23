@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 
-import { Card } from "@heroui/react";
-
 import { usePlayList } from "@/store/play-list";
 
 import Center from "./center";
@@ -20,15 +18,11 @@ function PlayBar() {
   }, [init]);
 
   return (
-    <Card
-      radius="none"
-      shadow="sm"
-      className="bg-background grid h-full grid-cols-[minmax(0,1fr)_minmax(0,3fr)_minmax(0,1fr)] px-4"
-    >
+    <div className="grid h-full grid-cols-[minmax(260px,1fr)_minmax(360px,1.4fr)_minmax(300px,1fr)] bg-transparent px-5">
       <div className="h-full">{Boolean(playId) && <Left />}</div>
       <Center />
       <Right />
-    </Card>
+    </div>
   );
 }
 

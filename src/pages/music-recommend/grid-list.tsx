@@ -1,21 +1,22 @@
 import React, { useCallback } from "react";
 
+import type { Track } from "@/domain/track";
+
+import { toPlayItem } from "@/adapters/track/actions";
 import MusicCard from "@/components/music-card";
 import VirtualGridPageList from "@/components/virtual-grid-page-list";
 import { usePlayList } from "@/store/play-list";
 import { useUser } from "@/store/user";
 
-import type { RecommendItem } from "./types";
-
 import { getContextMenus } from "./menu";
 
 interface MusicRecommendGridListProps {
-  items: RecommendItem[];
+  items: Track[];
   hasMore: boolean;
   loading: boolean;
   onLoadMore: () => void;
   getScrollElement: () => HTMLElement | null;
-  onMenuAction: (key: string, item: RecommendItem) => void;
+  onMenuAction: (key: string, item: Track) => void;
 }
 
 const MusicRecommendGridList: React.FC<MusicRecommendGridListProps> = ({
@@ -29,7 +30,7 @@ const MusicRecommendGridList: React.FC<MusicRecommendGridListProps> = ({
   const user = useUser(state => state.user);
 
   const renderGridItem = useCallback(
-    (item: RecommendItem) => {
+    (item: Track) => {
       return (
         <MusicCard
           key={item.id}
@@ -37,8 +38,8 @@ const MusicRecommendGridList: React.FC<MusicRecommendGridListProps> = ({
           cover={item.cover}
           playCount={item.playCount}
           duration={item.duration}
-          ownerName={item.author}
-          ownerMid={item.authorMid}
+          ownerName={item.creator?.name}
+          ownerMid={item.creator?.id ? Number(item.creator.id) || undefined : undefined}
           menus={getContextMenus({
             isLogin: user?.isLogin,
           })}
@@ -46,15 +47,8 @@ const MusicRecommendGridList: React.FC<MusicRecommendGridListProps> = ({
             onMenuAction(key, item);
           }}
           onPress={() => {
-            if (!item.bvid) return;
-            usePlayList.getState().play({
-              type: "mv",
-              bvid: item.bvid,
-              title: item.title,
-              cover: item.cover,
-              ownerName: item.author,
-              ownerMid: item.authorMid,
-            });
+            if (!item.sourceRef.bvid) return;
+            usePlayList.getState().play(toPlayItem(item));
           }}
         />
       );

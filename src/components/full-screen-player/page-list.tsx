@@ -25,17 +25,19 @@ const FullScreenPageList = ({
     <div
       ref={ref}
       className={twMerge(
-        "flex flex-col overflow-hidden rounded-2xl bg-white/10 text-white ring-1 ring-white/12 backdrop-blur-md",
+        "flex flex-col overflow-hidden rounded-[var(--biu-radius-xl)] border border-white/10 bg-black/20 text-white shadow-[var(--biu-shadow-floating)] backdrop-blur-xl",
         className,
       )}
       style={style}
     >
-      <div className="flex w-full flex-none flex-row items-center justify-between space-x-1 border-b border-white/10 px-2 py-2">
+      <div className="flex w-full flex-none flex-row items-center justify-between gap-2 border-b border-white/10 px-3 py-3">
         <Input
+          aria-label="搜索分集"
           classNames={{
             mainWrapper: "h-full",
-            input: "text-sm",
-            inputWrapper: "bg-black/20 hover:bg-black/30 group-data-[focus=true]:bg-black/30",
+            input: "text-sm outline-none focus-visible:outline-none",
+            inputWrapper:
+              "h-9 rounded-full bg-white/8 px-3 hover:bg-white/12 group-data-[focus=true]:bg-white/12 group-data-[focus-visible=true]:ring-0",
           }}
           placeholder="搜索分集"
           size="sm"
@@ -44,16 +46,22 @@ const FullScreenPageList = ({
           value={searchKeyword}
           onValueChange={setSearchKeyword}
         />
-        <IconButton variant="flat" onPress={onClose} className="w-6 min-w-6">
+        <IconButton
+          aria-label="关闭分集列表"
+          tooltip="关闭"
+          variant="flat"
+          onPress={onClose}
+          className="w-8 min-w-8 rounded-full"
+        >
           <RiArrowRightSLine size={16} className="text-white/80" />
         </IconButton>
       </div>
       <MusicPageList
-        className="h-full w-full flex-1 p-1 pb-2"
+        className="h-full w-full flex-1 p-2"
         hideCover
-        itemClassName="hover:bg-white/10 data-[active=true]:bg-primary/20 text-foreground/80 data-[active=true]:text-primary h-8 min-h-8 p-1 [&_span.tabular-nums]:hidden"
-        itemHeight={32}
-        itemTitleClassName="text-sm"
+        itemClassName="hover:bg-white/10 data-[active=true]:bg-primary/20 text-foreground/80 data-[active=true]:text-primary h-10 min-h-10 rounded-lg px-2 [&_span.tabular-nums]:hidden"
+        itemHeight={44}
+        itemTitleClassName="text-sm font-medium"
         onPressItem={onClose}
         searchKeyword={searchKeyword}
       />

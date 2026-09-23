@@ -30,7 +30,7 @@ const GridCard = memo(({ title, cover, type, createTime, mediaCount, onPress }: 
           />
           {/* Overlay */}
           <div className="absolute right-2 bottom-2 z-20 rounded-sm bg-black/60 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
-            <span>{`${type === CollectionType.VideoSeries ? "系列" : "合集"} · ${mediaCount ?? 0}个视频`}</span>
+            <span>{`${type === CollectionType.VideoSeries ? "系列" : "合集"} · ${mediaCount ?? 0} 首内容`}</span>
           </div>
         </div>
       </div>

@@ -48,11 +48,18 @@ const UserCard: React.FC<UserCardProps> = ({ u }) => {
   };
 
   return (
-    <Card isHoverable isPressable as="div" onPress={() => navigate(`/user/${u.mid}`)}>
-      <CardBody className="flex flex-col items-center gap-y-2">
+    <Card
+      isHoverable
+      isPressable
+      as="div"
+      aria-label={`打开创作者 ${u.uname}`}
+      onPress={() => navigate(`/user/${u.mid}`)}
+      className="border border-[rgb(var(--biu-color-border)/0.06)] bg-[rgb(var(--biu-color-surface))] shadow-none transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--biu-shadow-card)]"
+    >
+      <CardBody className="flex flex-col items-center gap-y-3 p-5">
         {/* Avatar Section */}
         <div className="relative flex-none">
-          <Avatar className="h-16 w-16" src={formatUrlProtocol(u.upic as string)} isBordered />
+          <Avatar className="h-20 w-20" src={formatUrlProtocol(u.upic as string)} isBordered />
           {u.official_verify?.type === 0 && (
             <div className="bg-warning ring-background absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full text-white ring-2">
               <RiFlashlightFill size={12} />
@@ -91,7 +98,10 @@ const UserCard: React.FC<UserCardProps> = ({ u }) => {
               color={isFollowed ? "success" : "default"}
               variant={isFollowed ? "flat" : "solid"}
               radius="sm"
-              onPress={handleFollow}
+              onClick={event => event.stopPropagation()}
+              onPress={async () => {
+                await handleFollow();
+              }}
               startContent={isFollowed ? <RiUserFollowLine size={18} /> : <RiAddLine size={18} />}
             >
               {isFollowed ? "已关注" : "关注"}

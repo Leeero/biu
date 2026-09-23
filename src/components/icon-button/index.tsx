@@ -13,7 +13,10 @@ const IconButton = ({ tooltip, tooltipProps, children, className, ...props }: Pr
       radius="md"
       size="sm"
       variant="light"
-      className={twMerge("hover:text-primary text-inherit", className)}
+      className={twMerge(
+        "hover:text-primary text-inherit transition-[background-color,color,transform] duration-[var(--biu-duration-fast)] hover:bg-[rgb(var(--biu-color-surface-hover))]",
+        className,
+      )}
       {...props}
     >
       {children}

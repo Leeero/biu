@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import { addToast, Spinner } from "@heroui/react";
+import { addToast } from "@heroui/react";
 
+import { adaptCreatedFavoriteToPlaylist } from "@/adapters/playlist/favorite";
 import { CollectionType } from "@/common/constants/collection";
 import VirtualGridPageList from "@/components/virtual-grid-page-list";
 import { getFavFolderCreatedList, type FavFolderCreatedList } from "@/service/fav-folder-created-list";
-
-import GridCard from "../grid-card";
+import { PlaylistCard } from "@/ui/patterns/playlist-card";
+import { PageState } from "@/ui/states/page-state";
 
 interface Props {
   getScrollElement: () => HTMLElement | null;
@@ -23,6 +24,7 @@ const Favorites = ({ getScrollElement }: Props) => {
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const fetchPage = useCallback(
     async (pn: number) => {
@@ -62,11 +64,13 @@ const Favorites = ({ getScrollElement }: Props) => {
     if (!id) return;
     try {
       setInitialLoading(true);
+      setLoadError(false);
       setPage(1);
       const { items, total } = await fetchPage(1);
       setList(items);
       setHasMore(items.length < total);
     } catch {
+      setLoadError(true);
       addToast({ title: "加载失败", color: "danger" });
     } finally {
       setInitialLoading(false);
@@ -78,11 +82,15 @@ const Favorites = ({ getScrollElement }: Props) => {
   }, [retryInitial]);
 
   if (initialLoading) {
-    return (
-      <div className="flex h-[280px] items-center justify-center">
-        <Spinner label="加载中" />
-      </div>
-    );
+    return <PageState kind="loading" className="min-h-[280px]" />;
+  }
+
+  if (loadError) {
+    return <PageState kind="error" actionLabel="重新加载" onAction={() => void retryInitial()} />;
+  }
+
+  if (!list.length) {
+    return <PageState kind="empty" title="暂无公开收藏夹" description="该用户还没有公开的音乐收藏夹" />;
   }
 
   return (
@@ -93,15 +101,15 @@ const Favorites = ({ getScrollElement }: Props) => {
       onLoadMore={loadMore}
       getScrollElement={getScrollElement}
       itemKey="id"
-      renderItem={item => (
-        <GridCard
-          title={item.title}
-          cover={item.cover}
-          createTime={item.ctime}
-          mediaCount={item.media_count}
-          onPress={() => navigate(`/collection/${item.id}?type=${CollectionType.Favorite}`)}
-        />
-      )}
+      renderItem={item => {
+        const playlist = adaptCreatedFavoriteToPlaylist(item);
+        return (
+          <PlaylistCard
+            playlist={playlist}
+            onPress={() => navigate(`/collection/${item.id}?type=${CollectionType.Favorite}`)}
+          />
+        );
+      }}
     />
   );
 };

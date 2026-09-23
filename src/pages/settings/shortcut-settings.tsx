@@ -93,7 +93,10 @@ const ShortcutSettingsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2>快捷键设置</h2>
+        <div>
+          <h2>快捷键</h2>
+          <p className="text-default-500 mt-1 text-sm">设置应用内操作与系统全局控制按键</p>
+        </div>
         <AsyncButton size="sm" radius="md" variant="flat" onPress={handleReset}>
           恢复默认
         </AsyncButton>

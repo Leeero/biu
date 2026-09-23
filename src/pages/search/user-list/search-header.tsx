@@ -19,14 +19,14 @@ const sortOptions: { label: string; value: UserSortKey }[] = [
 
 export default function SearchHeader({ sortKey, onSortChange }: SearchHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-4 pb-4">
+    <div className="mb-4 flex items-center justify-between">
       <Tabs
+        aria-label="创作者排序"
         variant="light"
         radius="md"
         classNames={{
           cursor: "rounded-medium",
         }}
-        className="-ml-1"
         selectedKey={sortKey}
         onSelectionChange={key => onSortChange(key as UserSortKey)}
       >

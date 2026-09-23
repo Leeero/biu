@@ -1,13 +1,13 @@
 import { RiPlayListLine } from "@remixicon/react";
 
 import IconButton from "@/components/icon-button";
-import { useModalStore } from "@/store/modal";
+import { usePlayerActions } from "@/features/player/use-player-actions";
 
 const OpenPlaylistDrawerButton = () => {
-  const setOpen = useModalStore(s => s.setPlayListDrawerOpen);
+  const { openQueue } = usePlayerActions();
 
   return (
-    <IconButton onPress={() => setOpen(true)}>
+    <IconButton aria-label="打开播放列表" tooltip="播放列表" onPress={openQueue}>
       <RiPlayListLine size={18} />
     </IconButton>
   );

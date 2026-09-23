@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import { addToast, Spinner, Tab, Tabs } from "@heroui/react";
+import { addToast, Tab, Tabs } from "@heroui/react";
 import { RiPlayFill } from "@remixicon/react";
 
+import type { Track } from "@/domain/track";
+
+import { getTrackSourceUrl, toFavoriteSelection, toMediaDownloadInfo, toPlayItem } from "@/adapters/track/actions";
+import { adaptRankItemToTrack, adaptRegionArchiveToTrack } from "@/adapters/track/recommendation";
 import AsyncButton from "@/components/async-button";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
 import { getMusicComprehensiveWebRank, type Data as MusicItem } from "@/service/music-comprehensive-web-rank";
@@ -10,8 +14,8 @@ import { getRegionFeedRcmd, type Archive } from "@/service/web-interface-region-
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
-
-import type { RecommendItem } from "./types";
+import { PageHeader } from "@/ui/patterns/page-header";
+import { PageState } from "@/ui/states/page-state";
 
 import MusicRecommendGridList from "./grid-list";
 import MusicRecommendList from "./list";
@@ -28,42 +32,14 @@ const REGION_MAP: Record<Exclude<RecommendTabKey, "pop">, number> = {
   guichu: 1007,
 };
 
-const normalizeRankItem = (item: MusicItem): RecommendItem => {
-  const archive = item.related_archive;
-  return {
-    id: item.id,
-    aid: Number(item.aid) || undefined,
-    bvid: archive?.bvid || item.bvid,
-    title: archive?.title || item.music_title,
-    cover: archive?.cover || item.cover,
-    author: archive?.username || item.author,
-    authorMid: archive?.uid,
-    playCount: archive?.vv_count,
-    duration: archive?.duration,
-  };
-};
-
-const normalizeRegionItem = (item: Archive, fallbackId: string | number): RecommendItem => {
-  return {
-    id: item.aid ?? item.bvid ?? item.trackid ?? fallbackId,
-    aid: item.aid,
-    bvid: item.bvid,
-    title: item.title || "",
-    cover: item.cover,
-    author: item.author?.name,
-    authorMid: item.author?.mid,
-    playCount: item.stat?.view,
-    duration: item.duration,
-  };
-};
-
 const MusicRecommend = () => {
   const scrollerRef = useRef<ScrollRefObject>(null);
 
-  const [list, setList] = useState<RecommendItem[]>([]);
+  const [list, setList] = useState<Track[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const pageRef = useRef(1);
   const [activeTab, setActiveTab] = useState<RecommendTabKey>("music");
   const scrollRestoreRef = useRef<{ tab: RecommendTabKey; top: number } | null>(null);
@@ -86,7 +62,9 @@ const MusicRecommend = () => {
         const res = await getMusicComprehensiveWebRank({ pn, ps: PAGE_SIZE, web_location: "333.1351" });
         const items = res?.data?.list ?? [];
         if (res.code === 0) {
-          const normalized = items.map(normalizeRankItem);
+          const normalized = items.map((item: MusicItem, index: number) =>
+            adaptRankItemToTrack(item, `${pn}-${index}`),
+          );
           setList(prev => (pn === 1 ? normalized : [...prev, ...normalized]));
           setHasMore(items.length === PAGE_SIZE);
         } else {
@@ -108,7 +86,9 @@ const MusicRecommend = () => {
       });
       const items = res?.data?.archives ?? [];
       if (res.code === 0) {
-        const normalized = items.map((item, index) => normalizeRegionItem(item, `${pn}-${index}`));
+        const normalized = items.map((item: Archive, index: number) =>
+          adaptRegionArchiveToTrack(item, `${pn}-${index}`),
+        );
         setList(prev => (pn === 1 ? normalized : [...prev, ...normalized]));
         setHasMore(items.length === REGION_PAGE_SIZE);
       } else {
@@ -134,10 +114,15 @@ const MusicRecommend = () => {
 
   const init = useCallback(async () => {
     try {
+      setLoadError(false);
       pageRef.current = 1;
       setHasMore(true);
       setLoadingMore(false);
       await fetchPage(1);
+    } catch {
+      setList([]);
+      setHasMore(false);
+      setLoadError(true);
     } finally {
       setInitialLoading(false);
     }
@@ -162,18 +147,7 @@ const MusicRecommend = () => {
   }, [activeTab, getScrollElement, initialLoading, list.length]);
 
   const handlePlayAll = useCallback(async () => {
-    const items = list
-      .map(item => {
-        return {
-          type: "mv" as const,
-          bvid: item.bvid,
-          title: item.title,
-          cover: item.cover,
-          ownerName: item.author,
-          ownerMid: item.authorMid,
-        };
-      })
-      .filter(item => Boolean(item.bvid));
+    const items = list.filter(item => item.sourceRef.bvid).map(toPlayItem);
 
     if (!items.length) {
       addToast({ title: "暂无可播放内容", color: "warning" });
@@ -184,142 +158,130 @@ const MusicRecommend = () => {
     addToast({ title: `已添加 ${items.length} 首到播放列表`, color: "success" });
   }, [list]);
 
-  const handleMenuAction = useCallback(async (key: string, item: RecommendItem) => {
-    if (!item.bvid && key !== "favorite") {
+  const handleMenuAction = useCallback(async (key: string, item: Track) => {
+    if (!item.sourceRef.bvid && key !== "favorite") {
       addToast({ title: "暂无可播放内容", color: "warning" });
       return;
     }
     switch (key) {
-      case "favorite":
-        if (!item.aid) {
+      case "favorite": {
+        const selection = toFavoriteSelection(item);
+        if (!selection) {
           addToast({ title: "该项目无法收藏", color: "warning" });
           return;
         }
-        useModalStore.getState().onOpenFavSelectModal({
-          rid: Number(item.aid),
-          type: 2,
-          title: item.title,
-        });
+        useModalStore.getState().onOpenFavSelectModal(selection);
         break;
+      }
       case "play-next":
-        usePlayList.getState().addToNext({
-          type: "mv",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-          sid: Number(item.id) || undefined,
-          ownerName: item.author,
-        });
+        usePlayList.getState().addToNext(toPlayItem(item));
         break;
       case "add-to-playlist":
-        usePlayList.getState().addList([
-          {
-            type: "mv",
-            title: item.title,
-            cover: item.cover,
-            bvid: item.bvid,
-            sid: Number(item.id) || undefined,
-            ownerName: item.author,
-          },
-        ]);
+        usePlayList.getState().addList([toPlayItem(item)]);
         break;
-      case "download-audio":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "audio",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-        });
+      case "download-audio": {
+        const task = toMediaDownloadInfo(item, "audio");
+        if (!task) return;
+        await window.electron.addMediaDownloadTask(task);
         addToast({
           title: "已添加下载任务",
           color: "success",
         });
         break;
-      case "download-video":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "video",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.bvid,
-        });
+      }
+      case "download-video": {
+        const task = toMediaDownloadInfo(item, "video");
+        if (!task) return;
+        await window.electron.addMediaDownloadTask(task);
         addToast({
           title: "已添加下载任务",
           color: "success",
         });
         break;
-      case "bililink":
-        if (item.bvid) {
-          window.electron.openExternal(`https://www.bilibili.com/video/${item.bvid}`);
-        }
+      }
+      case "bililink": {
+        const url = getTrackSourceUrl(item);
+        if (url) window.electron.openExternal(url);
         break;
+      }
       default:
         break;
     }
   }, []);
 
   return (
-    <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full px-4">
-      <div className="mb-2 flex items-center justify-between">
-        <Tabs
-          variant="solid"
-          size="lg"
-          radius="md"
-          classNames={{
-            cursor: "rounded-medium",
-          }}
-          selectedKey={activeTab}
-          onSelectionChange={key => {
-            const nextTab = key as RecommendTabKey;
-            const viewport = getScrollElement();
-            if (viewport) {
-              scrollRestoreRef.current = { tab: nextTab, top: viewport.scrollTop };
-            }
-            setActiveTab(nextTab);
-          }}
-        >
-          <Tab key="music" title="音乐" />
-          <Tab key="guichu" title="鬼畜" />
-          <Tab key="pop" title="流行" />
-        </Tabs>
-        <AsyncButton
-          color="primary"
-          size="md"
-          startContent={<RiPlayFill size={18} />}
-          isDisabled={initialLoading || list.length === 0}
-          onPress={handlePlayAll}
-          className="dark:text-black"
-        >
-          全部播放
-        </AsyncButton>
-      </div>
-      {activeTab === "pop" && <NewMusicTop onLayoutChange={handlePopLayoutChange} />}
-      <div className="relative">
-        {displayMode === "card" ? (
-          <MusicRecommendGridList
-            key={listKey}
-            items={list}
-            hasMore={hasMore}
-            loading={loadingMore}
-            onLoadMore={loadMore}
-            getScrollElement={getScrollElement}
-            onMenuAction={handleMenuAction}
-          />
-        ) : (
-          <MusicRecommendList
-            key={listKey}
-            items={list}
-            hasMore={hasMore}
-            loading={loadingMore}
-            onLoadMore={loadMore}
-            getScrollElement={getScrollElement}
-            onMenuAction={handleMenuAction}
-          />
-        )}
-        {initialLoading && list.length === 0 && (
-          <div className="flex h-[40vh] items-center justify-center">
-            <Spinner size="lg" />
-          </div>
-        )}
+    <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
+      <div className="mx-auto w-full max-w-[var(--biu-content-max-width)] px-6 pt-5 pb-8">
+        <PageHeader
+          title="发现音乐"
+          description="浏览来自 B 站音乐分区的推荐内容与新歌，不包含个性化推荐。"
+          className="mb-4"
+          actions={
+            <AsyncButton
+              color="primary"
+              size="md"
+              radius="full"
+              startContent={<RiPlayFill size={18} />}
+              isDisabled={initialLoading || list.length === 0}
+              onPress={handlePlayAll}
+            >
+              全部播放
+            </AsyncButton>
+          }
+        />
+        <div className="mb-6 flex items-center border-b border-[rgb(var(--biu-color-border)/0.06)] pb-3">
+          <Tabs
+            aria-label="发现音乐分类"
+            variant="light"
+            size="md"
+            radius="full"
+            classNames={{
+              tabList: "gap-1 bg-[rgb(var(--biu-color-surface-hover))] p-1 rounded-full",
+              cursor: "rounded-full bg-[rgb(var(--biu-color-surface-raised))] shadow-sm",
+              tabContent: "group-data-[selected=true]:text-primary font-medium",
+            }}
+            selectedKey={activeTab}
+            onSelectionChange={key => {
+              const nextTab = key as RecommendTabKey;
+              const viewport = getScrollElement();
+              if (viewport) scrollRestoreRef.current = { tab: nextTab, top: viewport.scrollTop };
+              setActiveTab(nextTab);
+            }}
+          >
+            <Tab key="music" title="音乐" />
+            <Tab key="pop" title="流行" />
+            <Tab key="guichu" title="鬼畜" />
+          </Tabs>
+        </div>
+        {activeTab === "pop" && <NewMusicTop onLayoutChange={handlePopLayoutChange} />}
+        <section aria-label="推荐内容" className="relative">
+          {displayMode === "card" ? (
+            <MusicRecommendGridList
+              key={listKey}
+              items={list}
+              hasMore={hasMore}
+              loading={loadingMore}
+              onLoadMore={loadMore}
+              getScrollElement={getScrollElement}
+              onMenuAction={handleMenuAction}
+            />
+          ) : (
+            <MusicRecommendList
+              key={listKey}
+              items={list}
+              hasMore={hasMore}
+              loading={loadingMore}
+              onLoadMore={loadMore}
+              getScrollElement={getScrollElement}
+              onMenuAction={handleMenuAction}
+            />
+          )}
+          {initialLoading && list.length === 0 && <PageState kind="loading" />}
+          {!initialLoading && loadError && (
+            <PageState kind="error" actionLabel="重新加载" onAction={() => void init()} />
+          )}
+          {!initialLoading && !loadError && list.length === 0 && <PageState kind="empty" />}
+        </section>
       </div>
     </ScrollContainer>
   );

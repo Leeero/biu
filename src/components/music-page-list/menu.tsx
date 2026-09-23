@@ -2,14 +2,15 @@ import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, useDiscl
 import { RiDeleteBinLine, RiExternalLinkLine, RiMoreFill } from "@remixicon/react";
 
 import { openBiliVideoLink } from "@/common/utils/url";
-import { usePlayList, type PlayData } from "@/store/play-list";
+import { usePlayerActions } from "@/features/player/use-player-actions";
+import { type PlayData } from "@/store/play-list";
 
 interface Props {
   data: PlayData;
 }
 
 const Menus = ({ data }: Props) => {
-  const delPage = usePlayList(state => state.delPage);
+  const { removeQueueItem } = usePlayerActions();
   const { isOpen, onOpenChange } = useDisclosure();
 
   return (
@@ -25,6 +26,7 @@ const Menus = ({ data }: Props) => {
         <DropdownTrigger>
           <Button
             isIconOnly
+            aria-label={`更多操作 ${data.pageTitle || data.title}`}
             variant="light"
             size="sm"
             className={`flex-none transition-opacity duration-200 ${isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} group-hover:pointer-events-auto group-hover:opacity-100`}
@@ -46,7 +48,7 @@ const Menus = ({ data }: Props) => {
             key="del"
             color="danger"
             startContent={<RiDeleteBinLine size={16} />}
-            onPress={() => delPage(data.id)}
+            onPress={() => removeQueueItem(data.id)}
           >
             从列表删除
           </DropdownItem>

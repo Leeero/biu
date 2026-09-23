@@ -10,7 +10,7 @@ const RightControl = () => {
   const getPlayItem = usePlayList(s => s.getPlayItem);
 
   return (
-    <div className="flex h-full items-center justify-end space-x-2">
+    <div className="flex h-full items-center justify-end gap-1 pl-4 text-[rgb(var(--biu-color-text-secondary))]">
       <MusicPlayMode />
       {Boolean(playId) && getPlayItem()?.source !== "local" && <MusicDownloadButton />}
       <OpenPlaylistDrawerButton />

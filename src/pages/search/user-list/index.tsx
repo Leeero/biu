@@ -124,7 +124,6 @@ export default function UserList({ keyword, getScrollElement }: UserListProps) {
         hasMore={hasMore}
         loading={loadingMore}
         rowHeight={240}
-        className="px-4"
       />
     </>
   );

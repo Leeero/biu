@@ -21,6 +21,7 @@ let source: MediaElementAudioSourceNode | null = null;
 const AudioWaveform = ({ width = 56, height = 56, barCount = 40, barColor = "currentColor" }: AudioWaveformProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationIdRef = useRef<number>(0);
+  const lastDrawTimeRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -53,28 +54,14 @@ const AudioWaveform = ({ width = 56, height = 56, barCount = 40, barColor = "cur
     // Initialize on mount
     initAudio();
 
-    // Ensure context resumes on play
-    const handlePlay = () => {
-      if (audioContext?.state === "suspended") {
-        audioContext.resume();
-      }
-      if (!animationIdRef.current) {
-        render();
-      }
-    };
-
-    const handlePause = () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-        animationIdRef.current = 0;
-      }
-    };
+    const bufferLength = analyser?.frequencyBinCount ?? 0;
+    const dataArray = new Uint8Array(bufferLength);
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const frameInterval = reduceMotion ? 1000 / 15 : 1000 / 30;
 
     const draw = () => {
       if (!analyser || !ctx) return;
 
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
 
       ctx.clearRect(0, 0, width, height);
@@ -87,6 +74,8 @@ const AudioWaveform = ({ width = 56, height = 56, barCount = 40, barColor = "cur
       // With fftSize=512, bufferLength=256.
       // 0.6 * 256 * (44100/512) ≈ 13kHz coverage
       const usefulBufferLength = Math.floor(bufferLength * 0.6);
+
+      ctx.fillStyle = barColor === "currentColor" ? "#666" : barColor;
 
       // Draw bars
       for (let i = 0; i < barCount; i++) {
@@ -106,9 +95,6 @@ const AudioWaveform = ({ width = 56, height = 56, barCount = 40, barColor = "cur
         const x = i * computedBarWidth;
         const y = height - barHeight;
 
-        // Set color
-        ctx.fillStyle = barColor === "currentColor" ? "#666" : barColor;
-
         // Draw rounded bar (simulated)
         ctx.beginPath();
         // Use rect for simplicity, or roundRect if supported
@@ -121,27 +107,58 @@ const AudioWaveform = ({ width = 56, height = 56, barCount = 40, barColor = "cur
       }
     };
 
-    const render = () => {
-      draw();
+    const render = (timestamp: number = performance.now()) => {
       animationIdRef.current = requestAnimationFrame(render);
+      if (document.hidden || timestamp - lastDrawTimeRef.current < frameInterval) return;
+      lastDrawTimeRef.current = timestamp;
+      draw();
+    };
+
+    const stopRendering = () => {
+      if (!animationIdRef.current) return;
+      cancelAnimationFrame(animationIdRef.current);
+      animationIdRef.current = 0;
+    };
+
+    // Ensure context resumes on play
+    const handlePlay = () => {
+      if (audioContext?.state === "suspended") {
+        audioContext.resume();
+      }
+      if (!animationIdRef.current && !document.hidden) {
+        render();
+      }
+    };
+
+    const handlePause = () => {
+      stopRendering();
+      draw();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopRendering();
+      } else if (!audioElement.paused && !animationIdRef.current) {
+        render();
+      }
     };
 
     audioElement.addEventListener("play", handlePlay);
     audioElement.addEventListener("pause", handlePause);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Initialize state
-    if (!audioElement.paused) {
+    if (!audioElement.paused && !document.hidden) {
       render();
     } else {
       draw();
     }
 
     return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
+      stopRendering();
       audioElement.removeEventListener("play", handlePlay);
       audioElement.removeEventListener("pause", handlePause);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [width, height, barCount, barColor]);
 

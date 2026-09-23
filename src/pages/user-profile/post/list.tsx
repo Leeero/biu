@@ -2,11 +2,12 @@ import React, { useCallback } from "react";
 
 import type { SpaceArcVListItem } from "@/service/space-wbi-arc-search";
 
+import { adaptCreatorPostToTrack } from "@/adapters/track/creator";
 import { formatSecondsToDate } from "@/common/utils/time";
 import MusicListItem from "@/components/music-list-item";
 import MusicListHeader from "@/components/music-list-item/header";
 import VirtualPageList from "@/components/virtual-page-list";
-import { usePlayList } from "@/store/play-list";
+import { executeTrackAction } from "@/features/track/actions";
 import { useSettings } from "@/store/settings";
 
 import { getContextMenus } from "./menu";
@@ -25,14 +26,7 @@ const PostList: React.FC<PostListProps> = ({ items, hasMore, loading, onLoadMore
   const isCompact = displayMode === "compact";
 
   const handlePress = useCallback((item: SpaceArcVListItem) => {
-    usePlayList.getState().play({
-      type: "mv",
-      bvid: item.bvid,
-      title: item.title,
-      cover: item.pic,
-      ownerName: item.author,
-      ownerMid: item.mid,
-    });
+    void executeTrackAction("play", adaptCreatorPostToTrack(item));
   }, []);
 
   return (

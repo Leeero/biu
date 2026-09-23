@@ -13,9 +13,11 @@ import { useShallow } from "zustand/react/shallow";
 
 import { getPlayModeList } from "@/common/constants/audio";
 import { createBroadcastChannel, toggleMiniMode } from "@/common/utils/mini-player";
+import { formatDuration } from "@/common/utils/time";
 import Image from "@/components/image";
 import { usePlayProgress } from "@/store/play-progress";
 
+import { createMiniPlayerActions } from "./actions";
 import { usePlayState } from "./play-state";
 import { useStyle } from "./use-style";
 
@@ -25,29 +27,30 @@ const CoverView = memo(() => {
   const cover = usePlayState(s => s.cover);
   if (!cover) return null;
   return (
-    <div className="relative h-full w-[100px] flex-shrink-0">
+    <div className="relative m-2 h-24 w-24 flex-shrink-0 overflow-hidden rounded-[var(--biu-radius-lg)]">
       <Image
         removeWrapper
-        radius="none"
+        radius="lg"
         src={cover}
-        width={100}
+        width={96}
         height="100%"
         params="672w_378h_1c.avif"
         loading="eager"
         decoding="async"
         style={{ transform: "translateZ(0)", backfaceVisibility: "hidden", willChange: "transform", contain: "paint" }}
       />
-      <div className="from-background pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-10 rounded-[var(--biu-radius-lg)] ring-1 ring-black/5 ring-inset" />
     </div>
   );
 });
 
 const MiniPlayer = () => {
-  const { isSingle, isPlaying, title, duration, playMode } = usePlayState(
+  const { isSingle, isPlaying, title, artist, duration, playMode } = usePlayState(
     useShallow(state => ({
       isSingle: state.isSingle,
       isPlaying: state.isPlaying,
       title: state.title,
+      artist: state.artist,
       duration: state.duration,
       playMode: state.playMode,
     })),
@@ -57,17 +60,13 @@ const MiniPlayer = () => {
   const updatePlayState = usePlayState(state => state.update);
   const bcRef = useRef<BroadcastChannel>(null);
 
-  const postMessage = (type: string, state?: any) => {
-    if (!bcRef.current) return;
-    bcRef.current.postMessage({
-      from: "mini",
-      data: {
-        type,
-        state,
-      },
-      ts: Date.now(),
-    });
-  };
+  const actions = useMemo(
+    () =>
+      createMiniPlayerActions(message => {
+        bcRef.current?.postMessage(message);
+      }),
+    [],
+  );
 
   useStyle();
 
@@ -77,7 +76,7 @@ const MiniPlayer = () => {
 
   useEffect(() => {
     bcRef.current = createBroadcastChannel();
-    postMessage("init");
+    actions.initialize();
 
     bcRef.current.onmessage = ev => {
       const { from, state } = ev.data || {};
@@ -96,80 +95,70 @@ const MiniPlayer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSeek = (v: number) => {
-    postMessage("seek", { currentTime: v });
-  };
-
-  const togglePlayMode = () => {
-    postMessage("togglePlayMode");
-  };
-
-  const prev = () => {
-    postMessage("prev");
-  };
-
-  const togglePlay = () => {
-    postMessage("togglePlay");
-  };
-
-  const next = () => {
-    postMessage("next");
-  };
-
   return (
-    <div className="window-drag rounded-medium flex h-screen w-screen flex-col overflow-hidden select-none">
+    <div className="window-drag flex h-screen w-screen flex-col overflow-hidden rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface)/0.96)] text-[rgb(var(--biu-color-text-primary))] select-none">
       <div className="flex h-full items-center">
         <CoverView />
-        <div className="flex min-w-0 flex-1 flex-col space-y-1 px-2">
-          <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 py-2 pr-2">
+          <div className="flex min-w-0 flex-col pr-8">
             {title ? (
-              <span className="truncate text-center text-sm font-medium">{title}</span>
+              <>
+                <span className="truncate text-sm font-semibold">{title}</span>
+                <span className="truncate text-xs text-[rgb(var(--biu-color-text-secondary))]">{artist || "未知"}</span>
+              </>
             ) : (
-              <span className="text-center text-sm text-zinc-500">暂无播放内容</span>
+              <span className="text-sm text-[rgb(var(--biu-color-text-tertiary))]">暂无播放内容</span>
             )}
           </div>
-          <div className="window-no-drag mt-1 flex items-center">
+          <div className="window-no-drag flex items-center gap-2">
+            <span className="w-7 text-right text-[10px] text-[rgb(var(--biu-color-text-tertiary))] tabular-nums">
+              {title ? formatDuration(currentTime) : "-:--"}
+            </span>
             <Slider
               aria-label="播放进度"
               minValue={0}
               maxValue={duration}
               value={currentTime}
               onChange={v => {
-                handleSeek(v as number);
+                actions.seek(v as number);
               }}
               isDisabled={!title}
               size="sm"
               className="flex-1"
               classNames={{
                 trackWrapper: "group",
-                track: "h-[4px] cursor-pointer",
+                track: "h-[3px] cursor-pointer",
                 thumb: clx("w-3 h-3 after:h-2 after:bg-primary opacity-0", {
                   "group-hover:opacity-100": Boolean(title),
                 }),
               }}
             />
+            <span className="w-7 text-[10px] text-[rgb(var(--biu-color-text-tertiary))] tabular-nums">
+              {title ? formatDuration(duration) : "-:--"}
+            </span>
           </div>
-          <div className="flex items-center justify-between space-x-1">
+          <div className="flex items-center justify-between gap-1">
             <Button
               isIconOnly
               size="sm"
               variant="light"
               disableAnimation
-              onPress={togglePlayMode}
-              className="hover:text-primary window-no-drag"
+              onPress={actions.togglePlayMode}
+              className="window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
               aria-label="播放模式"
             >
               {playModeIcon}
             </Button>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center gap-1">
               <Button
                 isDisabled={!title || isSingle}
                 isIconOnly
                 size="sm"
                 variant="light"
                 disableAnimation
-                onPress={prev}
-                className="hover:text-primary window-no-drag"
+                onPress={actions.previous}
+                aria-label="上一首"
+                className="window-no-drag hover:text-primary h-7 w-7 min-w-7"
               >
                 <RiSkipBackFill size={18} />
               </Button>
@@ -179,10 +168,9 @@ const MiniPlayer = () => {
                 size="sm"
                 variant="light"
                 disableAnimation
-                onPress={() => {
-                  togglePlay();
-                }}
-                className="hover:text-primary window-no-drag"
+                onPress={actions.togglePlay}
+                aria-label={isPlaying ? "暂停" : "播放"}
+                className="window-no-drag text-primary h-8 w-8 min-w-8 hover:scale-105"
               >
                 {isPlaying ? <RiPauseCircleFill size={28} /> : <RiPlayCircleFill size={28} />}
               </Button>
@@ -192,10 +180,9 @@ const MiniPlayer = () => {
                 size="sm"
                 variant="light"
                 disableAnimation
-                onPress={() => {
-                  next();
-                }}
-                className="hover:text-primary window-no-drag"
+                onPress={actions.next}
+                aria-label="下一首"
+                className="window-no-drag hover:text-primary h-7 w-7 min-w-7"
               >
                 <RiSkipForwardFill size={18} />
               </Button>
@@ -206,7 +193,8 @@ const MiniPlayer = () => {
               variant="light"
               disableAnimation
               onPress={toggleMiniMode}
-              className="hover:text-primary window-no-drag"
+              aria-label="返回完整播放器"
+              className="window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
             >
               <RiExpandDiagonalLine size={16} />
             </Button>
