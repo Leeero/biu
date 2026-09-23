@@ -75,6 +75,9 @@ jobs:
         env:
           HUSKY: 0
 
+      - name: Test
+        run: pnpm test -- --run
+
       - name: Build
         run: pnpm build
 
@@ -86,7 +89,11 @@ jobs:
             dist/artifacts/*.exe
             dist/artifacts/*.yml
             dist/artifacts/*.dmg
+            dist/artifacts/*.zip
             dist/artifacts/*.AppImage
+            dist/artifacts/*.deb
+            dist/artifacts/*.rpm
+            dist/artifacts/*.blockmap
           if-no-files-found: warn
           retention-days: 5
 

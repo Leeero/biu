@@ -80,7 +80,7 @@ export async function buildElectron() {
       },
       publish: {
         provider: "github",
-        owner: "wood3n",
+        owner: "Leeero",
         repo: "biu",
         releaseType: null,
       },
@@ -91,5 +91,6 @@ export async function buildElectron() {
     })
     .catch(error => {
       logger.error(error);
+      throw error;
     });
 }

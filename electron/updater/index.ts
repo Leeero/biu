@@ -9,6 +9,15 @@ import { channel } from "../ipc/channel";
 const { autoUpdater } = electronUpdater;
 
 let checkForUpdatesInterval: NodeJS.Timeout | null = null;
+
+const checkForUpdatesSafely = async () => {
+  try {
+    await autoUpdater.checkForUpdates();
+  } catch (error) {
+    log.warn("[updater] Failed to check for updates:", error);
+  }
+};
+
 function setupAutoUpdater({ getMainWindow }: { getMainWindow: () => BrowserWindow | null }) {
   autoUpdater.logger = log;
   log.transports.file.level = "info";
@@ -57,10 +66,10 @@ function setupAutoUpdater({ getMainWindow }: { getMainWindow: () => BrowserWindo
     });
   });
 
-  autoUpdater.checkForUpdates();
+  void checkForUpdatesSafely();
   checkForUpdatesInterval = setInterval(
     () => {
-      autoUpdater.checkForUpdates();
+      void checkForUpdatesSafely();
     },
     1 * 60 * 60 * 1000,
   );

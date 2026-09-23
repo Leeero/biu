@@ -9,13 +9,13 @@
   "description": "music application based on bilibili api",
   "author": "wood3n",
   "license": "PolyForm-Noncommercial-1.0.0",
-  "homepage": "https://github.com/wood3n/biu#readme",
+  "homepage": "https://github.com/Leeero/biu#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wood3n/biu.git"
+    "url": "git+https://github.com/Leeero/biu.git"
   },
   "bugs": {
-    "url": "https://github.com/wood3n/biu/issues"
+    "url": "https://github.com/Leeero/biu/issues"
   },
   "keywords": [
     "music",
