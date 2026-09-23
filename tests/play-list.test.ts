@@ -1,7 +1,8 @@
 import { describe, expect, test, beforeEach, vi } from "vitest";
 
 import { PlayMode } from "@/common/constants/audio";
-import { usePlayList } from "@/store/play-list";
+import { isSame, usePlayList } from "@/store/play-list";
+import { usePlayProgress } from "@/store/play-progress";
 
 vi.mock("@/common/utils/audio", () => ({
   getAudioUrl: vi.fn(async () => ({ audioUrl: "https://audio.test/a.mp3", isLossless: false })),
@@ -60,6 +61,17 @@ vi.mock("@heroui/react", async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   usePlayList.getState().clear();
+  usePlayList.setState({
+    isPlaying: false,
+    isMuted: false,
+    volume: 0.5,
+    playMode: PlayMode.Loop,
+    rate: 1,
+    duration: undefined,
+    nextId: undefined,
+    shouldKeepPagesOrderInRandomPlayMode: true,
+  });
+  usePlayProgress.setState({ currentTime: 0 });
 });
 
 describe("play-list store", () => {
@@ -97,6 +109,38 @@ describe("play-list store", () => {
     expect(audio.playbackRate).toBe(1.25);
     expect(usePlayList.getState().playMode).toBe(PlayMode.Single);
     expect(audio.loop).toBe(true);
+  });
+
+  test("identifies local and online items with stable identities", () => {
+    expect(
+      isSame({ type: "audio", source: "local", id: "file-a" }, { type: "mv", source: "local", id: "file-a" }),
+    ).toBe(true);
+    expect(isSame({ type: "mv", bvid: "BV1" }, { type: "mv", bvid: "BV1" })).toBe(true);
+    expect(isSame({ type: "audio", sid: 10 }, { type: "audio", sid: 10 })).toBe(true);
+    expect(isSame({ type: "mv", bvid: "10" }, { type: "audio", sid: 10 })).toBe(false);
+    expect(isSame(undefined, { type: "audio", sid: 10 })).toBe(false);
+  });
+
+  test("mute and seek keep store and audio in sync", async () => {
+    const s = usePlayList.getState();
+    await s.init();
+    s.toggleMute();
+    s.seek(42.25);
+    expect(usePlayList.getState().isMuted).toBe(true);
+    expect(s.getAudio().muted).toBe(true);
+    expect(s.getAudio().currentTime).toBe(42.25);
+    expect(usePlayProgress.getState().currentTime).toBe(42.25);
+  });
+
+  test("cycles through every play mode and updates single-track loop", async () => {
+    const s = usePlayList.getState();
+    await s.init();
+    const expected = [PlayMode.Random, PlayMode.Single, PlayMode.Sequence, PlayMode.Loop];
+    for (const mode of expected) {
+      s.togglePlayMode();
+      expect(usePlayList.getState().playMode).toBe(mode);
+      expect(s.getAudio().loop).toBe(mode === PlayMode.Single);
+    }
   });
 
   test("play audio adds item and toggles playing", async () => {
@@ -169,6 +213,63 @@ describe("play-list store", () => {
     const nextItem = usePlayList.getState().list[idx + 1];
     expect(usePlayList.getState().nextId).toBe(nextItem.id);
     expect(nextItem.sid).toBe(20);
+  });
+
+  test("nextId is consumed once before normal queue order resumes", async () => {
+    const s = usePlayList.getState();
+    await s.init();
+    await s.playList([
+      { type: "audio", sid: 1, title: "a1" },
+      { type: "audio", sid: 2, title: "a2" },
+      { type: "audio", sid: 3, title: "a3" },
+    ]);
+    const thirdId = usePlayList.getState().list[2].id;
+    usePlayList.setState({ nextId: thirdId });
+    await s.next();
+    expect(usePlayList.getState().playId).toBe(thirdId);
+    expect(usePlayList.getState().nextId).toBeUndefined();
+    await s.next();
+    expect(usePlayList.getState().playId).toBe(usePlayList.getState().list[0].id);
+  });
+
+  test("sequence mode stops at the end instead of wrapping", async () => {
+    const s = usePlayList.getState();
+    await s.init();
+    await s.playList([
+      { type: "audio", sid: 1, title: "a1" },
+      { type: "audio", sid: 2, title: "a2" },
+    ]);
+    usePlayList.setState({
+      playMode: PlayMode.Sequence,
+      playId: usePlayList.getState().list[1].id,
+    });
+    const audio = s.getAudio();
+    audio.currentTime = 100;
+    await audio.play();
+    audio.onended?.(new Event("ended"));
+    expect(audio.currentTime).toBe(0);
+    expect(audio.paused).toBe(true);
+    expect(usePlayList.getState().playId).toBe(usePlayList.getState().list[1].id);
+  });
+
+  test("keeps local id and url without requesting online metadata", async () => {
+    const s = usePlayList.getState();
+    const { getAudioSongInfo } = await import("@/service/audio-song-info");
+    await s.play({
+      type: "audio",
+      id: "local-file-1",
+      source: "local",
+      audioUrl: "file:///music/a.mp3",
+      title: "<b>Local A</b>",
+    });
+    const item = usePlayList.getState().list[0];
+    expect(item).toMatchObject({
+      id: "local-file-1",
+      source: "local",
+      audioUrl: "file:///music/a.mp3",
+      title: "Local A",
+    });
+    expect(getAudioSongInfo).not.toHaveBeenCalled();
   });
 
   test("addList deduplicates and preserves playing item", async () => {

@@ -12,6 +12,7 @@ export interface MiniPlayerMainStateSnapshot {
   isSingle: boolean;
   isPlaying: boolean;
   title?: string;
+  artist?: string;
   cover?: string;
   currentTime: number;
   duration: number;
@@ -55,6 +56,7 @@ function getMainStateSnapshot(): MiniPlayerMainStateSnapshot {
   return {
     isSingle: list.length === 1,
     title: playItem?.pageTitle || playItem?.title,
+    artist: playItem?.source === "local" ? "本地音乐" : playItem?.ownerName || "未知",
     cover: playItem?.pageCover || playItem?.cover,
     playId,
     isPlaying,

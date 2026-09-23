@@ -1,5 +1,7 @@
 import { chunk } from "es-toolkit/array";
 
+import { toPlayItem } from "@/adapters/track/actions";
+import { adaptFavoriteResourcesToTracks } from "@/adapters/track/favorite";
 import { getFavResourceIds } from "@/service/fav-resource";
 import { getFavResourceInfos, type FavResourceInfo } from "@/service/fav-resource-infos";
 
@@ -14,7 +16,7 @@ export const isDefaultFav = (attr?: number) => {
   return ((attr >> 1) & 1) === 0;
 };
 
-export const getAllFavMedia = async ({ id: favFolderId }: { id: string }) => {
+export const getAllFavTracks = async ({ id: favFolderId }: { id: string }) => {
   const idsRes = await getFavResourceIds({
     media_id: Number(favFolderId),
     platform: "web",
@@ -51,26 +53,7 @@ export const getAllFavMedia = async ({ id: favFolderId }: { id: string }) => {
     }
   }
 
-  return allInfos
-    .filter(item => [2, 12].includes(item.type) && item.attr === 0)
-    .map(item => {
-      if (item.type === 2) {
-        return {
-          type: "mv" as const,
-          bvid: item.bvid || item.bv_id,
-          title: item.title,
-          cover: item.cover,
-          ownerMid: item.upper?.mid,
-          ownerName: item.upper?.name,
-        };
-      }
-      return {
-        type: "audio" as const,
-        sid: item.id,
-        title: item.title,
-        cover: item.cover,
-        ownerMid: item.upper?.mid,
-        ownerName: item.upper?.name,
-      };
-    });
+  return adaptFavoriteResourcesToTracks(allInfos);
 };
+
+export const getAllFavMedia = async ({ id }: { id: string }) => (await getAllFavTracks({ id })).map(toPlayItem);
