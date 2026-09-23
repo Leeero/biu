@@ -1,24 +1,19 @@
-import { ipcMain } from "electron";
-
-import { getLyricsByLrclib, type SeachSongByLrclibParams } from "./api/lrclib-lyric";
-import {
-  getLyricsByNetease,
-  getSongByNetease,
-  type GetLyricsByNeteaseParams,
-  type SearchSongByNeteaseParams,
-} from "./api/netease-lyric";
+import { handleTrustedIpc } from "../security/ipc";
+import { parseLrclibSearch, parseNeteaseLyrics, parseNeteaseSearch } from "../security/validation";
+import { getLyricsByLrclib } from "./api/lrclib-lyric";
+import { getLyricsByNetease, getSongByNetease } from "./api/netease-lyric";
 import { channel } from "./channel";
 
 export function registerLyricsHandlers() {
-  ipcMain.handle(channel.lyrics.searchNeteaseSongs, async (_, params: SearchSongByNeteaseParams) => {
-    return getSongByNetease(params);
+  handleTrustedIpc(channel.lyrics.searchNeteaseSongs, async (_, params: SearchSongByNeteaseParams) => {
+    return getSongByNetease(parseNeteaseSearch(params));
   });
 
-  ipcMain.handle(channel.lyrics.getNeteaseLyrics, async (_, params: GetLyricsByNeteaseParams) => {
-    return getLyricsByNetease(params);
+  handleTrustedIpc(channel.lyrics.getNeteaseLyrics, async (_, params: GetLyricsByNeteaseParams) => {
+    return getLyricsByNetease(parseNeteaseLyrics(params));
   });
 
-  ipcMain.handle(channel.lyrics.searchLrclib, async (_, params: SeachSongByLrclibParams) => {
-    return getLyricsByLrclib(params);
+  handleTrustedIpc(channel.lyrics.searchLrclib, async (_, params: SearchSongByLrclibParams) => {
+    return getLyricsByLrclib(parseLrclibSearch(params));
   });
 }

@@ -1,15 +1,16 @@
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow } from "electron";
+import isDev from "electron-is-dev";
 
 import { createMiniPlayer, destroyMiniPlayer, miniPlayer } from "../mini-player";
 import { channel } from "./channel";
 
 export function registerWindowHandlers({ getMainWindow }) {
-  ipcMain.on(channel.window.minimize, event => {
+  onTrustedIpc(channel.window.minimize, event => {
     const win = BrowserWindow.fromWebContents(event.sender);
     win?.minimize();
   });
 
-  ipcMain.on(channel.window.toggleMaximize, event => {
+  onTrustedIpc(channel.window.toggleMaximize, event => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
       if (win.isMaximized()) {
@@ -20,22 +21,22 @@ export function registerWindowHandlers({ getMainWindow }) {
     }
   });
 
-  ipcMain.on(channel.window.close, event => {
+  onTrustedIpc(channel.window.close, event => {
     const win = BrowserWindow.fromWebContents(event.sender);
     win?.close();
   });
 
-  ipcMain.handle(channel.window.isMaximized, event => {
+  handleTrustedIpc(channel.window.isMaximized, event => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return win?.isMaximized() ?? false;
   });
 
-  ipcMain.handle(channel.window.isFullScreen, event => {
+  handleTrustedIpc(channel.window.isFullScreen, event => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return win?.isFullScreen() ?? false;
   });
 
-  ipcMain.handle(channel.window.toggleMini, () => {
+  handleTrustedIpc(channel.window.toggleMini, () => {
     const mainWindow = getMainWindow?.();
     if (miniPlayer && !miniPlayer.isDestroyed()) {
       destroyMiniPlayer();
@@ -46,8 +47,10 @@ export function registerWindowHandlers({ getMainWindow }) {
     }
   });
 
-  ipcMain.on(channel.window.toggleDevTools, event => {
+  onTrustedIpc(channel.window.toggleDevTools, event => {
+    if (!isDev) return;
     const win = BrowserWindow.fromWebContents(event.sender);
     win?.webContents.toggleDevTools();
   });
 }
+import { handleTrustedIpc, onTrustedIpc } from "../security/ipc";

@@ -1,13 +1,14 @@
-import { ipcMain } from "electron";
 import log from "electron-log";
 
 import { StoreNameMap } from "@shared/store";
 
+import { parseStoreName, parseStoreValue } from "../security/validation";
 import { appSettingsStore, lyricsCacheStore, shortcutKeyStore, userStore } from "../store";
 import { channel } from "./channel";
 
 export function registerStoreHandlers() {
-  ipcMain.handle(channel.store.get, async (_, name: StoreName) => {
+  handleTrustedIpc(channel.store.get, async (_, name: StoreName) => {
+    name = parseStoreName(name);
     if (name === StoreNameMap.AppSettings) {
       return appSettingsStore.store;
     }
@@ -25,13 +26,10 @@ export function registerStoreHandlers() {
     }
   });
 
-  ipcMain.handle(channel.store.set, async (_, name: StoreName, value: any) => {
+  handleTrustedIpc(channel.store.set, async (_, name: StoreName, value: any) => {
     try {
-      // 确保 value 是有效对象，防止 electron-store 报错
-      if (value === null || value === undefined) {
-        log.warn(`[store:set] Received invalid value for ${String(name)}:`, value);
-        return;
-      }
+      name = parseStoreName(name);
+      value = parseStoreValue(value);
 
       if (name === StoreNameMap.AppSettings) {
         appSettingsStore.set(value);
@@ -53,7 +51,8 @@ export function registerStoreHandlers() {
     }
   });
 
-  ipcMain.handle(channel.store.clear, async (_, name: StoreName) => {
+  handleTrustedIpc(channel.store.clear, async (_, name: StoreName) => {
+    name = parseStoreName(name);
     if (name === StoreNameMap.AppSettings) {
       appSettingsStore.clear();
     }
@@ -73,3 +72,4 @@ export function registerStoreHandlers() {
     return true;
   });
 }
+import { handleTrustedIpc } from "../security/ipc";

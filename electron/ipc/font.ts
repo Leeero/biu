@@ -1,10 +1,10 @@
-import { ipcMain } from "electron";
 import { getFonts2 } from "font-list";
 
+import { handleTrustedIpc } from "../security/ipc";
 import { channel } from "./channel";
 
 export function registerFontHandlers() {
-  ipcMain.handle(channel.font.getFonts, async () => {
+  handleTrustedIpc(channel.font.getFonts, async () => {
     return getFonts2();
   });
 }

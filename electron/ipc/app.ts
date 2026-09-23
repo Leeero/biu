@@ -1,23 +1,26 @@
-import { app, ipcMain, session } from "electron";
+import { app, session } from "electron";
 import isDev from "electron-is-dev";
 import log from "electron-log";
 
+import { handleTrustedIpc } from "../security/ipc";
+import { parseProxySettings } from "../security/validation";
 import { autoUpdater } from "../updater";
 import { channel } from "./channel";
 
 export const applyProxySettings = async (proxySettings?: ProxySettings) => {
   try {
-    if (!proxySettings || proxySettings.type === "none") {
+    if (!proxySettings) {
       await session.defaultSession.setProxy({ mode: "direct" });
       return;
     }
 
-    const { type, host, port, username, password } = proxySettings;
-
-    if (!host || !port) {
+    const validatedSettings = parseProxySettings(proxySettings);
+    if (validatedSettings.type === "none") {
       await session.defaultSession.setProxy({ mode: "direct" });
       return;
     }
+
+    const { type, host, port, username, password } = validatedSettings;
 
     const scheme = type === "http" ? "http" : type === "socks4" ? "socks4" : "socks5";
 
@@ -37,11 +40,11 @@ export const applyProxySettings = async (proxySettings?: ProxySettings) => {
 };
 
 export function registerAppHandlers() {
-  ipcMain.handle(channel.app.getVersion, async () => {
+  handleTrustedIpc(channel.app.getVersion, async () => {
     return app.getVersion();
   });
 
-  ipcMain.handle(channel.app.checkUpdate, async (): Promise<CheckAppUpdateResult> => {
+  handleTrustedIpc(channel.app.checkUpdate, async (): Promise<CheckAppUpdateResult> => {
     try {
       const res = await autoUpdater.checkForUpdates();
 
@@ -64,19 +67,19 @@ export function registerAppHandlers() {
     }
   });
 
-  ipcMain.handle(channel.app.downloadUpdate, async () => {
+  handleTrustedIpc(channel.app.downloadUpdate, async () => {
     await autoUpdater.downloadUpdate();
   });
 
-  ipcMain.handle(channel.app.quitAndInstall, async () => {
+  handleTrustedIpc(channel.app.quitAndInstall, async () => {
     return autoUpdater.quitAndInstall();
   });
 
-  ipcMain.handle(channel.app.isDev, async () => {
+  handleTrustedIpc(channel.app.isDev, async () => {
     return isDev;
   });
 
-  ipcMain.handle(channel.app.setProxySettings, async (_, proxySettings: ProxySettings) => {
+  handleTrustedIpc(channel.app.setProxySettings, async (_, proxySettings: ProxySettings) => {
     await applyProxySettings(proxySettings);
   });
 }

@@ -3,6 +3,8 @@ import isDev from "electron-is-dev";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isTrustedAppNavigation } from "./security/validation";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,8 +15,8 @@ const createMiniPlayer = () => {
     title: "Biu Mini Player",
     show: true,
     hasShadow: true,
-    width: 320,
-    height: 100,
+    width: 360,
+    height: 112,
     resizable: false,
     roundedCorners: false,
     center: true,
@@ -29,12 +31,19 @@ const createMiniPlayer = () => {
       webSecurity: true,
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
       devTools: isDev,
     },
   });
 
+  const indexPath = path.resolve(__dirname, "../dist/web/index.html");
+
   miniPlayer.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
+  });
+
+  miniPlayer.webContents.on("will-navigate", (event, url) => {
+    if (!isTrustedAppNavigation(url, indexPath)) event.preventDefault();
   });
 
   miniPlayer.webContents.on("before-input-event", (event, input) => {
@@ -58,7 +67,6 @@ const createMiniPlayer = () => {
     });
   }
 
-  const indexPath = path.resolve(__dirname, "../dist/web/index.html");
   miniPlayer.loadFile(indexPath, { hash: "mini-player" });
 };
 

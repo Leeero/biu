@@ -1,7 +1,7 @@
-import { ipcMain } from "electron";
-
 import type { IpcHandlerProps } from "./types";
 
+import { handleTrustedIpc } from "../security/ipc";
+import { parseDownloadId, parseDownloadMedia, parseDownloadMediaList } from "../security/validation";
 import { channel } from "./channel";
 import { DownloadQueue } from "./download/download-queue";
 
@@ -10,35 +10,35 @@ let downloadQueue: DownloadQueue;
 export function registerDownloadHandlers({ getMainWindow }: IpcHandlerProps) {
   downloadQueue = new DownloadQueue(getMainWindow);
 
-  ipcMain.handle(channel.download.getList, async () => {
+  handleTrustedIpc(channel.download.getList, async () => {
     return downloadQueue.getTaskList();
   });
 
-  ipcMain.handle(channel.download.add, async (_, task: MediaDownloadTask) => {
-    return downloadQueue.addTask(task);
+  handleTrustedIpc(channel.download.add, async (_, task: MediaDownloadInfo) => {
+    return downloadQueue.addTask(parseDownloadMedia(task));
   });
 
-  ipcMain.handle(channel.download.addList, async (_, tasks: MediaDownloadTask[]) => {
-    return downloadQueue.addTasks(tasks);
+  handleTrustedIpc(channel.download.addList, async (_, tasks: MediaDownloadInfo[]) => {
+    return downloadQueue.addTasks(parseDownloadMediaList(tasks));
   });
 
-  ipcMain.handle(channel.download.pause, async (_, id: string) => {
-    downloadQueue.pauseTask(id);
+  handleTrustedIpc(channel.download.pause, async (_, id: string) => {
+    downloadQueue.pauseTask(parseDownloadId(id));
   });
 
-  ipcMain.handle(channel.download.resume, async (_, id: string) => {
-    downloadQueue.resumeTask(id);
+  handleTrustedIpc(channel.download.resume, async (_, id: string) => {
+    downloadQueue.resumeTask(parseDownloadId(id));
   });
 
-  ipcMain.handle(channel.download.cancel, async (_, id: string) => {
-    await downloadQueue.cancelTask(id);
+  handleTrustedIpc(channel.download.cancel, async (_, id: string) => {
+    await downloadQueue.cancelTask(parseDownloadId(id));
   });
 
-  ipcMain.handle(channel.download.retry, async (_, id: string) => {
-    downloadQueue.retryTask(id);
+  handleTrustedIpc(channel.download.retry, async (_, id: string) => {
+    downloadQueue.retryTask(parseDownloadId(id));
   });
 
-  ipcMain.handle(channel.download.clear, async () => {
+  handleTrustedIpc(channel.download.clear, async () => {
     await downloadQueue.clearTasks();
   });
 }

@@ -1,8 +1,5 @@
 export const channel = {
   store: {
-    getSettings: "settings:get",
-    setSettings: "settings:set",
-    clearSettings: "settings:clear",
     get: "store:get",
     set: "store:set",
     clear: "store:clear",
@@ -17,12 +14,8 @@ export const channel = {
   font: {
     getFonts: "font:get-fonts",
   },
-  file: {
-    getSize: "file:get-size",
-  },
   download: {
     getList: "download:get-list",
-    getDownloadData: "download:get-download-data",
     add: "download:add",
     addList: "download:add-list",
     pause: "download:pause",
@@ -39,10 +32,6 @@ export const channel = {
   },
   router: {
     navigate: "router:navigate",
-  },
-  http: {
-    get: "http:get",
-    post: "http:post",
   },
   player: {
     state: "player:state",
@@ -64,8 +53,6 @@ export const channel = {
     downloadUpdate: "app:download-update",
     updateMessage: "app:update-message",
     quitAndInstall: "app:quit-and-install",
-    openInstallerDirectory: "app:open-installer-directory",
-    onBeforeQuit: "app:on-before-quit",
     isDev: "app:is-dev",
     setProxySettings: "app:set-proxy-settings",
   },

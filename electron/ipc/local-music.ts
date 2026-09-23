@@ -1,10 +1,10 @@
-import { ipcMain } from "electron";
 import log from "electron-log";
 import { parseFile } from "music-metadata";
 import crypto from "node:crypto";
 import fsp from "node:fs/promises";
 import path from "node:path";
 
+import { parseAbsolutePath, parseAbsolutePaths } from "../security/validation";
 import { channel } from "./channel";
 
 const exts = new Set([".mp3", ".flac", ".wav", ".m4a", ".aac", ".ogg", ".wma", ".aiff"]);
@@ -35,11 +35,11 @@ function isErrnoException(value: unknown): value is NodeJS.ErrnoException {
 }
 
 export function registerLocalMusicHandlers() {
-  ipcMain.handle(channel.localMusic.scan, async (_, dirs: string[]) => {
+  handleTrustedIpc(channel.localMusic.scan, async (_, dirs: string[]) => {
     const result: LocalMusicItem[] = [];
     if (!Array.isArray(dirs) || !dirs.length) return result;
     try {
-      for (const dir of dirs) {
+      for (const dir of parseAbsolutePaths(dirs)) {
         const files: string[] = [];
         await walk(dir, files);
         for (const file of files) {
@@ -76,12 +76,14 @@ export function registerLocalMusicHandlers() {
     return result;
   });
 
-  ipcMain.handle(channel.localMusic.deleteFile, async (_, filePath: string) => {
+  handleTrustedIpc(channel.localMusic.deleteFile, async (_, filePath: string) => {
     if (!filePath) return false;
     try {
-      const stat = await fsp.stat(filePath);
+      const targetPath = parseAbsolutePath(filePath);
+      if (!exts.has(path.extname(targetPath).toLowerCase())) return false;
+      const stat = await fsp.stat(targetPath);
       if (!stat.isFile()) return false;
-      await fsp.unlink(filePath);
+      await fsp.unlink(targetPath);
       return true;
     } catch (err) {
       if (isErrnoException(err) && err.code === "ENOENT") return false;
@@ -90,3 +92,4 @@ export function registerLocalMusicHandlers() {
     }
   });
 }
+import { handleTrustedIpc } from "../security/ipc";

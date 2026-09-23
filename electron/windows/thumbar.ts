@@ -1,9 +1,10 @@
-import { BrowserWindow, ipcMain, nativeImage } from "electron";
+import { BrowserWindow, nativeImage } from "electron";
 import path from "node:path";
 
 import { ELECTRON_ICON_BASE_PATH } from "@shared/path";
 
 import { channel } from "../ipc/channel";
+import { onTrustedIpc } from "../security/ipc";
 import { IconBase } from "../utils";
 
 const iconPrev = nativeImage.createFromPath(path.resolve(IconBase, ELECTRON_ICON_BASE_PATH, "prev.png"));
@@ -39,7 +40,7 @@ export function setupWindowsThumbar(win: BrowserWindow) {
   // 初始化按钮（默认未播放）
   ensureThumbBar(false);
 
-  ipcMain.on(channel.player.state, (_, isPlaying) => {
-    ensureThumbBar(!!isPlaying);
+  onTrustedIpc(channel.player.state, (_, isPlaying) => {
+    ensureThumbBar(isPlaying === true);
   });
 }

@@ -11,6 +11,7 @@ import { registerIpcHandlers } from "./ipc/index";
 import { destroyMiniPlayer } from "./mini-player";
 import { injectAuthCookie } from "./network/cookie";
 import { installWebRequestInterceptors } from "./network/interceptor";
+import { isTrustedAppNavigation } from "./security/validation";
 import { registerAllShortcuts, unregisterAllShortcuts } from "./shortcut";
 import { appSettingsStore } from "./store";
 import { autoUpdater, setupAutoUpdater, stopCheckForUpdates } from "./updater";
@@ -26,6 +27,8 @@ log.initialize();
 if (isDev) {
   // 为 chrome-devtools-mcp 开启远程调试端口
   app.commandLine.appendSwitch("remote-debugging-port", "");
+  // 开发环境暴露完整可访问性树，便于键盘与辅助技术回归测试。
+  app.commandLine.appendSwitch("force-renderer-accessibility");
   // 开发环境数据隔离
   app.setPath("userData", path.join(app.getPath("appData"), `biu-dev`));
 }
@@ -58,14 +61,21 @@ function createWindow() {
       webSecurity: true,
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
       devTools: isDev,
     },
   });
+
+  const indexPath = path.resolve(__dirname, "../dist/web/index.html");
 
   // 禁止通过中键/target=_blank/window.open 等方式在 Electron 中打开新窗口
   // 不影响当前窗口内的左键导航与其他鼠标按键行为
   mainWindow.webContents.setWindowOpenHandler(() => {
     return { action: "deny" };
+  });
+
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    if (!isTrustedAppNavigation(url, indexPath)) event.preventDefault();
   });
 
   // 禁止 Ctrl+R / Cmd+R 刷新页面
@@ -75,7 +85,6 @@ function createWindow() {
     }
   });
 
-  const indexPath = path.resolve(__dirname, "../dist/web/index.html");
   mainWindow.loadFile(indexPath);
 
   // 初始化 Windows 任务栏缩略按钮，并监听播放状态更新
@@ -149,6 +158,7 @@ if (!gotTheLock) {
 
     registerIpcHandlers({
       getMainWindow: () => mainWindow,
+      indexPath: path.resolve(__dirname, "../dist/web/index.html"),
     });
 
     setupAutoUpdater({

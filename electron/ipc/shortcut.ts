@@ -1,14 +1,16 @@
-import { globalShortcut, ipcMain } from "electron";
+import { globalShortcut } from "electron";
 
 import type { IpcHandlerProps } from "./types";
 
+import { parseShortcutCommand, parseShortcutRegistration } from "../security/validation";
 import { registerAllShortcuts, unregisterAllShortcuts } from "../shortcut";
 import { shortcutKeyStore } from "../store";
 import { channel } from "./channel";
 
 export function registerShortcutHandlers({ getMainWindow }: IpcHandlerProps) {
-  ipcMain.handle(channel.shortcut.register, (_, { accelerator, id }) => {
+  handleTrustedIpc(channel.shortcut.register, (_, payload) => {
     try {
+      const { accelerator, id } = parseShortcutRegistration(payload);
       const globalShortcuts = shortcutKeyStore.get("globalShortcuts");
       const oldShortcut = globalShortcuts.find(s => s.id === id)?.shortcut;
 
@@ -31,7 +33,8 @@ export function registerShortcutHandlers({ getMainWindow }: IpcHandlerProps) {
   });
 
   // 注销指定快捷键
-  ipcMain.handle(channel.shortcut.unregister, (_, id) => {
+  handleTrustedIpc(channel.shortcut.unregister, (_, id) => {
+    id = parseShortcutCommand(id);
     const globalShortcuts = shortcutKeyStore.get("globalShortcuts");
     const shortcut = globalShortcuts.find(s => s.id === id)?.shortcut;
     if (shortcut) {
@@ -39,11 +42,12 @@ export function registerShortcutHandlers({ getMainWindow }: IpcHandlerProps) {
     }
   });
 
-  ipcMain.handle(channel.shortcut.unregisterAll, () => {
+  handleTrustedIpc(channel.shortcut.unregisterAll, () => {
     unregisterAllShortcuts();
   });
 
-  ipcMain.handle(channel.shortcut.registerAll, () => {
+  handleTrustedIpc(channel.shortcut.registerAll, () => {
     registerAllShortcuts(getMainWindow);
   });
 }
+import { handleTrustedIpc } from "../security/ipc";
