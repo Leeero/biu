@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>04 本地音乐 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">全部目录</button>
+          <button class="tab">D 盘 · Lossless</button>
+          <button class="tab">E 盘 · Live 录音</button>
+        </nav>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索音乐视频或创作者" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="head-main">
+          <h1 class="page-title">本地音乐</h1>
+          <p class="page-lead page-lead--low">3 个目录 · 1,284 个文件 · 8 种可扫描格式（mp3 / flac / wav / m4a / aac / ogg / wma / aiff）</p>
+          <div class="filterbar filterbar--loose">
+            <button class="pill pill--primary">全部播放</button>
+            <button class="pill pill--secondary">随机播放</button>
+            <button class="pill pill--neutral">重新扫描</button>
+            <button class="pill pill--danger">从应用删除文件 · 二次确认</button>
+          </div>
+        </div>
+
+        <div class="format-grid">
+          <article class="format-card">
+            <div class="format-name" style="color: var(--c-fmt-flac)">FLAC</div>
+            <div class="format-title">夜航（Live 版）</div>
+            <div class="format-meta">04:15 · 38.4 MB · 创建于 2024-08-12</div>
+            <span class="badge">D 盘 · Lossless</span>
+          </article>
+
+          <article class="format-card">
+            <div class="format-name" style="color: var(--c-fmt-wav)">WAV</div>
+            <div class="format-title">器乐练习 07</div>
+            <div class="format-meta">06:02 · 62.1 MB · 创建于 2024-06-30</div>
+            <span class="badge">D 盘 · Lossless</span>
+          </article>
+
+          <article class="format-card">
+            <div class="format-name" style="color: var(--c-fmt-mp3)">MP3</div>
+            <div class="format-title">深夜电台 0921</div>
+            <div class="format-meta">03:48 · 8.7 MB · 创建于 2024-09-21</div>
+            <span class="badge">E 盘 · Live 录音</span>
+          </article>
+
+          <article class="format-card">
+            <div class="format-name" style="color: var(--c-fmt-aiff)">AIFF</div>
+            <div class="format-title">城市回声（母带）</div>
+            <div class="format-meta">05:30 · 55.9 MB · 创建于 2023-11-04</div>
+            <span class="badge">D 盘 · Lossless</span>
+          </article>
+
+          <article class="format-card">
+            <div class="format-name" style="color: var(--c-fmt-m4a)">M4A</div>
+            <div class="format-title">雨声采样 30min</div>
+            <div class="format-meta">30:00 · 28.8 MB · 创建于 2024-03-17</div>
+            <span class="badge">E 盘 · Live 录音</span>
+          </article>
+
+          <article class="format-card">
+            <div class="format-name" style="color: var(--c-fmt-wma)">WMA</div>
+            <div class="format-title">旧磁带转录 14</div>
+            <div class="format-meta">04:41 · 11.2 MB · 创建于 2022-05-09</div>
+            <span class="badge">E 盘 · Live 录音</span>
+          </article>
+        </div>
+
+        <p class="note note--lower">
+          本地音乐只产出 title / 格式 / 大小 / 时长 / 创建时间（LocalMusicItem 没有 artist、album、cover 字段），PRD 4.7 也明确不做封面匹配——所以本地音乐的载体是「格式 +
+          文件名 + 目录」这套真实元数据。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">雨声采样 30min</div>
+            <div class="pb-sub">
+              <span>本地文件 · E 盘 · Field 目录</span>
+              <span class="tag tag--plain">本地 · M4A</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 20.8%"></span></div>
+          <div class="pb-time">00:52 / 04:10</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

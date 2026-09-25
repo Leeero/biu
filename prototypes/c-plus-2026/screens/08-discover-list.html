@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>08 发现音乐 · 列表 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">音乐分区</button>
+          <button class="tab">单一模块</button>
+        </nav>
+        <span class="topbar-note">已下线: 流行 / 鬼畜</span>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索音乐视频或创作者" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="head-main">
+          <h1 class="page-title">发现音乐</h1>
+          <p class="page-lead">来自 B 站音乐分区（1003）的推荐与新歌，收敛为单一模块；列表 / 卡片 / 紧凑 三种展示模式共用同一份数据。</p>
+          <div class="filterbar">
+            <button class="pill pill--primary">全部播放</button>
+            <button class="pill pill--secondary">随机播放</button>
+            <button class="pill pill--neutral">B站音乐分区 · 1003</button>
+            <button class="pill pill--neutral">数据源 · 分区推荐 + 新歌</button>
+            <button class="pill pill--accent">显示模式 · 列表 ▾</button>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">B 站音乐分区最新推荐 · 5 条</h2>
+          </div>
+          <div class="tracklist">
+            <div class="track-head">
+              <span>#</span>
+              <span>标题</span>
+              <span>播放 · 点赞 · 弹幕</span>
+              <span class="track-cell--end">时长</span>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">01</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3a3a46, #1c1c22)"></div>
+                <div class="track-text">
+                  <div class="track-name">「神呀，接住她的眼泪吧」— 这一首歌完整版来啦</div>
+                  <div class="track-sub">音乐综合 · 创作激励计划</div>
+                </div>
+              </div>
+              <div class="track-cell">32.1 万 · 4.2 万 · 1,286</div>
+              <div class="track-cell track-cell--end">04:02</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">02</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3c3644, #1d1b22)"></div>
+                <div class="track-text">
+                  <div class="track-name">【猎 Hunter】「荒野求生的小曲」</div>
+                  <div class="track-sub">原创音乐 · 电子</div>
+                </div>
+              </div>
+              <div class="track-cell">33.4 万 · 5.1 万 · 964</div>
+              <div class="track-cell track-cell--end">03:18</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">03</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3d3a33, #1e1d19)"></div>
+                <div class="track-text">
+                  <div class="track-name">我有两颢搞丸！！！</div>
+                  <div class="track-sub">翻唱 · 鬼畜素材（已归入音乐分区）</div>
+                </div>
+              </div>
+              <div class="track-cell">18.7 万 · 2.9 万 · 2,431</div>
+              <div class="track-cell track-cell--end">02:47</div>
+            </div>
+
+            <div class="track-row is-current">
+              <div class="track-index">04</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #333c37, #191d1b)"></div>
+                <div class="track-text">
+                  <div class="track-name">录歌 和好朋友在学校的最后一个晚上</div>
+                  <div class="track-sub">校园音乐 · 翻唱</div>
+                </div>
+              </div>
+              <div class="track-cell">9.4 万 · 1.6 万 · 512</div>
+              <div class="track-cell track-cell--end">05:11</div>
+              <div class="track-actions">
+                <button class="round round--lead"><svg class="i"><use href="#i-play"></use></svg></button>
+                <span class="sep"></span>
+                <button class="round"><svg class="i"><use href="#i-prev"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-next"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-queue-add"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-heart"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-download"></use></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">05</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #343a42, #1a1d21)"></div>
+                <div class="track-text">
+                  <div class="track-name">AI 小潮 team 在「反乌托邦」里「拼接遗憾」</div>
+                  <div class="track-sub">音乐综合 · AI 翻唱</div>
+                </div>
+              </div>
+              <div class="track-cell">12.4 万 · 2.0 万 · 738</div>
+              <div class="track-cell track-cell--end">04:12</div>
+            </div>
+          </div>
+        </section>
+
+        <p class="note">
+          分区收敛：只保留 music（rid=1003）单一模块，原来并列的「流行」(getMusicComprehensiveWebRank) 与「鬼畜」(rid=1007) 从信息架构中移除。列表沿用 B
+          站真实字段（标题 / UP 主 / 播放量 / 时长），不与本地库混淆。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">「神呀，接住她的眼泪吧」</div>
+            <div class="pb-sub">
+              <span>音乐区 UP · 32.1 万播放</span>
+              <span class="tag tag--quality">无损 30251</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 22.5%"></span></div>
+          <div class="pb-time">00:54 / 04:02</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

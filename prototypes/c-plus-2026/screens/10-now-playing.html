@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>10 正在播放 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage stage--immersive">
+      <header class="topbar">
+        <span class="nowplaying-label">正在播放</span>
+        <div class="topbar-right">
+          <nav class="np-mode-seg">
+            <button class="tab">封面</button>
+            <button class="tab is-active">歌词</button>
+            <button class="tab">视频</button>
+          </nav>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="np-grid">
+          <div>
+            <div class="np-art">
+              <span class="badge">B站音乐分区 · 1003</span>
+              <span class="ratio-note">16:9 原始比例 · 不做方形裁切</span>
+            </div>
+            <p class="note note--inline">
+              沉浸的三处修正：① 封面按 16:9 原始比例呈现，不做方形裁切；② 音质档位（30216 / 30232 / 30280 / 30250 / 30251）与杜比全景声直接可切，不再披一层玻璃盖住；③
+              歌词多来源可切（B站字幕 / AI / LRC / 本地缓存），并把「视频」做成第三种视图——素材本来就是视频。
+            </p>
+          </div>
+
+          <div class="np-info">
+            <h1 class="np-title">「神呀，接住她的眼泪吧」</h1>
+            <div class="np-meta">
+              <span>音乐区 UP</span><span>32.1 万播放</span><span>2026-09-21 投稿</span>
+            </div>
+            <div class="np-meta">
+              <span>无损 30251</span><span>44.1 kHz</span><span>已缓存到本地</span><span>时长 04:02</span>
+            </div>
+            <div class="np-tags">
+              <button class="pill">音质 · 无损 30251 <svg class="i"><use href="#i-chevron-down"></use></svg></button>
+              <button class="pill">杜比全景声 · 30250</button>
+              <button class="pill">歌词 · B站字幕 / AI / LRC</button>
+            </div>
+
+            <div class="lyrics">
+              <div class="lyrics-head">歌词 · B站字幕（AI 兜底）· 逐行高亮</div>
+              <div class="lyrics-line">神呀 请接住她的眼泪吧</div>
+              <div class="lyrics-line">夜色把整座城市折成一封信</div>
+              <div class="lyrics-line is-current">我把没说出口的 都唱给你听</div>
+              <div class="lyrics-line">风穿过走廊 带走所有姓名</div>
+              <div class="lyrics-line">如果回声也算回答</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="np-bottom">
+          <div class="np-track">
+            <div class="bar"><span style="width: 44%"></span></div>
+          </div>
+          <div class="np-times"><span>01:48</span><span>04:02</span></div>
+          <div class="np-controls">
+            <button class="np-source"><svg class="i"><use href="#i-music"></use></svg>播放来源 · B站音乐分区</button>
+            <div class="np-transport">
+              <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+              <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+              <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+            </div>
+            <div class="np-right">
+              <button class="np-mode"><svg class="i"><use href="#i-repeat-one"></use></svg>循环 · 单曲</button>
+              <button class="np-mode"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

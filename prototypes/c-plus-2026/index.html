@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biu 2.0 · C+ 视觉稿索引与设计规范</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/spec.css" />
+  </head>
+  <body class="spec">
+    <div class="spec-wrap">
+      <!-- ============================ 页头 ============================ -->
+      <header class="spec-hero">
+        <div class="spec-brand">
+          <div class="mark">Biu</div>
+          <span class="name">Biu 2.0</span>
+          <span class="ver">C+ 视觉稿</span>
+        </div>
+
+        <p class="spec-eyebrow">C+ · 满幅剧场 · 能力可读版　Full-bleed Theater · Capability-readable</p>
+        <h1>方向 C+ · 满幅剧场 · 能力可读版</h1>
+        <p class="lede">保留 C 的沉浸语言，修掉三处前提错误，并补齐整条信息架构。</p>
+
+        <div class="spec-facts">
+          <span class="fact">设计稿 <b>14</b> 页</span>
+          <span class="fact">视觉稿 <b>12</b> 屏</span>
+          <span class="fact">画布 <b>1440 × 900</b></span>
+          <span class="fact">顶栏 <b>71</b> / 播放栏 <b>88</b></span>
+          <span class="fact">左右留白 <b>64</b></span>
+        </div>
+      </header>
+
+      <!-- ========================== 定性卡 =========================== -->
+      <section class="spec-sec" id="qualitative">
+        <h2>定性卡</h2>
+        <p class="sec-sub">设计稿第 01 页原文</p>
+
+        <div class="card">
+          <p class="card-lead">保留 C 的沉浸语言，修掉三处前提错误，并补齐整条信息架构。</p>
+          <p>
+            C 的问题不在审美，而在它把赌注押在「封面」与「无 UI」上——而这个项目的封面素材与操作密度都不支持这两个前提。
+          </p>
+
+          <article class="crit">
+            <div class="crit-num">01</div>
+            <div>
+              <h3>封面不是封面</h3>
+              <p>
+                音乐卡片与图片组件统一用 @672w_378h_1c 把 B 站图裁成 16:9 视频缩略图；本地音乐扫描器只取
+                title 与 duration，LocalMusicItem 里没有封面字段。
+              </p>
+              <p class="fix">瓦片改用真实 16:9 比例并挂来源徽标；无封面内容单独设计载体。</p>
+            </div>
+          </article>
+
+          <article class="crit">
+            <div class="crit-num">02</div>
+            <div>
+              <h3>能力被玻璃盖住了</h3>
+              <p>
+                单曲 8 项能力、播放列表 8 项能力、音频 8 档音质（含杜比全景声与无损）、下载 6 种状态，PRD
+                把「列表密度、右键菜单、批量操作」列为桌面原则。
+              </p>
+              <p class="fix">玻璃圆片扩充成玻璃操作带，直接露出播放 / 下一首 / 入队 / 收藏 / 下载音频。</p>
+            </div>
+          </article>
+
+          <article class="crit">
+            <div class="crit-num">03</div>
+            <div>
+              <h3>搜索说了兑现不了的话</h3>
+              <p>
+                web-interface-search-type 的 search_type 只有 video / bili_user，没有歌曲与歌单；PRD 4.3
+                明令不得承诺「搜索歌曲、专辑、歌手」，验收标准 14.2 亦然。
+              </p>
+              <p class="fix">Tab 收为「音乐视频 / 创作者」，搜索框文案改为「搜索音乐视频或创作者」。</p>
+            </div>
+          </article>
+
+          <p class="ia">
+            <b>信息架构：</b>我的音乐库（我创建 / 我收藏 / 本地目录 / 下载）与搜索为一级入口；发现音乐收敛为单一 B
+            站音乐分区（1003）模块，已下线 流行 / 鬼畜。C+ 专栏 12 屏覆盖全部一级页面与常驻能力（播放栏 / 播放队列 /
+            当前播放详情 / 设置）。
+          </p>
+        </div>
+      </section>
+
+      <!-- ========================= 12 屏索引 ========================= -->
+      <section class="spec-sec" id="screens">
+        <h2>12 屏索引</h2>
+        <p class="sec-sub">点击任一屏进入 1440 × 900 原始画布（等比缩放居中）</p>
+
+        <div class="screen-grid">
+          <a class="screen-card" href="screens/01-library.html">
+            <div class="shot"><img src="thumbs/01-library.png" alt="01 我的音乐库" loading="lazy" /></div>
+            <div class="cap"><span class="no">01</span><span class="nm">我的音乐库</span><span class="en">Library</span></div>
+          </a>
+          <a class="screen-card" href="screens/02-playlist-detail.html">
+            <div class="shot"><img src="thumbs/02-playlist-detail.png" alt="02 播放列表详情" loading="lazy" /></div>
+            <div class="cap"><span class="no">02</span><span class="nm">我的收藏 · 详情</span><span class="en">Playlist</span></div>
+          </a>
+          <a class="screen-card" href="screens/03-watch-later.html">
+            <div class="shot"><img src="thumbs/03-watch-later.png" alt="03 稍后播放" loading="lazy" /></div>
+            <div class="cap"><span class="no">03</span><span class="nm">稍后播放</span><span class="en">Watch later</span></div>
+          </a>
+          <a class="screen-card" href="screens/04-local-music.html">
+            <div class="shot"><img src="thumbs/04-local-music.png" alt="04 本地音乐" loading="lazy" /></div>
+            <div class="cap"><span class="no">04</span><span class="nm">本地音乐</span><span class="en">Local music</span></div>
+          </a>
+          <a class="screen-card" href="screens/05-downloads.html">
+            <div class="shot"><img src="thumbs/05-downloads.png" alt="05 下载管理" loading="lazy" /></div>
+            <div class="cap"><span class="no">05</span><span class="nm">下载管理</span><span class="en">Downloads</span></div>
+          </a>
+          <a class="screen-card" href="screens/06-search.html">
+            <div class="shot"><img src="thumbs/06-search.png" alt="06 搜索结果" loading="lazy" /></div>
+            <div class="cap"><span class="no">06</span><span class="nm">搜索结果</span><span class="en">Search</span></div>
+          </a>
+          <a class="screen-card" href="screens/07-discover-card.html">
+            <div class="shot"><img src="thumbs/07-discover-card.png" alt="07 发现音乐 · 卡片" loading="lazy" /></div>
+            <div class="cap"><span class="no">07</span><span class="nm">发现音乐 · 卡片</span><span class="en">Discover · card</span></div>
+          </a>
+          <a class="screen-card" href="screens/08-discover-list.html">
+            <div class="shot"><img src="thumbs/08-discover-list.png" alt="08 发现音乐 · 列表" loading="lazy" /></div>
+            <div class="cap"><span class="no">08</span><span class="nm">发现音乐 · 列表</span><span class="en">Discover · list</span></div>
+          </a>
+          <a class="screen-card" href="screens/09-queue.html">
+            <div class="shot"><img src="thumbs/09-queue.png" alt="09 播放队列" loading="lazy" /></div>
+            <div class="cap"><span class="no">09</span><span class="nm">播放队列</span><span class="en">Queue</span></div>
+          </a>
+          <a class="screen-card" href="screens/10-now-playing.html">
+            <div class="shot"><img src="thumbs/10-now-playing.png" alt="10 正在播放" loading="lazy" /></div>
+            <div class="cap"><span class="no">10</span><span class="nm">正在播放 · 沉浸</span><span class="en">Now playing</span></div>
+          </a>
+          <a class="screen-card" href="screens/11-settings.html">
+            <div class="shot"><img src="thumbs/11-settings.png" alt="11 设置" loading="lazy" /></div>
+            <div class="cap"><span class="no">11</span><span class="nm">设置</span><span class="en">Settings</span></div>
+          </a>
+          <a class="screen-card" href="screens/12-mini-player.html">
+            <div class="shot"><img src="thumbs/12-mini-player.png" alt="12 迷你播放器与系统集成" loading="lazy" /></div>
+            <div class="cap"><span class="no">12</span><span class="nm">迷你播放器</span><span class="en">Mini player</span></div>
+          </a>
+        </div>
+      </section>
+
+      <!-- =========================== 色板 ============================ -->
+      <section class="spec-sec" id="palette">
+        <h2>色板</h2>
+        <p class="sec-sub">沿用 C 的语言，仅补真实能力色 · 设计稿第 14 页原文</p>
+
+        <div class="swatches">
+          <div class="swatch">
+            <div class="chip" style="background: #000000"></div>
+            <div class="meta"><code>#000000</code><div class="use">影像底</div></div>
+          </div>
+          <div class="swatch">
+            <div class="chip" style="background: rgba(255, 255, 255, 0.16)"></div>
+            <div class="meta"><code>white 16%</code><div class="use">玻璃圆片</div></div>
+          </div>
+          <div class="swatch">
+            <div class="chip" style="background: #ffffff"></div>
+            <div class="meta"><code>#FFFFFF</code><div class="use">主文字与播放键</div></div>
+          </div>
+          <div class="swatch">
+            <div class="chip" style="background: #cccccc"></div>
+            <div class="meta"><code>#CCCCCC</code><div class="use">次文字</div></div>
+          </div>
+          <div class="swatch">
+            <div class="chip" style="background: #2997ff"></div>
+            <div class="meta"><code>#2997FF</code><div class="use">强调</div></div>
+          </div>
+          <div class="swatch">
+            <div class="chip" style="background: #d2d2d7"></div>
+            <div class="meta"><code>#D2D2D7</code><div class="use">胶片灰</div></div>
+          </div>
+        </div>
+
+        <p class="sec-sub" style="margin: 40px 0 16px">补充真实能力色</p>
+        <div class="fmt-row">
+          <span class="fmt-chip"><i style="background: #5ab4ff"></i>音质徽标<code>#5AB4FF</code></span>
+          <span class="fmt-chip"><i style="background: #2997ff"></i>本地目录徽标<code>#2997FF</code></span>
+          <span class="fmt-chip"><i style="background: #ff6b6b"></i>危险操作<code>#FF6B6B</code></span>
+        </div>
+
+        <p class="sec-sub" style="margin: 32px 0 16px">本地格式色</p>
+        <div class="fmt-row">
+          <span class="fmt-chip"><i style="background: #5ab4ff"></i>FLAC<code>#5AB4FF</code></span>
+          <span class="fmt-chip"><i style="background: #7ed8a8"></i>WAV<code>#7ED8A8</code></span>
+          <span class="fmt-chip"><i style="background: #e5c07b"></i>AIFF<code>#E5C07B</code></span>
+          <span class="fmt-chip"><i style="background: #b99be8"></i>M4A<code>#B99BE8</code></span>
+          <span class="fmt-chip"><i style="background: #c8c8ce"></i>MP3<code>#C8C8CE</code></span>
+          <span class="fmt-chip"><i style="background: #c8c8ce"></i>WMA<code>#C8C8CE</code></span>
+        </div>
+      </section>
+
+      <!-- =========================== 排版 ============================ -->
+      <section class="spec-sec" id="type">
+        <h2>排版</h2>
+        <p class="sec-sub">正文族 -apple-system / SF Pro / PingFang SC，数字用 SF Pro Display 表格式数字</p>
+
+        <div class="type-row">
+          <div class="type-spec"><b>满幅标题</b>56 / 600 · lh 1.16 · ls -1px</div>
+          <div class="t-page-title">封面即界面 夜航</div>
+        </div>
+        <div class="type-row">
+          <div class="type-spec"><b>曲名</b>40 / 600 · lh 1.2 · ls -0.8px</div>
+          <div class="t-track-title">「神呀，接住她的眼泪吧」</div>
+        </div>
+        <div class="type-row">
+          <div class="type-spec"><b>歌词与浮层小字</b>17 / 400 · lh 1.62</div>
+          <div class="t-small">夜色把整座城市折成一封信，风穿过走廊 带走所有姓名。</div>
+        </div>
+        <div class="type-row">
+          <div class="type-spec"><b>标签与徽标</b>13 / 400</div>
+          <div class="t-label">无损 30251 · 44.1 kHz · 已缓存到本地 · 杜比全景声 30250</div>
+        </div>
+      </section>
+
+      <!-- ======================== 材质与形态 ========================= -->
+      <section class="spec-sec" id="material">
+        <h2>材质与形态</h2>
+        <p class="sec-sub">设计稿第 14 页原文 · 遮罩与圆角都有明确职责边界</p>
+
+        <div class="mat-grid">
+          <div class="mat">
+            <div class="mat-demo is-radius"><span>0 满幅影像 / 999 圆片</span></div>
+            <h4>圆角</h4>
+            <p>0 满幅影像 / 999 圆片，界面里没有直角卡片。面板 <code>20</code>、瓦片 <code>12</code>、药丸 <code>999</code>。</p>
+          </div>
+          <div class="mat">
+            <div class="mat-demo is-scrim"></div>
+            <h4>遮罩</h4>
+            <p>只用于可读性：统一 <code>26%</code> + 底部渐隐，不作为装饰。</p>
+          </div>
+          <div class="mat">
+            <div class="mat-demo is-glass"></div>
+            <h4>玻璃圆片</h4>
+            <p>白 <code>16%</code> + 描边白 + 背景模糊 <code>20</code>。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================== 骨架几何（实测） ====================== -->
+      <section class="spec-sec" id="geometry">
+        <h2>骨架几何</h2>
+        <p class="sec-sub">
+          由设计稿 PNG 逐像素量得（原始 2200 × 1375，换算 1440 × 900 画布），并以无头 Chrome 回环校验。
+          全部数值落在 <code>assets/tokens.css</code>。
+        </p>
+
+        <div class="geo-wrap">
+          <table class="geo">
+            <thead>
+              <tr><th>项目</th><th>数值</th><th>令牌</th><th>说明</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>画布</td><td>1440 × 900</td><td><code>--stage-w / --stage-h</code></td><td>等比缩放居中，任何窗口下比例一致</td></tr>
+              <tr><td>顶栏 / 播放栏</td><td>71 / 88</td><td><code>--topbar-h / --playbar-h</code></td><td>常驻两层，内容区弹性填充</td></tr>
+              <tr><td>左右留白</td><td>64</td><td><code>--gutter</code></td><td>标题、列表、注解带统一对齐</td></tr>
+              <tr><td>列表行高</td><td>68</td><td><code>--row-h</code></td><td>行与行之间无分隔线</td></tr>
+              <tr><td>行内缩略图</td><td>100 × 56（16:9）</td><td><code>--art-w / --art-h</code></td><td>B 站图按 16:9 承载，不方形裁切</td></tr>
+              <tr><td>图 → 文间距</td><td>31</td><td><code>--track-gap</code></td><td>标题 / 副标题左边界</td></tr>
+              <tr><td>右侧两列</td><td>220 + 152</td><td><code>--col4 / --col5</code></td><td>来源 / 时长（时长列右对齐）</td></tr>
+              <tr><td>列表右缩进</td><td>40</td><td><code>--list-pad-r</code></td><td>与操作带的右边界</td></tr>
+              <tr><td>筛选条</td><td>48 容器 + 36 药丸</td><td><code>--r-pill</code></td><td>6px 内边距，药丸间距 4</td></tr>
+              <tr><td>沉浸态封面</td><td>639 × 359</td><td>—</td><td>16:9 原始比例，不做方形裁切</td></tr>
+              <tr><td>沉浸态底部</td><td>进度 y700 / 控制带 752–808</td><td>—</td><td>无独立播放栏，节奏内嵌</td></tr>
+              <tr><td>注解带</td><td>top 598 / 653 / 693 / 694 / 698 / 704</td><td><code>.note--*</code></td><td>逐屏实测回环校正，非视觉估算</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =========================== 页脚 ============================ -->
+      <footer class="spec-foot">
+        <span>Biu 2.0 · C+ 视觉稿转换</span>
+        <span>源文件：Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）</span>
+        <a href="screens/01-library.html">从第 01 屏开始 →</a>
+      </footer>
+    </div>
+  </body>
+</html>

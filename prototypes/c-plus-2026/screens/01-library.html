@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>01 我的音乐库 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <!-- 顶栏 -->
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">我的歌单</button>
+          <button class="tab">我收藏的</button>
+          <button class="tab">发现音乐</button>
+        </nav>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索音乐视频或创作者" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <!-- 内容 -->
+      <main class="content">
+        <div class="page-head">
+          <div class="head-main">
+            <h1 class="page-title">我的音乐库</h1>
+            <p class="page-lead page-lead--low">6 个播放列表 · 214 首 · 我创建 4 / 我收藏 2</p>
+            <div class="filterbar filterbar--tight">
+              <button class="pill pill--primary">全部播放</button>
+              <button class="pill pill--secondary">随机播放</button>
+              <button class="pill pill--neutral">音质偏好 · 无损优先（8 档）</button>
+            </div>
+          </div>
+          <section class="panel">
+            <p class="panel-eyebrow">库概览</p>
+            <ul class="panel-list">
+              <li>6 个播放列表 · 我创建 4 / 我收藏 2</li>
+              <li>3 个本地目录 · 1,284 个文件</li>
+              <li>214 首 · 音质偏好 无损优先</li>
+              <li>下载完成 18 · 进行中 2</li>
+            </ul>
+          </section>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">我创建的 · 4 个播放列表</h2>
+          </div>
+          <div class="grid">
+            <article class="tile" style="--tile-art: linear-gradient(150deg, #30303a, #1a1a1f)">
+              <div class="tile-art"></div>
+              <span class="badge">收藏夹</span>
+              <div class="tile-copy">
+                <div class="tile-title">夜航电子</div>
+                <div class="tile-meta">42 首 · 3 小时 12 分</div>
+              </div>
+            </article>
+            <article class="tile" style="--tile-art: linear-gradient(150deg, #383644, #1c1b22)">
+              <div class="tile-art"></div>
+              <span class="badge">合集</span>
+              <div class="tile-copy">
+                <div class="tile-title">器乐练习</div>
+                <div class="tile-meta">28 首 · 2 小时 04 分</div>
+              </div>
+            </article>
+            <article class="tile" style="--tile-art: linear-gradient(150deg, #333940, #191d20)">
+              <div class="tile-art"></div>
+              <span class="badge">系列</span>
+              <div class="actionband">
+                <button class="round round--lead"><svg class="i"><use href="#i-play"></use></svg></button>
+                <span class="sep"></span>
+                <button class="round"><svg class="i"><use href="#i-next"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-queue-add"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-heart"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-download"></use></svg></button>
+              </div>
+              <div class="tile-copy">
+                <div class="tile-title">Live 现场</div>
+                <div class="tile-meta">19 首 · 1 小时 38 分</div>
+              </div>
+            </article>
+            <article class="tile" style="--tile-art: linear-gradient(150deg, #3b352c, #201d18)">
+              <div class="tile-art"></div>
+              <span class="badge badge--dir">本地目录</span>
+              <div class="tile-copy">
+                <div class="tile-title">本地无损库</div>
+                <div class="tile-meta">56 首 · 4 小时 05 分 · FLAC</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">我收藏的 · 2 个播放列表</h2>
+          </div>
+          <div class="grid">
+            <article class="tile" style="--tile-art: linear-gradient(150deg, #30303a, #1a1a1f)">
+              <div class="tile-art"></div>
+              <span class="badge">收藏夹</span>
+              <div class="tile-copy">
+                <div class="tile-title">深夜循环</div>
+                <div class="tile-meta">63 首 · 无损</div>
+              </div>
+            </article>
+            <article class="tile" style="--tile-art: linear-gradient(150deg, #383644, #1c1b22)">
+              <div class="tile-art"></div>
+              <span class="badge">合集</span>
+              <div class="tile-copy">
+                <div class="tile-title">睡前歌单</div>
+                <div class="tile-meta">31 首 · 无损</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <p class="note note--low">
+          悬停或选中瓦片：玻璃操作带直接露出 5 个主操作（播放 / 下一首 / 入队 / 收藏 / 下载音频），其余进入右键菜单——每个
+          Track 的 8 项能力都有落点。
+        </p>
+      </main>
+
+      <!-- 播放栏 -->
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">夜航</div>
+            <div class="pb-sub">
+              <span>NOISE_LAB</span>
+              <span class="tag tag--quality">无损 30251</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 20.8%"></span></div>
+          <div class="pb-time">00:52 / 04:10</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

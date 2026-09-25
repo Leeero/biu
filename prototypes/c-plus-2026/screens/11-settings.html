@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>11 设置 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">常规</button>
+          <button class="tab">播放</button>
+          <button class="tab">高级</button>
+        </nav>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索音乐视频或创作者" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="head-main">
+            <h1 class="page-title">设置</h1>
+            <p class="page-lead">六组设置收敛为一个入口：常规 / 播放 / 下载与本地 / 快捷键 / 高级 / 关于。</p>
+            <div class="filterbar">
+              <button class="pill pill--primary">跟随系统</button>
+              <button class="pill pill--neutral">浅色</button>
+              <button class="pill pill--neutral">深色</button>
+              <button class="pill pill--neutral">导入 / 导出设置</button>
+              <button class="pill pill--accent">检查更新 · v2.0.4</button>
+            </div>
+          </div>
+          <section class="panel">
+            <p class="panel-eyebrow">当前配置</p>
+            <ul class="panel-list">
+              <li>主题 · 深色 · 密度 · 标准</li>
+              <li>音质 · 自动（最高可用）</li>
+            </ul>
+          </section>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">常规 · 界面与启动</h2>
+          </div>
+          <div class="tracklist tracklist--settings settinglist">
+            <div class="setting-row">
+              <div class="track-index">01</div>
+              <div class="setting-icon"><svg class="i"><use href="#i-gear"></use></svg></div>
+              <div>
+                <div class="setting-name">常规</div>
+                <div class="setting-desc">主题 · 字体 · 页面密度 · 关闭窗口行为 · 开机启动</div>
+              </div>
+              <div class="track-cell">跟随系统 · 标准</div>
+              <div class="track-cell track-cell--end">5 项</div>
+            </div>
+
+            <div class="setting-row">
+              <div class="track-index">02</div>
+              <div class="setting-icon"><svg class="i"><use href="#i-music"></use></svg></div>
+              <div>
+                <div class="setting-name">播放</div>
+                <div class="setting-desc">音质偏好 · 默认播放模式 · 随机保持分P顺序 · 播放历史上报</div>
+              </div>
+              <div class="track-cell">自动（最高可用）</div>
+              <div class="track-cell track-cell--end">4 项</div>
+            </div>
+
+            <div class="setting-row">
+              <div class="track-index">03</div>
+              <div class="setting-icon"><svg class="i"><use href="#i-folder"></use></svg></div>
+              <div>
+                <div class="setting-name">下载与本地</div>
+                <div class="setting-desc">下载目录 · 本地音乐目录 · FFmpeg 路径（高级）</div>
+              </div>
+              <div class="track-cell">~/Music/Biu</div>
+              <div class="track-cell track-cell--end">3 项</div>
+            </div>
+
+            <div class="setting-row">
+              <div class="track-index">04</div>
+              <div class="setting-icon"><svg class="i"><use href="#i-sparkle"></use></svg></div>
+              <div>
+                <div class="setting-name">快捷键</div>
+                <div class="setting-desc">应用内与全局快捷键 · 启用开关 · 冲突检测</div>
+              </div>
+              <div class="track-cell is-danger">2 处冲突</div>
+              <div class="track-cell track-cell--end">11 项</div>
+            </div>
+
+            <div class="setting-row">
+              <div class="track-index">05</div>
+              <div class="setting-icon"><svg class="i"><use href="#i-external"></use></svg></div>
+              <div>
+                <div class="setting-name">高级 · 关于</div>
+                <div class="setting-desc">网络代理 · 自定义主色与圆角 · 设置导入导出 · 版本与更新</div>
+              </div>
+              <div class="track-cell">v2.0.4</div>
+              <div class="track-cell track-cell--end">6 项</div>
+            </div>
+          </div>
+        </section>
+
+        <p class="note">
+          设置收敛为六个 Tab（settings/index.tsx）：常规 / 播放 / 下载与本地 / 快捷键 / 高级 / 关于。FFmpeg 路径、网络代理、自定义主色与圆角下沉到「高级」；快捷键保存 isConflict 冲突标记。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">《雨落长街》· 全专上线</div>
+            <div class="pb-sub">
+              <span>卧室音乐计划 · 新碟 Banner</span>
+              <span class="tag tag--quality">无损 30251</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 36%"></span></div>
+          <div class="pb-time">01:22 / 03:48</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

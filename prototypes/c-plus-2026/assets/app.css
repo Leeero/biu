@@ -1,0 +1,2126 @@
+/* ============================================================================
+   Biu 2.0 · C+ 应用外壳与通用组件
+   —— 顶栏 / 播放栏 / 筛选条 / 药丸 / 瓦片 / 轨道行 / 玻璃面板
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--c-app-bg);
+  color: var(--c-text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow: hidden;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+svg.i {
+  width: 1em;
+  height: 1em;
+  display: block;
+  flex: none;
+  fill: currentColor;
+}
+
+/* ---- 舞台：视觉稿固定 1440 × 900，等比缩放居中 ------------------------ */
+.stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(255, 255, 255, 0.022), transparent 58%),
+    radial-gradient(110% 80% at 92% 100%, rgba(90, 140, 255, 0.03), transparent 62%),
+    var(--c-app-bg);
+  transform-origin: 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   顶部栏
+   ========================================================================== */
+.topbar {
+  flex: none;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 38px;
+  padding: 0 22px 0 34px;
+  position: relative;
+  z-index: var(--z-topbar);
+  background: linear-gradient(to bottom, #1a1a1c 0%, var(--c-topbar) 46%, #131315 100%);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+.brand {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  flex: none;
+}
+
+.brand-sub {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-text-2);
+  flex: none;
+}
+
+/* 顶栏分段控件：40px 容器，8px 内边距，药丸 999 */
+.tabgroup {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.09);
+  flex: none;
+}
+
+.tab {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 22px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-label);
+  color: #c8c8ce;
+  white-space: nowrap;
+  transition: background var(--ease-fast), color var(--ease-fast);
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tab.is-active {
+  background: #f2f2f2;
+  color: #0a0a0c;
+  font-weight: 600;
+}
+
+.tab .count {
+  color: var(--c-text-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.tab.is-active .count {
+  color: #6e6e73;
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  flex: none;
+}
+
+.search {
+  width: 400px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 0 16px;
+  border-radius: var(--r-field);
+  background: var(--surface-field);
+  color: var(--c-text-4);
+}
+
+.search .i {
+  font-size: 20px;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-size: var(--fs-meta);
+  color: var(--c-text);
+}
+
+.search input::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.search kbd {
+  flex: none;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.28);
+  color: #c8c8ce;
+  font: inherit;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.2px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex: none;
+  background: radial-gradient(120% 120% at 30% 20%, #55555a, #2f2f33);
+}
+
+/* ==========================================================================
+   内容区
+   ========================================================================== */
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 33px var(--gutter) 0;
+  position: relative;
+}
+
+.page-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* 标题列比右侧玻璃面板低 11px，构成设计稿中的错位基线 */
+.head-main {
+  padding-top: 11px;
+  min-width: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  line-height: var(--lh-page-title);
+  letter-spacing: -1px;
+}
+
+.page-lead {
+  margin: 8px 0 0;
+  font-size: var(--fs-lead);
+  line-height: 28px;
+  color: var(--c-text-2);
+  letter-spacing: -0.2px;
+}
+
+/* 玻璃面板：白 16% + 描边白 + 背景模糊 20 */
+.panel {
+  border-radius: var(--r-panel);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--blur-glass));
+  padding: 20px 22px;
+}
+
+.panel-eyebrow {
+  margin: 0 0 4px;
+  font-size: var(--fs-small);
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--c-text-2);
+}
+
+.panel-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-small);
+  line-height: 27px;
+  color: var(--c-text);
+}
+
+.panel-list b {
+  font-weight: 600;
+}
+
+/* ---- 筛选条：48px 容器 + 6px 内边距 + 36px 药丸 ----------------------- */
+.filterbar {
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 48px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-sunken);
+}
+
+.pill {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-label);
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: background var(--ease-fast);
+}
+
+.pill .i {
+  font-size: 15px;
+}
+
+/* 主操作 */
+.pill--primary {
+  background: #f2f2f2;
+  color: #0a0a0c;
+  font-weight: 600;
+}
+
+/* 次操作 */
+.pill--secondary {
+  background: rgba(255, 255, 255, 0.24);
+  color: var(--c-text);
+  font-weight: 500;
+}
+
+/* 中性 / 带外框 */
+.pill--neutral {
+  background: rgba(255, 255, 255, 0.17);
+  color: var(--c-text-2);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* 已生效的筛选条件 */
+.pill--accent {
+  background: rgba(41, 151, 255, 0.22);
+  color: #7cbcff;
+  font-weight: 500;
+}
+
+.pill--danger {
+  background: rgba(255, 107, 107, 0.16);
+  color: var(--c-danger);
+  border-color: rgba(255, 107, 107, 0.32);
+}
+
+.pill--ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--c-text-2);
+}
+
+/* ---- 分组标题 -------------------------------------------------------- */
+.section {
+  margin-top: 20px;
+}
+
+.section + .section {
+  margin-top: 27px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--c-text);
+}
+
+.section-note {
+  font-size: var(--fs-label);
+  color: var(--c-text-4);
+}
+
+/* ---- 瓦片网格：4 列 / 20px 间距 / 16:9 --------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* 瓦片：真实 16:9，压 26% 遮罩 + 底部渐隐 */
+.tile {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-tile);
+  overflow: hidden;
+  isolation: isolate;
+  background: #1c1c20;
+  cursor: pointer;
+}
+
+.tile-art {
+  position: absolute;
+  inset: 0;
+  background: var(--tile-art, linear-gradient(150deg, #2f2f37, #17171b));
+}
+
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scrim-veil);
+  pointer-events: none;
+}
+
+.tile-copy {
+  position: absolute;
+  z-index: 2;
+  left: 20px;
+  right: 20px;
+  bottom: 16px;
+}
+
+.tile-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.tile-meta {
+  margin-top: 6px;
+  font-size: var(--fs-meta);
+  color: var(--c-text-2);
+}
+
+/* 来源徽标 */
+.badge {
+  position: absolute;
+  z-index: 2;
+  left: 12px;
+  top: 12px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: var(--r-chip);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: var(--fs-micro);
+  color: var(--c-text);
+}
+
+.badge--dir {
+  color: var(--c-dir);
+  background: rgba(41, 151, 255, 0.16);
+  border-color: rgba(41, 151, 255, 0.24);
+}
+
+/* 玻璃操作带：悬停 / 选中时露出 5 个主操作 */
+.actionband {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+.actionband .round {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--c-text);
+  font-size: 17px;
+  transition: background var(--ease-fast);
+}
+
+.actionband .round:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.actionband .round--lead {
+  background: #fff;
+  color: #0a0a0c;
+  font-size: 19px;
+}
+
+.actionband .round--lead:hover {
+  background: #e8e8ea;
+}
+
+.actionband .sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.22);
+  margin: 0 2px;
+}
+
+/* ==========================================================================
+   轨道行（列表）
+   ========================================================================== */
+.tracklist {
+  --cols: 56px minmax(0, 1fr) var(--col4) var(--col5);
+  display: flex;
+  flex-direction: column;
+}
+
+.tracklist--stats {
+  --cols: 56px minmax(0, 1fr) 240px var(--col5);
+}
+
+.tracklist--download {
+  --cols: 56px minmax(0, 1fr) 220px var(--col5);
+}
+
+.tracklist--settings {
+  --cols: 56px 121px minmax(0, 1fr) var(--col4) var(--col5);
+}
+
+.tracklist--mini {
+  --cols: 56px minmax(0, 1fr) 300px var(--col5);
+}
+
+.track-head {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  height: 44px;
+  padding-right: var(--list-pad-r);
+  font-size: var(--fs-micro);
+  color: var(--c-text-4);
+  position: relative;
+}
+
+.track-row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  height: var(--row-h);
+  padding-right: var(--list-pad-r);
+  position: relative;
+}
+
+/* 选中 / 悬停：整行铺满内容宽度，上下各留 2px */
+.track-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2px;
+  bottom: 2px;
+  border-radius: var(--r-chip);
+  background: transparent;
+  pointer-events: none;
+}
+
+.track-row:hover::before {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.track-row.is-current::before {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.track-row > * {
+  position: relative;
+  z-index: 1;
+}
+
+.track-index {
+  font-size: var(--fs-label);
+  color: var(--c-text-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.track-main {
+  display: flex;
+  align-items: center;
+  gap: var(--track-gap);
+  min-width: 0;
+}
+
+.track-art {
+  width: var(--art-w);
+  height: var(--art-h);
+  flex: none;
+  border-radius: 6px;
+  background: var(--tile-art, linear-gradient(150deg, #2f2f37, #17171b));
+}
+
+.track-art--disc {
+  border-radius: 50%;
+  background: radial-gradient(120% 120% at 30% 25%, #4a4a52, #1c1c21 70%);
+}
+
+.track-text {
+  min-width: 0;
+}
+
+.track-name {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-sub {
+  margin-top: 6px;
+  font-size: var(--fs-label);
+  color: var(--c-text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-cell {
+  font-size: var(--fs-label);
+  color: var(--c-text-4);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-cell--end {
+  text-align: right;
+}
+
+/* 行内悬浮操作带 */
+.track-actions {
+  position: absolute;
+  z-index: 3;
+  right: 24px;
+  top: 50%;
+  translate: 0 -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+.track-actions .round {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--c-text);
+  font-size: 15px;
+}
+
+.track-actions .round--lead {
+  width: 38px;
+  height: 38px;
+  background: #fff;
+  color: #0a0a0c;
+  font-size: 17px;
+}
+
+.track-actions .sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 2px;
+}
+
+/* 状态与进度 */
+.progress-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-inline .bar {
+  width: 190px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.progress-inline .bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--c-accent);
+}
+
+.progress-inline .pct {
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 小徽标 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.tag--quality {
+  color: var(--c-quality);
+  background: rgba(90, 180, 255, 0.14);
+  border-color: rgba(90, 180, 255, 0.24);
+}
+
+.tag--accent {
+  color: #7cbcff;
+  background: rgba(41, 151, 255, 0.18);
+  border-color: rgba(41, 151, 255, 0.26);
+}
+
+.tag--plain {
+  color: var(--c-text-2);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.tag--danger {
+  color: var(--c-danger);
+  background: rgba(255, 107, 107, 0.16);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.tag--ok {
+  color: #7ed8a8;
+  background: rgba(126, 216, 168, 0.14);
+  border-color: rgba(126, 216, 168, 0.24);
+}
+
+/* 创作者行 */
+.creator-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 110px;
+  align-items: center;
+  gap: 16px;
+  min-height: 74px;
+  border-top: 1px solid var(--line-weak);
+}
+
+.creator-face {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(120% 120% at 30% 25%, #4d4d55, #1e1e23 72%);
+}
+
+.follow {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--c-text);
+  justify-self: end;
+}
+
+.follow.is-on {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: transparent;
+  color: var(--c-text-4);
+}
+
+/* ---- 本地音乐格式卡：646 × 130，两列 20 间距 -------------------------- */
+.format-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.format-card {
+  position: relative;
+  height: 130px;
+  border-radius: var(--r-tile);
+  background: var(--surface);
+  border: 1px solid var(--line-weak);
+  padding: 22px 28px 20px;
+}
+
+.format-name {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  line-height: 36px;
+  font-family: var(--font-num);
+}
+
+.format-title {
+  margin-top: 2px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  letter-spacing: -0.3px;
+}
+
+.format-meta {
+  font-size: var(--fs-label);
+  line-height: 20px;
+  color: var(--c-text-4);
+}
+
+.format-card .badge {
+  left: auto;
+  right: 16px;
+  top: 16px;
+}
+
+/* ---- 大卡（新碟 banner） ---------------------------------------------- */
+.hero-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 420px minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 32px;
+  padding: 24px;
+  border-radius: var(--r-panel);
+  background: var(--surface);
+  border: 1px solid var(--line-weak);
+}
+
+.hero-art {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-tile);
+  overflow: hidden;
+  background: linear-gradient(150deg, #2b3550, #14161d);
+}
+
+.hero-art .badge {
+  left: 12px;
+  top: 12px;
+}
+
+.hero-art .ratio-note {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  font-size: var(--fs-micro);
+  color: var(--c-text-4);
+}
+
+.hero-body .tag {
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1.24;
+}
+
+.hero-meta {
+  margin-top: 12px;
+  font-size: var(--fs-small);
+  color: var(--c-text-2);
+}
+
+.hero-tags {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-play {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: #fff;
+  color: #0a0a0c;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  justify-self: center;
+}
+
+/* ---- 发现音乐 · 方形专辑卡 ------------------------------------------- */
+.album-card {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  padding: 18px;
+  border-radius: var(--r-panel);
+  background: var(--surface);
+  border: 1px solid var(--line-weak);
+}
+
+.album-art {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  flex: none;
+  border-radius: var(--r-tile);
+  overflow: hidden;
+  background: var(--tile-art, linear-gradient(150deg, #2f2f37, #17171b));
+}
+
+.album-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.album-tag {
+  margin-bottom: 12px;
+}
+
+.album-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.album-meta {
+  margin-top: 8px;
+  font-size: var(--fs-label);
+  color: var(--c-text-4);
+}
+
+.album-foot {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- 设置分组行：行高 68 / 图标 40 × 40 ------------------------------ */
+.setting-row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  height: var(--row-h);
+  padding-right: var(--list-pad-r);
+}
+
+.setting-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(150deg, #2b3550, #171a24);
+  color: #7cbcff;
+  font-size: 20px;
+}
+
+.setting-name {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.setting-desc {
+  margin-top: 4px;
+  font-size: var(--fs-label);
+  line-height: 20px;
+  color: var(--c-text-4);
+}
+
+/* ---- 迷你播放器预览 --------------------------------------------------- */
+.mini {
+  width: 100%;
+  border-radius: var(--r-tile);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
+  padding: 14px 16px;
+}
+
+.mini-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.mini-art {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 8px;
+  background: linear-gradient(150deg, #3a3a44, #1a1a1f);
+}
+
+.mini-name {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-sub {
+  margin-top: 4px;
+  font-size: var(--fs-micro);
+  color: var(--c-text-4);
+}
+
+.mini-bar {
+  margin-top: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.mini-bar span {
+  display: block;
+  height: 100%;
+  width: 42%;
+  border-radius: 2px;
+  background: var(--c-accent);
+}
+
+.mini-controls {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mini-controls .dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}
+
+.mini-expand {
+  margin-left: auto;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: var(--fs-micro);
+  color: var(--c-text-2);
+}
+
+.mini-caption {
+  margin-top: 14px;
+  font-size: var(--fs-small);
+  color: var(--c-text-4);
+}
+
+.kbdrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: var(--fs-small);
+  color: var(--c-text-2);
+  padding: 7px 0;
+}
+
+.kbdrow .keys {
+  color: var(--c-text-3);
+  font-family: var(--font-num);
+}
+
+.kbdrow.is-conflict,
+.kbdrow.is-conflict .keys {
+  color: var(--c-danger);
+}
+
+/* ==========================================================================
+   注解带（设计说明，非产品 UI）
+   ========================================================================== */
+.note {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  top: 653px;
+  /* 复位 UA 默认的 p margin-block-start（1em = 13px），否则绝对定位会整体下移 13px */
+  margin: 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: var(--fs-label);
+  line-height: 20.8px;
+  color: var(--c-text-4);
+  z-index: var(--z-note);
+}
+
+/* 内容更高时注解带下移，避免与内容相撞（top 相对内容区顶部 71，权威值见 docs 实测表） */
+.note--low {
+  top: 693px;
+}
+
+.note--lower {
+  top: 694px;
+}
+
+.note--lowest {
+  top: 698px;
+}
+
+.note::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6.4px;
+  background: var(--c-accent);
+}
+
+/* ==========================================================================
+   底部播放栏
+   ========================================================================== */
+.playbar {
+  flex: none;
+  height: var(--playbar-h);
+  position: relative;
+  z-index: var(--z-playbar);
+  background: rgba(14, 14, 17, 0.86);
+  backdrop-filter: blur(var(--blur-glass));
+  border-top: 1px solid var(--line-weak);
+}
+
+.pb-left {
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pb-cover {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border-radius: 8px;
+  background: linear-gradient(150deg, #3a3a44, #1a1a1f);
+}
+
+.pb-meta {
+  min-width: 0;
+  max-width: 300px;
+}
+
+.pb-title {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pb-sub {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-label);
+  color: var(--c-text-4);
+  white-space: nowrap;
+}
+
+.pb-mid {
+  position: absolute;
+  left: calc(50% - 117px);
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+}
+
+.pb-transport {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.pb-icon {
+  color: var(--c-film);
+  font-size: 22px;
+  display: grid;
+  place-items: center;
+}
+
+.pb-icon:hover {
+  color: #fff;
+}
+
+.pb-play {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  color: #0a0a0c;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+}
+
+.pb-progress {
+  margin-left: 53px;
+  width: 392px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.pb-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--c-accent);
+}
+
+.pb-time {
+  margin-left: 14px;
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pb-right {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pb-queue {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ==========================================================================
+   正在播放（沉浸态）
+   ========================================================================== */
+/* 背景照设计稿实测重建（数值拟合，14 个采样点平均色差 6.3 → 1.7）：
+   左缘竖向紫雾（峰值 y≈40%）+ 顶部横向冷蓝雾；右上/右下均为 #06060b 级暗底，无蓝光 */
+.stage--immersive {
+  background:
+    radial-gradient(20% 22% at 0% 0%, rgba(30, 114, 166, 0.49), transparent 64%),
+    radial-gradient(21% 73% at 0% 43%, rgba(108, 78, 158, 0.47), transparent 77%),
+    radial-gradient(97% 54% at 33% 6%, rgba(55, 49, 90, 0.6), transparent 84%),
+    #06060b;
+}
+
+.stage--immersive .topbar {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.np-mode-seg {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.np-mode-seg .tab {
+  height: 32px;
+  padding: 0 18px;
+  font-size: var(--fs-body);
+}
+
+.np-grid {
+  display: grid;
+  grid-template-columns: 639px minmax(0, 1fr);
+  gap: 47px;
+  align-items: start;
+  padding-top: 18px;
+}
+
+.np-art {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-tile);
+  overflow: hidden;
+  /* 封面色照设计稿实测（平铺 ≈ #1B2131），留极轻的角部渐变以保留体积感 */
+  background: linear-gradient(150deg, #242b3d, #171c28);
+}
+
+.np-art .badge {
+  left: 16px;
+  top: 16px;
+}
+
+.np-art .ratio-note {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  font-size: var(--fs-label);
+  color: var(--c-text-4);
+}
+
+.np-info {
+  padding-left: 20px;
+  min-width: 0;
+  /* 右栏标题顶边比封面再高 4px（设计稿实测 118 vs 122） */
+  margin-top: -4px;
+}
+
+.np-title {
+  margin: 0;
+  font-size: var(--fs-track-title);
+  font-weight: var(--fw-track-title);
+  line-height: var(--lh-track-title);
+  letter-spacing: -0.8px;
+}
+
+.np-meta {
+  margin-top: 10px;
+  font-size: var(--fs-meta);
+  line-height: 24px;
+  color: var(--c-text-2);
+}
+
+.np-meta span + span::before {
+  content: "·";
+  margin: 0 8px;
+  color: var(--c-text-5);
+}
+
+.np-tags {
+  margin-top: 17px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.np-tags .pill {
+  height: 34px;
+  font-size: var(--fs-label);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--c-text-2);
+}
+
+.lyrics {
+  margin-top: 20px;
+  border-radius: var(--r-panel);
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--blur-glass));
+  padding: 22px 26px;
+}
+
+.lyrics-head {
+  font-size: var(--fs-small);
+  line-height: 24px;
+  color: var(--c-text-4);
+  margin-bottom: 14px;
+}
+
+.lyrics-line {
+  font-size: 22px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.lyrics-line.is-current {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 沉浸态底部：全宽进度 + 三段控制 */
+/* 底栏整体上移，锚定在 y=808（设计稿实测：进度 700 / 时间 716 / 控制 752-808） */
+.np-bottom {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 92px;
+  padding-bottom: 0;
+}
+
+.np-track .bar {
+  height: 4px;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: hidden;
+}
+
+.np-track .bar span {
+  display: block;
+  height: 100%;
+  border-radius: 0;
+  background: var(--c-accent);
+}
+
+.np-times {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.np-controls {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+}
+
+.np-source,
+.np-mode {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+  white-space: nowrap;
+}
+
+/* 药丸按内容宽度贴合，不被 1fr 栅格列拉伸 */
+.np-source {
+  justify-self: start;
+}
+
+.np-right {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.np-transport {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  justify-self: center;
+}
+
+/* ==========================================================================
+   浮动弹层（如「批量下载音频」download-select-modal）
+   ========================================================================== */
+.modal {
+  position: absolute;
+  z-index: 30;
+  border-radius: var(--r-panel);
+  background: rgba(28, 28, 32, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(28px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal--download {
+  left: 752px;
+  top: 225px;
+  width: 560px;
+  height: 153px;
+  padding: 22px 24px 20px;
+}
+
+.modal-title {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.modal-sub {
+  margin-top: 4px;
+  font-size: var(--fs-label);
+  line-height: 21px;
+  color: var(--c-text-4);
+}
+
+.modal-line {
+  margin-top: 2px;
+  font-size: var(--fs-label);
+  line-height: 21px;
+  color: var(--c-text-2);
+}
+
+.modal-foot {
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+}
+
+.btn-accent {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 20px;
+  border-radius: var(--r-pill);
+  background: var(--c-accent);
+  color: #fff;
+  font-size: var(--fs-label);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   发现音乐 · 新碟 banner 大卡 + 方形专辑卡
+   ========================================================================== */
+.hero-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 353px minmax(0, 1fr) 128px;
+  align-items: center;
+  gap: 20px;
+  padding: 17px 16px;
+  border-radius: var(--r-panel);
+  background: var(--surface);
+  border: 1px solid var(--line-weak);
+}
+
+.hero-art {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-tile);
+  overflow: hidden;
+  background: linear-gradient(150deg, #1b2131, #14161d);
+}
+
+.hero-art .badge {
+  left: 12px;
+  top: 12px;
+}
+
+.hero-art .ratio-note {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  font-size: var(--fs-micro);
+  color: var(--c-text-4);
+}
+
+.hero-body {
+  min-width: 0;
+}
+
+.hero-tag {
+  margin-bottom: 8px;
+}
+
+.hero-title {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 38px;
+}
+
+.hero-meta {
+  margin-top: 4px;
+  font-size: var(--fs-label);
+  line-height: 20px;
+  color: var(--c-text-2);
+}
+
+.hero-tags {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-play {
+  justify-self: end;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff;
+  color: #0a0a0c;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+}
+
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 23px;
+}
+
+.album-card {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  padding: 16px;
+  border-radius: var(--r-panel);
+  background: var(--surface);
+  border: 1px solid var(--line-weak);
+  height: 176px;
+}
+
+.album-art {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  flex: none;
+  border-radius: var(--r-tile);
+  overflow: hidden;
+  background: var(--tile-art, linear-gradient(150deg, #2f2f37, #17171b));
+}
+
+.album-art .badge {
+  left: 10px;
+  top: 10px;
+}
+
+.album-art .ratio-note {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-size: var(--fs-micro);
+  color: var(--c-text-4);
+}
+
+.album-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: 34px;
+}
+
+.album-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 28px;
+}
+
+.album-meta {
+  margin-top: 2px;
+  font-size: var(--fs-label);
+  line-height: 20px;
+  color: var(--c-text-4);
+}
+
+.album-foot {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   搜索结果 · 大搜索框 + 创作者行
+   ========================================================================== */
+.searchfield {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 16px 0 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.searchfield .i {
+  font-size: 30px;
+  color: var(--c-text-2);
+}
+
+.searchfield .q {
+  flex: 1;
+  min-width: 0;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.searchfield .local-link {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+  white-space: nowrap;
+}
+
+.creator-row {
+  display: grid;
+  grid-template-columns: 56px 100px minmax(0, 1fr) var(--col5);
+  align-items: center;
+  height: var(--row-h);
+  padding-right: var(--list-pad-r);
+}
+
+.creator-face {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(120% 120% at 30% 25%, #4d4d55, #1e1e23 72%);
+}
+
+.creator-actions {
+  justify-self: end;
+}
+
+.follow {
+  height: 34px;
+  padding: 0 20px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--c-text);
+}
+
+.follow.is-on {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: transparent;
+  color: var(--c-text-4);
+}
+
+/* ==========================================================================
+   迷你播放器与系统集成
+   ========================================================================== */
+.mini-row {
+  display: flex;
+  gap: 31px;
+}
+
+.mini-card {
+  position: relative;
+  border-radius: var(--r-tile);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line-weak);
+  padding: 19px 22px;
+  height: 164px;
+}
+
+.mini-card--player {
+  width: 380px;
+}
+
+.mini-card--tray {
+  width: 257px;
+}
+
+.mini-card--keys {
+  width: 612px;
+}
+
+.mini-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.mini-art {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 8px;
+  background: linear-gradient(150deg, #3a3a44, #1a1a1f);
+}
+
+.mini-name {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-sub {
+  margin-top: 2px;
+  font-size: var(--fs-label);
+  line-height: 20px;
+  color: var(--c-text-4);
+}
+
+.mini-bar {
+  margin-top: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.mini-bar span {
+  display: block;
+  height: 100%;
+  width: 42%;
+  border-radius: 2px;
+  background: var(--c-accent);
+}
+
+.mini-controls {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mini-controls .dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+}
+
+.mini-expand {
+  margin-left: auto;
+  height: 26px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.2);
+  font-size: var(--fs-micro);
+  color: var(--c-text);
+}
+
+.mini-caption {
+  margin-top: 14px;
+  font-size: var(--fs-label);
+  line-height: 20px;
+  color: var(--c-text-4);
+}
+
+.mini-head {
+  font-size: var(--fs-label);
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.tray-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tray-item {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+}
+
+.kbdrow {
+  display: flex;
+  align-items: baseline;
+  height: 22px;
+  font-size: var(--fs-label);
+  color: var(--c-text-2);
+}
+
+.kbdrow .keys {
+  margin-left: 12px;
+  color: var(--c-text-3);
+  font-family: var(--font-num);
+}
+
+.kbdrow.is-conflict,
+.kbdrow.is-conflict .keys {
+  color: var(--c-danger);
+}
+
+/* 通用小工具 */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.gap-24 {
+  margin-top: 24px;
+}
+
+.gap-36 {
+  margin-top: 36px;
+}
+
+/* ==========================================================================
+   逐屏校正（依据设计稿实测微调）
+   ========================================================================== */
+.page-head--narrow {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+/* 本地音乐：无分组标题，卡片直接接在筛选条下 */
+.format-grid {
+  margin-top: 36px;
+}
+
+/* 下载状态列：文字 + 220 × 4 进度条 */
+.dl-status {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.dl-label {
+  font-size: var(--fs-label);
+  line-height: 20px;
+  color: var(--c-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dl-bar {
+  width: 220px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.dl-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--c-accent);
+}
+
+/* 创作者行：无序号列，头像贴左侧留白 */
+.creator-row {
+  grid-template-columns: 107px minmax(0, 1fr) 112px;
+  align-items: center;
+  height: 56px;
+  padding-right: 0;
+}
+
+.creator-face {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(120% 120% at 30% 25%, #4d4d55, #1e1e23 72%);
+}
+
+.creator-actions {
+  justify-self: start;
+}
+
+/* 分组间距变体 */
+.section--tight {
+  margin-top: 12px;
+}
+
+/* 注解带位置变体（内容高度不同） */
+.note--high {
+  top: 598px;
+}
+
+/* 搜索结果：大搜索框紧贴内容顶 */
+.searchfield {
+  margin-top: 15px;
+}
+
+.searchfield + .page-lead {
+  margin-top: 13px;
+}
+
+/* 正在播放：右列左内边距 18，歌词行高 43 */
+.np-info {
+  padding-left: 18px;
+}
+
+.np-art {
+  width: 649px;
+}
+
+.lyrics {
+  padding: 24px 26px 17px;
+}
+
+.lyrics-head {
+  margin-bottom: 24px;
+}
+
+.lyrics-line {
+  font-size: 22px;
+  line-height: 43px;
+}
+
+.np-note {
+  margin-top: 24px;
+}
+
+/* 顶栏：无控件的纯标注 */
+.topbar-note {
+  flex: none;
+  font-size: var(--fs-body);
+  color: var(--c-text-5);
+  white-space: nowrap;
+}
+
+/* 注解带：随内容排布 */
+.note--inline {
+  position: static;
+  left: auto;
+  right: auto;
+  top: auto;
+  margin-top: 24px;
+}
+
+/* 沉浸态底部节奏（实测：进度 700 / 时间 720 / 控制 752-808，播放键 56） */
+.np-bottom {
+  padding-bottom: 0;
+}
+
+.np-controls {
+  margin-top: 20px;
+}
+
+.stage--immersive .pb-play {
+  width: 56px;
+  height: 56px;
+}
+
+/* 设置列表：分组标题与首行之间 46px */
+.settinglist {
+  margin-top: 46px;
+}
+
+.track-cell.is-danger {
+  color: var(--c-danger);
+}
+
+/* 迷你播放器卡片内部节奏（实测） */
+.mini-row {
+  margin-top: 16px;
+}
+
+.mini-bar {
+  margin-top: 3px;
+}
+
+.mini-controls {
+  margin-top: 17px;
+}
+
+.mini-caption {
+  margin-top: 10px;
+}
+
+/* 筛选条位置变体（设计稿各屏略有出入） */
+.filterbar--tight {
+  margin-top: 12px;
+}
+
+.filterbar--loose {
+  margin-top: 24px;
+}
+
+/* 第 07 屏首屏分组整体低 9px */
+.section--push {
+  margin-top: 23px;
+}
+
+/* --------------------------------------------------------------------------
+   第 01 屏 / 第 04 屏：导语行比常规低 6px（设计稿实测 198 vs 192）
+   -------------------------------------------------------------------------- */
+.page-lead--low {
+  margin-top: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   第 07 屏（发现音乐 · 卡片）：标题列去掉 11px 错位基线，整组上提
+   实测 H1 111-158 / 导语 186-203 / 筛选条 226-264
+   -------------------------------------------------------------------------- */
+.head-main--flat {
+  padding-top: 0;
+}
+
+.head-main--flat .page-lead {
+  margin-top: 13px;
+}
+
+.head-main--flat .filterbar {
+  margin-top: 15px;
+}
+
+/* --------------------------------------------------------------------------
+   第 06 屏（搜索结果）：结果行无序号列，缩略图直接贴左侧留白
+   -------------------------------------------------------------------------- */
+.tracklist--search {
+  --cols: minmax(0, 1fr) var(--col4) var(--col5);
+}
+
+/* --------------------------------------------------------------------------
+   第 12 屏（迷你播放器）：注解带最低位（实测 780-793）
+   -------------------------------------------------------------------------- */
+.note--footer {
+  top: 704px;
+}

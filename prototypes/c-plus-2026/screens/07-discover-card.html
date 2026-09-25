@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>07 发现音乐 · 卡片 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">音乐分区</button>
+          <button class="tab">单一模块</button>
+        </nav>
+        <span class="topbar-note">已下线: 流行 / 鬼畜</span>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索音乐视频或创作者" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="head-main head-main--flat">
+          <h1 class="page-title">发现音乐</h1>
+          <p class="page-lead">新碟 banner 与分区推荐合并去重后呈现，支持 卡片 / 列表 / 紧凑 三种展示模式。</p>
+          <div class="filterbar">
+            <button class="pill pill--primary">全部播放</button>
+            <button class="pill pill--secondary">随机播放</button>
+            <button class="pill pill--neutral">数据源 · 新碟 banner + 分区推荐</button>
+            <button class="pill pill--neutral">去重后合并 27 条</button>
+            <button class="pill pill--accent">显示模式 · 卡片 ▾</button>
+          </div>
+        </div>
+
+        <section class="section section--push">
+          <div class="section-head">
+            <h2 class="section-title">精选 · 新碟 banner</h2>
+          </div>
+          <article class="hero-card">
+            <div class="hero-art">
+              <span class="badge">新碟 banner</span>
+              <span class="ratio-note">16:9 原始比例 · 不做方形裁切</span>
+            </div>
+            <div class="hero-body">
+              <div class="hero-tag"><span class="tag tag--accent">独家首发</span></div>
+              <div class="hero-title">《雨落长街》全专上线 · 官方无损音源</div>
+              <div class="hero-meta">卧室音乐计划 · 2026-09-22 上线 · 专辑 12 首 · 总时长 46:18</div>
+              <div class="hero-tags">
+                <span class="tag tag--quality">无损 30251</span>
+                <span class="tag tag--plain">杜比全景声 · 30250</span>
+                <span class="tag tag--plain">与分区推荐共用播放队列</span>
+              </div>
+            </div>
+            <button class="hero-play"><svg class="i"><use href="#i-play"></use></svg></button>
+          </article>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">新碟速报 · 方形专辑封面（new/music）</h2>
+          </div>
+          <div class="album-grid">
+            <article class="album-card">
+              <div class="album-art" style="--tile-art: linear-gradient(150deg, #35405c, #191d28)">
+                <span class="badge">独家首发</span>
+                <span class="ratio-note">1:1</span>
+              </div>
+              <div class="album-body">
+                <div class="album-title">《夏夜回声》</div>
+                <div class="album-meta">琴键上的猫</div>
+                <div class="album-foot">
+                  <span class="tag tag--accent">畅销 1.2 万</span>
+                  <span class="tag tag--plain">无损</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="album-card">
+              <div class="album-art" style="--tile-art: linear-gradient(150deg, #403a4c, #1d1b24)">
+                <span class="badge">首发</span>
+                <span class="ratio-note">1:1</span>
+              </div>
+              <div class="album-body">
+                <div class="album-title">《夜航（录音室版）》</div>
+                <div class="album-meta">NOISE_LAB</div>
+                <div class="album-foot">
+                  <span class="tag tag--accent">畅销 8,640</span>
+                  <span class="tag tag--plain">无损</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="album-card">
+              <div class="album-art" style="--tile-art: linear-gradient(150deg, #42402f, #22211a)">
+                <span class="badge">新碟</span>
+                <span class="ratio-note">1:1</span>
+              </div>
+              <div class="album-body">
+                <div class="album-title">《器乐练习集 Vol.3》</div>
+                <div class="album-meta">卧室音乐计划</div>
+                <div class="album-foot">
+                  <span class="tag tag--accent">畅销 3,120</span>
+                  <span class="tag tag--plain">高解析</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <p class="note note--lowest">
+          这一屏补的都是接口已返回、界面没兑现的东西：new/music 的 cover 本是方形专辑图，唯一消费方却用 672w_378h_1c 裁成 16:9（项目已有 400w_400h_1c
+          方形范例），且该模块此前只挂在已被移除的「流行」Tab 上，活该落回本页；分区推荐的 rec_reason 与 stat:like / stat:danmaku 同样被适配器丢弃，displayMode 实为三档（card / list /
+          compact）。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">《雨落长街》· 全专上线</div>
+            <div class="pb-sub">
+              <span>卧室音乐计划 · 新碟 Banner</span>
+              <span class="tag tag--quality">无损 30251</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 36%"></span></div>
+          <div class="pb-time">01:22 / 03:48</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>09 播放队列 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">全部</button>
+          <button class="tab">音乐视频</button>
+          <button class="tab">本地文件</button>
+        </nav>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索音乐视频或创作者" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="head-main">
+          <h1 class="page-title">播放队列</h1>
+          <p class="page-lead">按来源去重（local:id / mv:bvid / audio:sid），支持拖拽排序与多分 P。</p>
+          <div class="filterbar">
+            <button class="pill pill--primary">播放全部</button>
+            <button class="pill pill--secondary">顺序播放 ▾</button>
+            <button class="pill pill--neutral">随机时保持分P顺序 · 开</button>
+            <button class="pill pill--neutral">清空队列</button>
+            <button class="pill pill--accent">去重后 24 首 · 已折叠 3</button>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">队列 · 27 首 · 去重后 24</h2>
+          </div>
+          <div class="tracklist">
+            <div class="track-head">
+              <span>#</span>
+              <span>标题</span>
+              <span>来源 · 状态</span>
+              <span class="track-cell--end">时长</span>
+            </div>
+
+            <div class="track-row is-current">
+              <div class="track-index">01</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3a3a46, #1c1c22)"></div>
+                <div class="track-text">
+                  <div class="track-name">「神呀，接住她的眼泪吧」— 这一首歌完整版来啦</div>
+                  <div class="track-sub">音乐区 UP · 来自发现音乐</div>
+                </div>
+              </div>
+              <div class="track-cell">正在播放 · 单曲循环</div>
+              <div class="track-cell track-cell--end">04:02</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">02</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3c3644, #1d1b22)"></div>
+                <div class="track-text">
+                  <div class="track-name">【猎 Hunter】「荒野求生的小曲」</div>
+                  <div class="track-sub">猎 Hunter · 下一首播放</div>
+                </div>
+              </div>
+              <div class="track-cell">队列 · 音乐视频</div>
+              <div class="track-cell track-cell--end">03:18</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">03</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3d3a33, #1e1d19)"></div>
+                <div class="track-text">
+                  <div class="track-name">我有两颢搞丸！！！</div>
+                  <div class="track-sub">搞丸君 · 队列</div>
+                </div>
+              </div>
+              <div class="track-cell">队列 · 音乐视频</div>
+              <div class="track-cell track-cell--end">02:47</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">04</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #333c37, #191d1b)"></div>
+                <div class="track-text">
+                  <div class="track-name">录歌 和好朋友在学校的最后一个晚上</div>
+                  <div class="track-sub">阿风同学 · 队列 · 多分P 1/2</div>
+                </div>
+              </div>
+              <div class="track-cell">队列 · 音乐视频 · 折叠重复</div>
+              <div class="track-cell track-cell--end">05:11</div>
+              <div class="track-actions">
+                <button class="round round--lead"><svg class="i"><use href="#i-play"></use></svg></button>
+                <span class="sep"></span>
+                <button class="round"><svg class="i"><use href="#i-prev"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-next"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-queue-add"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-heart"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-download"></use></svg></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <p class="note">
+          队列身份去重：local:id / mv:bvid / audio:sid（getQueueIdentity）。行内可直接「下一首播放」、按分P 拆分、置顶或移除；随机播放时可开启「保持分P 顺序」。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">《雨落长街》· 全专上线</div>
+            <div class="pb-sub">
+              <span>卧室音乐计划 · 新碟 Banner</span>
+              <span class="tag tag--quality">无损 30251</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 36%"></span></div>
+          <div class="pb-time">01:22 / 03:48</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 27</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

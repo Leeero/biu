@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>06 搜索结果 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">音乐视频 · 9</button>
+          <button class="tab">创作者 · 2</button>
+        </nav>
+        <div class="topbar-right">
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="searchfield">
+          <svg class="i"><use href="#i-search"></use></svg>
+          <div class="q">反乌托邦</div>
+          <button class="local-link">
+            在本地音乐中搜索「反乌托邦」
+            <svg class="i"><use href="#i-arrow-right"></use></svg>
+          </button>
+        </div>
+
+        <p class="page-lead">结果来自 B 站搜索，可按音乐视频或创作者查看。</p>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">音乐视频 · 9 条</h2>
+          </div>
+          <div class="tracklist tracklist--search">
+            <div class="track-row is-current">
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3a3a46, #1c1c22)"></div>
+                <div class="track-text">
+                  <div class="track-name">【反乌托邦】AI 小潮 team 在「反乌托邦」里「拼接遗憾」</div>
+                  <div class="track-sub">潮汕好男人 · 12.4 万播放</div>
+                </div>
+              </div>
+              <div class="track-cell"></div>
+              <div class="track-cell track-cell--end">04:12</div>
+              <div class="track-actions">
+                <button class="round round--lead"><svg class="i"><use href="#i-play"></use></svg></button>
+                <span class="sep"></span>
+                <button class="round"><svg class="i"><use href="#i-prev"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-next"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-queue-add"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-heart"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-download"></use></svg></button>
+              </div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3c3644, #1d1b22)"></div>
+                <div class="track-text">
+                  <div class="track-name">「反乌托邦」钢琴改编 · 城市夜景版</div>
+                  <div class="track-sub">琴键上的猫 · 3.8 万播放</div>
+                </div>
+              </div>
+              <div class="track-cell"></div>
+              <div class="track-cell track-cell--end">03:26</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3d3a33, #1e1d19)"></div>
+                <div class="track-text">
+                  <div class="track-name">反乌托邦（2024 Remaster）</div>
+                  <div class="track-sub">卧室音乐计划 · 1.2 万播放</div>
+                </div>
+              </div>
+              <div class="track-cell"></div>
+              <div class="track-cell track-cell--end">05:04</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section--tight">
+          <div class="section-head">
+            <h2 class="section-title">创作者 · 2 个</h2>
+          </div>
+          <div class="creator-row">
+            <div class="creator-face"></div>
+            <div class="track-text">
+              <div class="track-name">潮汕好男人</div>
+              <div class="track-sub">48.2 万粉丝 · 音乐区 UP · 已投稿 128 个视频</div>
+            </div>
+            <div class="creator-actions"><button class="follow is-on">已关注</button></div>
+          </div>
+          <div class="creator-row">
+            <div class="creator-face"></div>
+            <div class="track-text">
+              <div class="track-name">琴键上的猫</div>
+              <div class="track-sub">6.7 万粉丝 · 演绎区 UP · 已投稿 64 个视频</div>
+            </div>
+            <div class="creator-actions"><button class="follow">关注</button></div>
+          </div>
+        </section>
+
+        <p class="note note--high">
+          结果类型只有 video 与 bili_user 两类（web-interface-search-type 的 search_type），因此这里不再出现「歌曲 / 歌单 / 本地文件」筛选——本地库改为跨页入口，不假装成统一索引。每条结果都带
+          Track 的 5 个主操作。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">反乌托邦（2024 Remaster）</div>
+            <div class="pb-sub">
+              <span>卧室音乐计划 · 1.2 万播放</span>
+              <span class="tag tag--plain">高清 30280</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 60%"></span></div>
+          <div class="pb-time">03:02 / 05:04</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

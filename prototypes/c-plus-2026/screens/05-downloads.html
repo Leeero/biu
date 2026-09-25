@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>05 下载管理 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">全部</button>
+          <button class="tab">音频</button>
+          <button class="tab">视频</button>
+        </nav>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索音乐视频或创作者" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="head-main">
+          <h1 class="page-title">下载管理</h1>
+          <p class="page-lead">9 种真实任务状态，暂停 / 继续 / 重试按状态门控，不发出无效操作。</p>
+          <div class="filterbar">
+            <button class="pill pill--primary">打开下载目录 · ~/Music/Biu</button>
+            <button class="pill pill--secondary">暂停全部</button>
+            <button class="pill pill--neutral">重试全部失败</button>
+            <button class="pill pill--neutral">清空已完成</button>
+            <button class="pill pill--danger">清空记录 · 二次确认</button>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">12 个任务 · 2 个进行中</h2>
+          </div>
+          <div class="tracklist tracklist--download">
+            <div class="track-head">
+              <span>#</span>
+              <span>文件</span>
+              <span>状态</span>
+              <span class="track-cell--end">大小</span>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">01</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3a3a46, #1c1c22)"></div>
+                <div class="track-text">
+                  <div class="track-name">「神呀，接住她的眼泪吧」— 这一首歌完整版来啦</div>
+                  <div class="track-sub">无损 30251 · 音频 · FLAC · 今天 16:02</div>
+                </div>
+              </div>
+              <div class="dl-status">
+                <div class="dl-label">下载中 · 62%</div>
+                <div class="dl-bar"><span style="width: 62%"></span></div>
+              </div>
+              <div class="track-cell track-cell--end">12.4 MB</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">02</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3c3644, #1d1b22)"></div>
+                <div class="track-text">
+                  <div class="track-name">【猎 Hunter】「荒野求生的小曲」</div>
+                  <div class="track-sub">杜比 30250 · 音频 · M4A · 今天 15:48</div>
+                </div>
+              </div>
+              <div class="dl-status">
+                <div class="dl-label">合并分块中 · 40%</div>
+                <div class="dl-bar"><span style="width: 40%"></span></div>
+              </div>
+              <div class="track-cell track-cell--end">18.7 MB</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">03</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3d3a33, #1e1d19)"></div>
+                <div class="track-text">
+                  <div class="track-name">我有两颢搞丸！！！</div>
+                  <div class="track-sub">高清 30280 · 视频 · MP4 · 昨天 21:30</div>
+                </div>
+              </div>
+              <div class="dl-status">
+                <div class="dl-label">已完成 · 可定位文件</div>
+              </div>
+              <div class="track-cell track-cell--end">86.2 MB</div>
+            </div>
+
+            <div class="track-row is-current">
+              <div class="track-index">04</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #333c37, #191d1b)"></div>
+                <div class="track-text">
+                  <div class="track-name">录歌 和好朋友在学校的最后一个晚上</div>
+                  <div class="track-sub">自动 30232 · 音频 · 今天 14:11</div>
+                </div>
+              </div>
+              <div class="dl-status">
+                <div class="dl-label">任务出错 · 可重试</div>
+              </div>
+              <div class="track-cell track-cell--end">—</div>
+              <div class="track-actions">
+                <button class="round round--lead"><svg class="i"><use href="#i-play"></use></svg></button>
+                <span class="sep"></span>
+                <button class="round"><svg class="i"><use href="#i-prev"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-next"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-queue-add"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-heart"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-download"></use></svg></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <p class="note">
+          状态取自 MediaDownloadStatus 的 9 个真实值：等待中 / 下载中 / 下载暂停 / 合并中 / 合并暂停 / 转换中 / 转换暂停 / 已完成 / 任务出错。暂停仅对「下载中」有效、继续仅对三种「暂停」有效、重试仅对「任务出错」有效。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">《雨落长街》· 全专上线</div>
+            <div class="pb-sub">
+              <span>卧室音乐计划 · 新碟 Banner</span>
+              <span class="tag tag--quality">无损 30251</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 36%"></span></div>
+          <div class="pb-time">01:22 / 03:48</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>

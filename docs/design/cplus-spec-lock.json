@@ -1,0 +1,768 @@
+{
+  "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
+  "meta": {
+    "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
+    "version": "1.2.0",
+    "frozenAt": "2026-09-25",
+    "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
+    "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
+    "prototype": "prototypes/c-plus-2026/",
+    "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
+    "revisions": [
+      {
+        "version": "1.2.0",
+        "at": "2026-09-25",
+        "phase": "P0",
+        "changes": [
+          "补录 material.scrimVeil.stops：遮罩渐隐的四个停止点原本只写在 rule 的自由文本里，无法被断言，导致 --biu-scrim-veil 登记了却无人钉住。",
+          "测试侧新增「登记即断言」完备性校验：真值中任何 token / borderToken / tokens.* 字段都必须被某个断言覆盖，否则失败。此前存在登记未断言的静默缺口（--biu-radius-image、--biu-radius-window、--biu-scrim、--biu-scrim-veil），漂移不会报警。",
+          "补齐上述四个令牌的值断言（圆角按 material.radius 的角色值比对，遮罩按 value / stops 比对）。"
+        ]
+      },
+      {
+        "version": "1.1.0",
+        "at": "2026-09-25",
+        "phase": "P0",
+        "changes": [
+          "修正 palette 沉浸态背景：原记录为拟合前的中间参数（rgba(74,92,182,.46) 等），与原型实现不一致。已同步为原型现值的实测拟合结果（平均色差 1.65）。",
+          "补录 palette 中缺失但被原型实际使用的合成色：反色对（#F2F2F2/#E8E8EA/#0A0A0C）、强调药丸文字（#7CBCFF）、占位符与歌词弱化文字、底板环境光、顶栏渐变三档停止点。",
+          "排版令牌由 --biu-text-<role> 更名为 --biu-type-<role>，消除与文字颜色令牌 --biu-text-primary 的同前缀歧义。原子令牌后缀约定见 meta.tokenConventions。",
+          "新增 tokenMap：真值路径 → CSS 令牌名的声明式映射，供 tests/design-tokens.test.ts 通用断言。",
+          "明确排除项：占位封面渐变属于数据夹具，不进色板。"
+        ]
+      }
+    ],
+    "tokenConventions": {
+      "palette": "条目含 value 与 token 时，token 为语义令牌名；三通道令牌的被引用者地位于 palette.css。",
+      "typography": "scale.<role>.token 为字阶基名，原子令牌为 <token>-size / -weight / -leading / -tracking，另有由四者拼出的 font 简写 <token>。",
+      "geometry": "见 tokenMap；值一律为 1440×900 基准画布下的 CSS px，空格视为规则常数不参与断言。"
+    }
+  },
+  "canvas": {
+    "reference": [1440, 900],
+    "sourcePixels": [2200, 1375],
+    "sourceToReferenceScale": 0.654545,
+    "stage": "浏览器窗口 ≥ 1440 × 900 时按 1:1 渲染；小于时不得缩放界面（与原型 .stage 等比缩放方案不同，见方案 §2.3）",
+    "artboardNote": "设计稿页为白底文档页内嵌圆角画板，四角约 16 CSS px 圆角。以 H1 左缘实测 66 与画板内留白 64 对齐，残差 ≤ 2 px，落在 band 容差内。"
+  },
+  "palette": {
+    "imageBed": {
+      "value": "#000000",
+      "token": "--biu-surface-image",
+      "origin": "设计稿第 14 页原文",
+      "use": "影像底"
+    },
+    "appBg": {
+      "value": "#08080A",
+      "token": "--biu-surface-canvas",
+      "origin": "实测",
+      "use": "应用底板（非纯黑）"
+    },
+    "topbar": {
+      "value": "#161618",
+      "token": "--biu-surface-topbar",
+      "origin": "实测",
+      "use": "顶栏底"
+    },
+    "playbar": {
+      "value": "#0E0E11",
+      "token": "--biu-surface-player",
+      "origin": "实测",
+      "use": "播放栏底"
+    },
+    "textPrimary": {
+      "value": "#FFFFFF",
+      "token": "--biu-text-primary",
+      "origin": "设计稿原文",
+      "use": "主文字与播放键",
+      "contrastOnCanvas": 20.01,
+      "contrastRule": "AA（≥4.5）"
+    },
+    "textSecondary": {
+      "value": "#CCCCCC",
+      "token": "--biu-text-secondary",
+      "origin": "设计稿原文",
+      "use": "次文字",
+      "contrastOnCanvas": 12.46,
+      "contrastRule": "AA（≥4.5）"
+    },
+    "textTertiary": {
+      "value": "#A1A1A6",
+      "token": "--biu-text-tertiary",
+      "origin": "派生",
+      "use": "三级文字",
+      "contrastOnCanvas": 7.78,
+      "contrastRule": "AA（≥4.5）"
+    },
+    "textQuaternary": {
+      "value": "#8E8E93",
+      "token": "--biu-text-quaternary",
+      "origin": "派生",
+      "use": "注解带文字",
+      "contrastOnCanvas": 6.14,
+      "contrastRule": "AA（≥4.5）"
+    },
+    "textDisabled": {
+      "value": "#6E6E73",
+      "token": "--biu-text-disabled",
+      "origin": "派生",
+      "use": "禁用与弱标注",
+      "contrastOnCanvas": 3.95,
+      "contrastRule": "低于 AA，仅限非正文标注"
+    },
+    "accent": {
+      "value": "#2997FF",
+      "token": "--biu-accent",
+      "origin": "设计稿原文",
+      "use": "强调"
+    },
+    "film": {
+      "value": "#D2D2D7",
+      "token": "--biu-film",
+      "origin": "设计稿原文",
+      "use": "胶片灰"
+    },
+    "quality": {
+      "value": "#5AB4FF",
+      "token": "--biu-quality",
+      "origin": "补充能力色",
+      "use": "音质徽标"
+    },
+    "dir": {
+      "value": "#2997FF",
+      "token": "--biu-dir",
+      "origin": "补充能力色",
+      "use": "本地目录徽标"
+    },
+    "danger": {
+      "value": "#FF6B6B",
+      "token": "--biu-danger",
+      "origin": "补充能力色",
+      "use": "危险操作"
+    },
+    "format": {
+      "flac": {
+        "value": "#5AB4FF",
+        "token": "--biu-fmt-flac"
+      },
+      "wav": {
+        "value": "#7ED8A8",
+        "token": "--biu-fmt-wav"
+      },
+      "aiff": {
+        "value": "#E5C07B",
+        "token": "--biu-fmt-aiff"
+      },
+      "m4a": {
+        "value": "#B99BE8",
+        "token": "--biu-fmt-m4a"
+      },
+      "mp3": {
+        "value": "#C8C8CE",
+        "token": "--biu-fmt-mp3"
+      },
+      "wma": {
+        "value": "#C8C8CE",
+        "token": "--biu-fmt-wma"
+      }
+    },
+    "inverseSurface": {
+      "value": "#F2F2F2",
+      "token": "--biu-inverse-surface",
+      "origin": "原型实测（.tab.is-active / .pill--primary / .round--lead）",
+      "use": "激活药丸与主操作底"
+    },
+    "inverseSurfaceHover": {
+      "value": "#E8E8EA",
+      "token": "--biu-inverse-surface-hover",
+      "origin": "原型实测",
+      "use": "反色底悬停态"
+    },
+    "inverseInk": {
+      "value": "#0A0A0C",
+      "token": "--biu-inverse-ink",
+      "origin": "原型实测",
+      "use": "反色底上的文字",
+      "contrastAgainst": "inverseSurface",
+      "contrastOnCanvas": 17.67
+    },
+    "accentInk": {
+      "value": "#7CBCFF",
+      "token": "--biu-accent-ink",
+      "origin": "原型实测（.pill--accent）",
+      "use": "强调药丸上的文字"
+    },
+    "textPlaceholder": {
+      "value": "rgba(255,255,255,0.42)",
+      "token": "--biu-text-placeholder",
+      "origin": "原型实测（.search input::placeholder）",
+      "use": "输入框占位符"
+    },
+    "textLyricsDim": {
+      "value": "rgba(255,255,255,0.56)",
+      "token": "--biu-text-lyrics-dim",
+      "origin": "原型实测（.lyrics-line）",
+      "use": "非当前行歌词"
+    },
+    "composite": {
+      "appBackground": {
+        "token": "--biu-app-bg",
+        "parts": ["#08080A", "rgba(255,255,255,0.022)", "rgba(90,140,255,0.03)"],
+        "rule": "两层极弱径向环境光叠在底板色上；不得替换为纯色 #08080A。"
+      },
+      "topbarBackground": {
+        "token": "--biu-topbar-bg",
+        "parts": ["#1A1A1C", "#161618", "#131315"],
+        "rule": "顶栏底是纵向合成渐变，不是纯色 #161618。停止点 0% / 46% / 100%。"
+      },
+      "immersiveBackground": {
+        "token": "--biu-immersive-bg",
+        "parts": ["#06060B", "rgba(30,114,166,0.49)", "rgba(108,78,158,0.47)", "rgba(55,49,90,0.6)"],
+        "rule": "左缘竖向紫雾（峰值 y≈43%）+ 顶部横向冷蓝雾；右上与右下是纯暗底，**不存在右下蓝光**。参数为 14 个采样点的数值拟合结果（平均色差 1.65）。若视觉上有疑虑，以 run.sh --screen 10-now-playing 的采样色差为准。"
+      }
+    }
+  },
+  "material": {
+    "glass": {
+      "fill": "rgba(255,255,255,0.16)",
+      "border": "rgba(255,255,255,0.18)",
+      "blur": "20px",
+      "token": "--biu-surface-glass",
+      "rule": "白 16% + 描边白 + 背景模糊 20",
+      "borderToken": "--biu-glass-border"
+    },
+    "scrim": {
+      "value": "rgba(0,0,0,0.26)",
+      "token": "--biu-scrim",
+      "rule": "只用于可读性，统一 26%，不作为装饰"
+    },
+    "scrimVeil": {
+      "token": "--biu-scrim-veil",
+      "stops": ["rgba(0,0,0,0.92)", "rgba(0,0,0,0.62)", "rgba(0,0,0,0.26)", "rgba(0,0,0,0)"],
+      "rule": "底部渐隐：0.92 → 0.62(38%) → 0.26(72%) → 0(100%)"
+    },
+    "radius": {
+      "image": "0px",
+      "tile": "12px",
+      "panel": "20px",
+      "chip": "8px",
+      "window": "12px",
+      "pill": "999px",
+      "field": "999px",
+      "rule": "界面里没有直角卡片",
+      "tokens": {
+        "image": "--biu-radius-image",
+        "tile": "--biu-radius-md",
+        "panel": "--biu-radius-lg",
+        "chip": "--biu-radius-sm",
+        "window": "--biu-radius-window",
+        "pill": "--biu-radius-pill",
+        "field": "--biu-radius-pill"
+      }
+    }
+  },
+  "typography": {
+    "family": "-apple-system, BlinkMacSystemFont, \"SF Pro Display\", \"SF Pro Text\", \"PingFang SC\", \"Helvetica Neue\", \"Microsoft YaHei\", sans-serif",
+    "familyNumeric": "\"SF Pro Display\", -apple-system, \"Helvetica Neue\", sans-serif",
+    "scale": {
+      "pageTitle": {
+        "size": "56px",
+        "weight": 600,
+        "lineHeight": 1.16,
+        "letterSpacing": "-1px",
+        "token": "--biu-type-page-title",
+        "role": "满幅标题"
+      },
+      "trackTitle": {
+        "size": "40px",
+        "weight": 600,
+        "lineHeight": 1.2,
+        "letterSpacing": "-0.8px",
+        "token": "--biu-type-track-title",
+        "role": "曲名"
+      },
+      "lead": {
+        "size": "22px",
+        "weight": 400,
+        "lineHeight": 1.27,
+        "token": "--biu-type-lead",
+        "role": "页面副标题"
+      },
+      "small": {
+        "size": "17px",
+        "weight": 400,
+        "lineHeight": 1.62,
+        "token": "--biu-type-small",
+        "role": "歌词与浮层小字"
+      },
+      "body": {
+        "size": "15px",
+        "weight": 400,
+        "lineHeight": 1.33,
+        "token": "--biu-type-body",
+        "role": "列表正文与元信息"
+      },
+      "label": {
+        "size": "13px",
+        "weight": 400,
+        "lineHeight": 1.6,
+        "token": "--biu-type-label",
+        "role": "标签与徽标"
+      },
+      "micro": {
+        "size": "12px",
+        "weight": 400,
+        "lineHeight": 1.33,
+        "token": "--biu-type-micro",
+        "role": "表头与角标"
+      }
+    },
+    "numeric": "所有时间、时长、进度、计数使用 tabular-nums"
+  },
+  "geometry": {
+    "stage": {
+      "width": "1440px",
+      "height": "900px"
+    },
+    "topbar": {
+      "height": "71px"
+    },
+    "playbar": {
+      "height": "88px"
+    },
+    "gutter": "64px",
+    "list": {
+      "rowHeight": "68px",
+      "artWidth": "100px",
+      "artHeight": "56px",
+      "artRatio": "16:9",
+      "artRadius": "6px",
+      "trackGap": "31px",
+      "col4": "220px",
+      "col5": "152px",
+      "listPadRight": "40px",
+      "separator": "无分隔线",
+      "currentState": "整行圆角高亮，左右通栏、上下内缩 2px，填充 rgba(255,255,255,0.07)"
+    },
+    "filterBar": {
+      "height": "48px",
+      "pillHeight": "36px",
+      "pillGap": "4px",
+      "innerPadding": "6px"
+    },
+    "immersive": {
+      "art": "639 × 359（设计稿索引原文；原型实现 649 × 365，P5 收敛）",
+      "gridGap": "47px",
+      "progressY": 700,
+      "timesY": 720,
+      "controlsBand": [752, 808],
+      "playButton": "56px",
+      "playButtonShape": "56 × 56 圆片"
+    },
+    "grid": {
+      "tileMinWidth": "206px",
+      "gap": "20px",
+      "tileArtRatio": "16:9"
+    }
+  },
+  "tolerances": {
+    "bandOffsetPx": 2,
+    "meanLuminanceDiffMax": 12,
+    "hardAnchorsPx": 1,
+    "hardAnchors": [
+      "topbar.height",
+      "playbar.height",
+      "gutter",
+      "list.rowHeight",
+      "list.artWidth",
+      "list.artHeight",
+      "list.col4",
+      "list.col5",
+      "list.listPadRight",
+      "filterBar.height",
+      "filterBar.pillHeight"
+    ],
+    "explain": "hardAnchors 为 L1：渲染实测 vs 设计实测，零偏差（默认 1px 容差）。bandOffsetPx 用于 L2 结构带（H1 / 导语 / 筛选条 / 播放栏）的起点。内容带（列表 / 右列 / 注解带）改用覆盖率判定，阈值见 verify.py 的 CONTENT_COVERAGE_MIN。meanLuminanceDiffMax 为 L3 整屏平均亮度差上限。",
+    "contrastDeltaMax": 0.05
+  },
+  "screens": [
+    {
+      "no": "01",
+      "name": "我的音乐库",
+      "designPage": 2,
+      "prototype": "screens/01-library.html",
+      "route": "/library",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 121,
+        "leadTop": 197,
+        "filterTop": 222,
+        "noteTop": 693
+      },
+      "variants": ["page-lead--low", "filterbar--tight", "note--low"],
+      "hasRowPitch": false
+    },
+    {
+      "no": "02",
+      "name": "我的收藏 · 详情",
+      "designPage": 3,
+      "prototype": "screens/02-playlist-detail.html",
+      "route": "/collection/:id",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 122,
+        "leadTop": 192,
+        "filterTop": 236,
+        "noteTop": 653
+      },
+      "variants": ["note", "modal"],
+      "hasRowPitch": true
+    },
+    {
+      "no": "03",
+      "name": "稍后播放",
+      "designPage": 4,
+      "prototype": "screens/03-watch-later.html",
+      "route": "/later",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 122,
+        "leadTop": 192,
+        "filterTop": 236,
+        "noteTop": 653
+      },
+      "variants": ["page-head--narrow", "note"],
+      "hasRowPitch": true
+    },
+    {
+      "no": "04",
+      "name": "本地音乐",
+      "designPage": 5,
+      "prototype": "screens/04-local-music.html",
+      "route": "/local-music",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 121,
+        "leadTop": 198,
+        "filterTop": 244,
+        "noteTop": 694
+      },
+      "variants": ["page-lead--low", "filterbar--loose", "note--lower"],
+      "hasRowPitch": false
+    },
+    {
+      "no": "05",
+      "name": "下载管理",
+      "designPage": 6,
+      "prototype": "screens/05-downloads.html",
+      "route": "/download-list",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 122,
+        "leadTop": 192,
+        "filterTop": 236,
+        "noteTop": 653
+      },
+      "variants": ["note", "tracklist--download"],
+      "hasRowPitch": true
+    },
+    {
+      "no": "06",
+      "name": "搜索结果",
+      "designPage": 7,
+      "prototype": "screens/06-search.html",
+      "route": "/search",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 131,
+        "leadTop": 197,
+        "filterTop": 240,
+        "noteTop": 598
+      },
+      "variants": ["note--high", "tracklist--search", "section--tight"],
+      "hasRowPitch": true
+    },
+    {
+      "no": "07",
+      "name": "发现音乐 · 卡片",
+      "designPage": 8,
+      "prototype": "screens/07-discover-card.html",
+      "route": "/",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 111,
+        "leadTop": 186,
+        "filterTop": 226,
+        "noteTop": 698
+      },
+      "variants": ["head-main--flat", "section--push", "note--lowest", "topbar-note"],
+      "hasRowPitch": false
+    },
+    {
+      "no": "08",
+      "name": "发现音乐 · 列表",
+      "designPage": 9,
+      "prototype": "screens/08-discover-list.html",
+      "route": "/",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 122,
+        "leadTop": 192,
+        "filterTop": 236,
+        "noteTop": 653
+      },
+      "variants": ["note", "topbar-note"],
+      "hasRowPitch": true
+    },
+    {
+      "no": "09",
+      "name": "播放队列",
+      "designPage": 10,
+      "prototype": "screens/09-queue.html",
+      "route": "/queue",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 122,
+        "leadTop": 192,
+        "filterTop": 236,
+        "noteTop": 653
+      },
+      "variants": ["note"],
+      "shellChange": "由 components/music-playlist-drawer 提升为独立路由页，播放栏保留",
+      "hasRowPitch": true
+    },
+    {
+      "no": "10",
+      "name": "正在播放 · 沉浸",
+      "designPage": 11,
+      "prototype": "screens/10-now-playing.html",
+      "route": "/now-playing",
+      "scroll": false,
+      "immersive": true,
+      "anchors": {
+        "topbar": null,
+        "playbar": null,
+        "art": [0, 0, 649, 365],
+        "progressY": 700,
+        "controlsBand": [752, 808]
+      },
+      "variants": ["note--inline", "np-mode-seg"],
+      "shellChange": "由 components/full-screen-player 提升为沉浸态路由，隐藏顶栏与播放栏",
+      "hasRowPitch": false
+    },
+    {
+      "no": "11",
+      "name": "设置",
+      "designPage": 12,
+      "prototype": "screens/11-settings.html",
+      "route": "/settings",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 122,
+        "leadTop": 192,
+        "filterTop": 236,
+        "noteTop": 653
+      },
+      "variants": ["note", "tracklist--settings"],
+      "hasRowPitch": true
+    },
+    {
+      "no": "12",
+      "name": "迷你播放器与系统集成",
+      "designPage": 13,
+      "prototype": "screens/12-mini-player.html",
+      "route": "/mini-player",
+      "scroll": true,
+      "anchors": {
+        "topbar": [0, 71],
+        "h1Top": 122,
+        "leadTop": 192,
+        "filterTop": 236,
+        "noteTop": 704
+      },
+      "variants": ["note--footer", "tracklist--mini"],
+      "hasRowPitch": false
+    }
+  ],
+  "extensionSurfaces": [
+    {
+      "name": "B站历史",
+      "currentRoute": "/history",
+      "entry": "头像菜单",
+      "decision": "沿用同一套 ui 组件与令牌，不单独出视觉稿，不新造令牌"
+    },
+    {
+      "name": "我的关注 / 关注动态",
+      "currentRoute": "/follow",
+      "entry": "头像菜单",
+      "decision": "同上"
+    },
+    {
+      "name": "创作者主页",
+      "currentRoute": "/user/:id",
+      "entry": "行内跳转",
+      "decision": "同上"
+    },
+    {
+      "name": "用户主页",
+      "currentRoute": "/user/:id",
+      "entry": "行内跳转",
+      "decision": "同上"
+    },
+    {
+      "name": "设计系统展示页",
+      "currentRoute": "/design-system",
+      "entry": "仅开发环境",
+      "decision": "保留，作为组件与令牌的活文档"
+    }
+  ],
+  "topbarSegments": {
+    "rule": "顶栏中部分段组由当前路由决定，不是全局导航。品牌点击回 /，头像承载次级入口。",
+    "byRoute": {
+      "/library": ["我的歌单", "我收藏的", "发现音乐"],
+      "/collection/:id": ["收藏夹 · 11", "合集 · 21", "系列 · 31"],
+      "/later": ["全部", "近 7 天", "近 30 天"],
+      "/local-music": ["全部目录", "D 盘 · Lossless", "E 盘 · Live 录音"],
+      "/download-list": ["全部", "音频", "视频"],
+      "/search": ["音乐视频 · 9", "创作者 · 2"],
+      "/": ["音乐分区", "单一模块"],
+      "/queue": ["全部", "音乐视频", "本地文件"],
+      "/settings": ["常规", "播放", "高级"],
+      "/mini-player": ["迷你播放器", "托盘", "全局快捷键"],
+      "/now-playing": ["封面", "歌词", "视频"]
+    }
+  },
+  "globalChrome": {
+    "brand": {
+      "text": "Biu",
+      "action": "回到 /"
+    },
+    "search": {
+      "placeholder": "搜索音乐视频或创作者",
+      "hotkey": "Ctrl K",
+      "constraint": "search_type 仅 video / bili_user，不得承诺搜索歌曲、专辑、歌手"
+    },
+    "avatar": {
+      "menu": ["我的音乐库", "发现音乐", "B站历史", "我的关注", "设置", "检查更新", "关于", "退出登录"]
+    }
+  },
+  "copyConstraints": [
+    "禁止出现「搜索歌曲 / 专辑 / 歌手」",
+    "禁止出现「每日推荐 / 私人 FM / 猜你喜欢」",
+    "发现音乐必须标注来源为 B 站音乐分区（1003），且注明非个性化推荐",
+    "已下线分区（流行 / 鬼畜）需以 topbar-note 显式标注"
+  ],
+  "immersiveGeometry": {
+    "artLeft": 64,
+    "artTop": 60,
+    "artDesignSize": "639 × 359",
+    "prototypeSize": "649 × 365",
+    "knownResidual": "沉浸态封面宽高在自动测量中与背景辉光区间重叠，无法可靠自动取数，因此只锚定左缘与上缘。原型实现宽 649，设计稿索引原文为 639，差 10px（1.6%），已登记为 P5 待收敛项。",
+    "progressY": 700,
+    "bottomTop": 752
+  },
+  "prototypeBaseline": {
+    "capturedAt": "2026-09-25",
+    "command": "bash tools/design-fidelity/run.sh --all",
+    "report": "docs/design/evidence/prototype-baseline.txt",
+    "threshold": 12,
+    "passed": 4,
+    "total": 12,
+    "note": "原型是本轮之前达成过的参考实现，不是验收线。verifier 的比对对象是设计稿 PNG；原型基线用于给每屏一个「必须超过」的起点。",
+    "screens": {
+      "01": {
+        "meanLuminanceDiff": 12.2,
+        "failedGates": ["L3", "list", "right"]
+      },
+      "02": {
+        "meanLuminanceDiff": 12.17,
+        "failedGates": ["L3"]
+      },
+      "03": {
+        "meanLuminanceDiff": 9.45,
+        "failedGates": []
+      },
+      "04": {
+        "meanLuminanceDiff": 7.94,
+        "failedGates": ["list", "right"]
+      },
+      "05": {
+        "meanLuminanceDiff": 8.73,
+        "failedGates": ["note", "rowPitch"]
+      },
+      "06": {
+        "meanLuminanceDiff": 9.18,
+        "failedGates": ["filter", "list", "note", "right", "rowPitch"]
+      },
+      "07": {
+        "meanLuminanceDiff": 14.55,
+        "failedGates": ["L3", "filter", "lead", "list", "note", "playbar", "playbarHeight", "right", "topbarHeight"]
+      },
+      "08": {
+        "meanLuminanceDiff": 9.66,
+        "failedGates": []
+      },
+      "09": {
+        "meanLuminanceDiff": 7.87,
+        "failedGates": []
+      },
+      "10": {
+        "meanLuminanceDiff": 11.46,
+        "failedGates": ["infoTitle", "lyrics"]
+      },
+      "11": {
+        "meanLuminanceDiff": 7.06,
+        "failedGates": []
+      },
+      "12": {
+        "meanLuminanceDiff": 9.73,
+        "failedGates": ["list", "note", "right"]
+      }
+    }
+  },
+  "tokenMap": {
+    "geometry.stage.width": "--biu-layout-stage-w",
+    "geometry.stage.height": "--biu-layout-stage-h",
+    "geometry.topbar.height": "--biu-layout-topbar-h",
+    "geometry.playbar.height": "--biu-layout-player-h",
+    "geometry.gutter": "--biu-layout-gutter",
+    "geometry.list.rowHeight": "--biu-layout-row-h",
+    "geometry.list.artWidth": "--biu-layout-art-w",
+    "geometry.list.artHeight": "--biu-layout-art-h",
+    "geometry.list.artRadius": "--biu-layout-art-radius",
+    "geometry.list.trackGap": "--biu-layout-track-gap",
+    "geometry.list.col4": "--biu-layout-col-4",
+    "geometry.list.col5": "--biu-layout-col-5",
+    "geometry.list.listPadRight": "--biu-layout-list-pad-r",
+    "geometry.filterBar.height": "--biu-layout-filterbar-h",
+    "geometry.filterBar.pillHeight": "--biu-layout-pill-h",
+    "geometry.filterBar.pillGap": "--biu-layout-pill-gap",
+    "geometry.filterBar.innerPadding": "--biu-layout-pill-pad",
+    "geometry.grid.tileMinWidth": "--biu-layout-tile-min-w",
+    "geometry.grid.gap": "--biu-layout-grid-gap",
+    "geometry.immersive.gridGap": "--biu-layout-immersive-gap",
+    "geometry.immersive.progressY": "--biu-layout-immersive-progress-y",
+    "geometry.immersive.timesY": "--biu-layout-immersive-times-y",
+    "geometry.immersive.playButton": "--biu-layout-play-button",
+    "material.glass.blur": "--biu-blur-glass"
+  },
+  "excludedFromPalette": {
+    "placeholderArt": {
+      "rule": "占位封面渐变（linear-gradient(150deg, #3a3a46, #1c1c22) 等）属于数据夹具，不是设计令牌。",
+      "target": "tools/design-fidelity/fixtures/"
+    },
+    "componentPrivateComposites": {
+      "rule": "单组件私有合成色在对应组件阶段按原型实测补入 palette.css 并同步本文件；禁止在组件代码里就地写字面值。"
+    }
+  }
+}

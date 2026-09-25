@@ -1,0 +1,140 @@
+/* ============================================================================
+   Biu 2.0 · C+ 「满幅剧场 · 能力可读版」设计令牌
+   来源：Biu 2.0 C+ 视觉稿（定性卡 + 12 屏 + 色板），第 14 页「色板 / 排版 / 材质」。
+   规则：业务样式只允许引用本文件变量，不允许出现字面色值。
+   ========================================================================== */
+
+:root {
+  /* ---- 色彩 · 色板原文 -------------------------------------------------
+     #000000 影像底 · 白 16% 玻璃圆片 · #FFFFFF 主文字与播放键
+     #CCCCCC 次文字 · #2997FF 强调 · #D2D2D7 胶片灰                      */
+  --c-image-bed: #000000;
+  --c-app-bg: #08080a; /* 应用底板（实测，非纯黑） */
+  --c-topbar: #161618; /* 顶栏底（实测） */
+  --c-playbar: #0e0e11; /* 播放栏底（实测） */
+  --c-text: #ffffff;
+  --c-text-2: #cccccc;
+  --c-text-3: #a1a1a6;
+  --c-text-4: #8e8e93;
+  --c-text-5: #6e6e73;
+  --c-accent: #2997ff;
+  --c-film: #d2d2d7;
+
+  /* 补充真实能力色 */
+  --c-quality: #5ab4ff; /* 音质徽标 */
+  --c-dir: #2997ff; /* 本地目录徽标 */
+  --c-danger: #ff6b6b; /* 危险操作 */
+
+  /* 本地格式色 */
+  --c-fmt-flac: #5ab4ff;
+  --c-fmt-wav: #7ed8a8;
+  --c-fmt-aiff: #e5c07b;
+  --c-fmt-m4a: #b99be8;
+  --c-fmt-mp3: #c8c8ce;
+  --c-fmt-wma: #c8c8ce;
+
+  /* ---- 玻璃与表面 · 白 16% + 描边白 + 背景模糊 20 -------------------- */
+  --blur-glass: 20px;
+  --glass: rgba(255, 255, 255, 0.16);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-strong: rgba(255, 255, 255, 0.24);
+
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-hover: rgba(255, 255, 255, 0.1);
+  --surface-sunken: rgba(255, 255, 255, 0.13);
+  --surface-field: rgba(255, 255, 255, 0.17);
+
+  --line: rgba(255, 255, 255, 0.1);
+  --line-weak: rgba(255, 255, 255, 0.06);
+  --line-strong: rgba(255, 255, 255, 0.16);
+
+  /* 遮罩只用于可读性：统一 26% + 底部渐隐，不作为装饰 */
+  --scrim: rgba(0, 0, 0, 0.26);
+  --scrim-veil: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.62) 38%,
+    rgba(0, 0, 0, 0.26) 72%,
+    rgba(0, 0, 0, 0) 100%
+  );
+
+  /* ---- 圆角 · 0 满幅影像 / 999 圆片，界面里没有直角卡片 -------------- */
+  --r-image: 0px;
+  --r-tile: 12px;
+  --r-panel: 20px;
+  --r-field: 999px;
+  --r-pill: 999px;
+  --r-chip: 8px;
+  --r-window: 12px;
+
+  /* ---- 排版 · 56/600 满幅标题 · 40/600 曲名 · 17/400 歌词与浮层小字 --- */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC",
+    "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  --font-num: "SF Pro Display", -apple-system, "Helvetica Neue", sans-serif;
+
+  --fs-page-title: 56px; /* 满幅标题 */
+  --fw-page-title: 600;
+  --lh-page-title: 1.16;
+
+  --fs-track-title: 40px; /* 曲名 */
+  --fw-track-title: 600;
+  --lh-track-title: 1.2;
+
+  --fs-small: 17px; /* 歌词与浮层小字 */
+  --fw-small: 400;
+  --lh-small: 1.62;
+
+  /* 派生字号（同族，按 1.15 阶梯收敛） */
+  --fs-lead: 22px; /* 页面副标题 */
+  --fs-body: 15px; /* 列表正文 */
+  --fs-meta: 15px; /* 元信息 */
+  --fs-label: 13px; /* 标签 / 徽标 */
+  --fs-micro: 12px; /* 表头 / 角标 */
+
+  /* ---- 间距 · 4 的倍数 ------------------------------------------------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ---- 层级 ------------------------------------------------------------ */
+  --z-content: 1;
+  --z-note: 20;
+  --z-playbar: 40;
+  --z-topbar: 50;
+
+  /* ---- 动效 ------------------------------------------------------------ */
+  --ease-fast: 120ms cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-base: 180ms cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-overlay: 240ms cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* ---- 骨架几何（源自设计稿实测） ------------------------------------- */
+  --stage-w: 1440px;
+  --stage-h: 900px;
+  --topbar-h: 71px;
+  --playbar-h: 88px;
+  --gutter: 64px;
+
+  /* 列表：行高 68 / 缩略图 100×56（16:9）/ 右列 220 + 152，右缩进 40 */
+  --row-h: 68px;
+  --art-w: 100px;
+  --art-h: 56px;
+  --track-gap: 31px;
+  --col4: 220px;
+  --col5: 152px;
+  --list-pad-r: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ease-fast: 1ms linear;
+    --ease-base: 1ms linear;
+    --ease-overlay: 1ms linear;
+  }
+}

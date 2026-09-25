@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>02 我的收藏 · 播放列表详情 · Biu 2.0 C+ 视觉稿</title>
+    <link rel="stylesheet" href="../assets/tokens.css" />
+    <link rel="stylesheet" href="../assets/app.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand">Biu</div>
+        <nav class="tabgroup">
+          <button class="tab is-active">收藏夹 · 11</button>
+          <button class="tab">合集 · 21</button>
+          <button class="tab">系列 · 31</button>
+        </nav>
+        <div class="topbar-right">
+          <label class="search">
+            <svg class="i"><use href="#i-search"></use></svg>
+            <input placeholder="搜索收藏夹与合集" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="head-main">
+          <h1 class="page-title">我的收藏 · 播放列表详情</h1>
+          <p class="page-lead">收藏夹 / 合集 / 系列 共用一套详情模板，仅数据类型不同。</p>
+          <div class="filterbar">
+            <button class="pill pill--primary">全部播放</button>
+            <button class="pill pill--secondary">随机播放</button>
+            <button class="pill pill--neutral">收藏 · 取消收藏</button>
+            <button class="pill pill--accent">批量下载音频 · 已选 12</button>
+            <button class="pill pill--neutral">更多 ▾ · 编辑 / 清理失效 / 删除</button>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2 class="section-title">默认收藏夹 · 214 个内容</h2>
+          </div>
+          <div class="tracklist">
+            <div class="track-head">
+              <span>#</span>
+              <span>内容</span>
+              <span>收藏于 · 分P</span>
+              <span class="track-cell--end">时长</span>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">01</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3a3a46, #1c1c22)"></div>
+                <div class="track-text">
+                  <div class="track-name">「神呀，接住她的眼泪吧」— 这一首歌完整版来啦</div>
+                  <div class="track-sub">音乐综合 · 来自默认收藏夹</div>
+                </div>
+              </div>
+              <div class="track-cell">收藏于 09-21 · 分P 1/1</div>
+              <div class="track-cell track-cell--end">03:18</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">02</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3c3644, #1d1b22)"></div>
+                <div class="track-text">
+                  <div class="track-name">【猎 Hunter】「荒野求生的小曲」</div>
+                  <div class="track-sub">原创音乐 · 来自默认收藏夹</div>
+                </div>
+              </div>
+              <div class="track-cell">收藏于 09-18 · 分P 1/2</div>
+              <div class="track-cell track-cell--end">02:47</div>
+            </div>
+
+            <div class="track-row">
+              <div class="track-index">03</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #3d3a33, #1e1d19)"></div>
+                <div class="track-text">
+                  <div class="track-name">我有两颢搞丸！！！</div>
+                  <div class="track-sub">翻唱 · 来自默认收藏夹</div>
+                </div>
+              </div>
+              <div class="track-cell">收藏于 09-18 · 分P 1/2</div>
+              <div class="track-cell track-cell--end">02:47</div>
+            </div>
+
+            <div class="track-row is-current">
+              <div class="track-index">04</div>
+              <div class="track-main">
+                <div class="track-art" style="--tile-art: linear-gradient(150deg, #333c37, #191d1b)"></div>
+                <div class="track-text">
+                  <div class="track-name">录歌 和好朋友在学校的最后一个晚上</div>
+                  <div class="track-sub">校园音乐 · 来自默认收藏夹</div>
+                </div>
+              </div>
+              <div class="track-cell">收藏于 09-12 · 分P 1/1</div>
+              <div class="track-cell track-cell--end">05:11</div>
+              <div class="track-actions">
+                <button class="round round--lead"><svg class="i"><use href="#i-play"></use></svg></button>
+                <span class="sep"></span>
+                <button class="round"><svg class="i"><use href="#i-prev"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-next"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-queue-add"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-heart"></use></svg></button>
+                <button class="round"><svg class="i"><use href="#i-download"></use></svg></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="modal modal--download">
+          <div class="modal-title">批量下载音频</div>
+          <div class="modal-sub">无选音质与范围，再统一入队（download-select-modal）</div>
+          <div class="modal-line">音质：自动 30232 · 高清 30280 · 无损 30251 · 杜比 30250</div>
+          <div class="modal-line">范围：全部 214 首 · 仅已选 12 首 · 跳过已下载</div>
+          <div class="modal-foot"><button class="btn-accent">加入下载队列</button></div>
+        </aside>
+
+        <p class="note">
+          三种集合类型（CollectionType 11 / 21 / 31）在代码里是三条数据通路，PRD 7.2 要求统一为同一个「播放列表详情」模板：播放全部、收藏、批量下载音频、编辑
+          / 清理失效 / 删除都挂在这一层。
+        </p>
+      </main>
+
+      <footer class="playbar">
+        <div class="pb-left">
+          <div class="pb-cover"></div>
+          <div class="pb-meta">
+            <div class="pb-title">《雨落长街》· 全专上线</div>
+            <div class="pb-sub">
+              <span>卧室音乐计划 · 新碟 Banner</span>
+              <span class="tag tag--quality">无损 30251</span>
+            </div>
+          </div>
+        </div>
+        <div class="pb-mid">
+          <div class="pb-transport">
+            <button class="pb-icon"><svg class="i"><use href="#i-prev"></use></svg></button>
+            <button class="pb-play"><svg class="i"><use href="#i-play"></use></svg></button>
+            <button class="pb-icon"><svg class="i"><use href="#i-next"></use></svg></button>
+          </div>
+          <div class="pb-progress"><span style="width: 36%"></span></div>
+          <div class="pb-time">01:22 / 03:48</div>
+        </div>
+        <div class="pb-right">
+          <button class="pb-queue"><svg class="i"><use href="#i-list"></use></svg>队列 · 12</button>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../assets/icons.js"></script>
+    <script src="../assets/stage.js"></script>
+  </body>
+</html>
