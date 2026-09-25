@@ -98,6 +98,12 @@
   --biu-layout-tile-min-w: 206px;
   --biu-layout-grid-gap: 20px;
 
+  /* 瓦片文案块（.tile-copy）。设计稿第 2 页实测：bottom 24（原型 16）、
+     元信息与标题间距 0（原型 6）—— 设计稿的标题与元信息是贴紧的一组。
+     取证过程见 spec-lock 的 geometry.tileCopy.rule。 */
+  --biu-layout-tile-copy-bottom: 24px;
+  --biu-layout-tile-copy-x: 20px;
+
   /* 浮动弹层固定几何。原型 .modal--download 的 left/top 是 1440×900 基准画布下的
      展示定位，不属于组件几何，故不登记。 */
   --biu-layout-dialog-w: 560px;

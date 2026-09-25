@@ -32,6 +32,14 @@ type Spec = {
       shadow: string;
       shadowToken: string;
     };
+    badge: {
+      defaultChip: string;
+      defaultChipToken: string;
+      defaultTextToken: string;
+      dirChip: string;
+      dirChipToken: string;
+      dirTextToken: string;
+    };
     radius: { tokens: Record<string, string>; [key: string]: unknown };
     scrim: { value: string; token: string };
     scrimVeil: { token: string; stops: string[] };
@@ -390,6 +398,10 @@ describe("几何与真值一致", () => {
     spec.material.modal.borderToken,
     spec.material.modal.blurToken,
     spec.material.modal.shadowToken,
+    // 徽标芯片的两个令牌同样不走 tokenMap：真值沿用 rgba(0,0,0,0.45) 写法，
+    // CSS 侧是 rgb(0 0 0 / 45%)，canonLength 比不出这种写法差。
+    spec.material.badge.defaultChipToken,
+    spec.material.badge.dirChipToken,
   ]) {
     ASSERTED.add(token);
   }
@@ -469,6 +481,23 @@ describe("几何与真值一致", () => {
     for (const stop of stops) {
       expect(resolved, `${token} 缺少停止点 ${stop}`).toContain(canon(stop));
     }
+  });
+
+  test("瓦片来源徽标芯片：黑 45% / 蓝 84%，且都不是白 14% 那档", () => {
+    const { defaultChip, defaultChipToken, dirChip, dirChipToken, dirTextToken } = spec.material.badge;
+
+    expect(canon(resolve(defaultChipToken))).toBe(canon(defaultChip));
+    expect(canon(resolve(dirChipToken))).toBe(canon(dirChip));
+
+    // 徽标芯片与 veil-14 是两个值 —— 这条断言的唯一用途是拦住
+    // 「有人把徽标改回原型的白 14% 芯片」。芯片变亮会让影像上的来源标注
+    // 读作高亮块，与设计稿「压暗的口」相反。
+    expect(canon(resolve(defaultChipToken)), "默认徽标被改回了原型的白 14% 底").not.toBe(
+      canon(resolve("--biu-veil-14")),
+    );
+    // 本地目录徽标的文字是反色墨（深字压亮芯片），不是强调蓝 ——
+    // 蓝字压蓝底会读不出字。
+    expect(resolve(dirTextToken)).toBe(resolve("--biu-inverse-ink"));
   });
 });
 

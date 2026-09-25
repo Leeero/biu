@@ -2,13 +2,24 @@
   "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
   "meta": {
     "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "frozenAt": "2026-09-25",
     "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
+      {
+        "version": "1.3.2",
+        "at": "2026-09-25",
+        "phase": "P3",
+        "changes": [
+          "P3 屏 01（我的音乐库）开工前的原型—设计稿分歧勘定。以 verify.py --target prototype 跑基线时发现原型在此屏 FAIL（L3 12.20 / list / right），逐像素对设计稿第 2 页取证后确认三处偏差出在原型，不在设计稿。",
+          "补录 material.badge：瓦片来源徽标的芯片是**黑 45%**（三枚瓦片实测 alpha 0.45/0.46/0.45），本地目录徽标是**强调蓝 84%** + 深色字；均无白描边。原型 .badge 的白 14% 底 + 白 12% 描边与设计稿不符 —— 白芯片在影像上读作「浅色块」，设计稿读作「压暗的口」。新增令牌 --biu-scrim-badge / --biu-dir-chip。veil-12 / veil-14 的 use 里「徽标」两字随之移除（值本身保留，其他消费者不变）。",
+          "补录 material.tileActionBand：五枚**等大** 34px 玻璃圆片，无主操作反色档、无分隔线。横向实测 210px = 5×34+4×6+2×8 与原型几何一致；差异只在原型多画了 .round--lead（反色主操作）与 .sep。设计稿注解原文「露出 5 个主操作」证实五个并列。veil-22 保留（.follow 仍用）。",
+          "补录 geometry.tileCopy：文案块 bottom 24（原型 16）、元信息与标题间距 0（原型 6）。两枚瓦片的墨迹中心（449 / 473.5）与新解精确吻合，原型解出的元信息位置低 5.5px。"
+        ]
+      },
       {
         "version": "1.3.1",
         "at": "2026-09-25",
@@ -258,14 +269,14 @@
       "veil12": {
         "value": "rgba(255,255,255,0.12)",
         "token": "--biu-veil-12",
-        "origin": "原型实测（.badge 描边 / .tag--plain 描边 / .follow.is-on）",
-        "use": "徽标与标签描边、已关注态底"
+        "origin": "原型实测（.tag--plain 描边 / .follow.is-on）",
+        "use": "标签描边、已关注态底"
       },
       "veil14": {
         "value": "rgba(255,255,255,0.14)",
         "token": "--biu-veil-14",
-        "origin": "原型实测（.badge 底 / .track-actions 底 / .pill--neutral 描边 / .modal 描边）",
-        "use": "徽标底、行内操作带底、弹层描边"
+        "origin": "原型实测（.track-actions 底 / .pill--neutral 描边 / .modal 描边）",
+        "use": "行内操作带底、弹层描边"
       },
       "veil18": {
         "value": "rgba(255,255,255,0.18)",
@@ -276,14 +287,14 @@
       "veil20": {
         "value": "rgba(255,255,255,0.2)",
         "token": "--biu-veil-20",
-        "origin": "原型实测（.actionband 描边 / .track-actions .sep）",
-        "use": "玻璃操作带描边、操作带分隔线"
+        "origin": "原型实测（.actionband 描边）",
+        "use": "玻璃操作带描边"
       },
       "veil22": {
         "value": "rgba(255,255,255,0.22)",
         "token": "--biu-veil-22",
-        "origin": "原型实测（.actionband .sep / .follow 描边）",
-        "use": "动作分隔线、关注按钮描边"
+        "origin": "原型实测（.follow 描边）",
+        "use": "关注按钮描边"
       },
       "veil28": {
         "value": "rgba(255,255,255,0.28)",
@@ -340,6 +351,32 @@
       "token": "--biu-scrim-veil",
       "stops": ["rgba(0,0,0,0.92)", "rgba(0,0,0,0.62)", "rgba(0,0,0,0.26)", "rgba(0,0,0,0)"],
       "rule": "底部渐隐：0.92 → 0.62(38%) → 0.26(72%) → 0(100%)"
+    },
+    "badge": {
+      "defaultChip": "rgba(0,0,0,0.45)",
+      "defaultChipToken": "--biu-scrim-badge",
+      "defaultText": "#FFFFFF",
+      "defaultTextToken": "--biu-text-primary",
+      "defaultBorder": "none",
+      "dirChip": "rgba(41,151,255,0.84)",
+      "dirChipToken": "--biu-dir-chip",
+      "dirTextToken": "--biu-inverse-ink",
+      "rule": "瓦片来源徽标的芯片材质（P3 屏 01 补录）。设计稿第 2 页三枚默认徽标实测黑 45%（芯片内 RGB 中位 23,23,28 / 28,26,31 / 25,28,30，对应瓦片底 43,43,51 / 51,49,58 / 46,52,56，alpha 0.45/0.46/0.45）；本地目录徽标实测强调蓝 84%（42,134,221 over 54,50,44，等价于 41,151,255 at 84% 叠加）。**原型的 .badge（白 14% 底 + 白 12% 描边）与设计稿不符**：设计稿芯片比瓦片底更暗、且无可辨描边（顶缘行实测与瓦片底同值）。这是原型与设计稿的又一处分歧，实现按设计稿 —— 白 14% 芯片在深色封面上读作「浅色块」，黑 45% 读作「压暗的口」，设计稿注解里徽标是影像上的来源标注，不是高亮块。",
+      "geometry": "高 24、左右内边距 9、圆角 8（chip 档）、字号 12 —— 与原型一致，不变"
+    },
+    "tileActionBand": {
+      "circle": "34px",
+      "circleCount": 5,
+      "gap": "6px",
+      "padding": "7px 8px",
+      "border": "rgba(255,255,255,0.2)",
+      "borderToken": "--biu-veil-20",
+      "blur": "20px",
+      "background": "rgba(255,255,255,0.16)",
+      "backgroundToken": "--biu-surface-glass",
+      "iconSize": "17px",
+      "rule": "玻璃操作带 = **五枚等大** 34px 玻璃圆片，无主操作反色档、无分隔线。证据：设计稿第 2 页瓦片 3 实测操作带横向 210px = 5×34 + 4×6 + 2×8（与原型 .actionband 的几何一致）；且设计稿注解原文「玻璃操作带直接露出 5 个主操作」——五个并列，没有层级。**原型的 .round--lead（反色主操作）与 .sep（分隔线）是原型的发挥，实现不随行**。veil-22 令牌保留（.follow 描边仍在用），只是不再用于操作带分隔线。图标用描边形（收藏是线形心形，与设计稿一致），主操作播放为实心三角 —— 与现有 Icon 词汇表一致。",
+      "visibility": "悬停或当前项时露出（设计稿注解原文）"
     },
     "modal": {
       "surface": "rgba(28,28,32,0.86)",
@@ -479,6 +516,12 @@
       "tileMinWidth": "206px",
       "gap": "20px",
       "tileArtRatio": "16:9"
+    },
+    "tileCopy": {
+      "sidePad": "20px",
+      "bottom": "24px",
+      "metaGap": "0px",
+      "rule": "瓦片文案块（.tile-copy）的落点。P3 屏 01 补录：设计稿第 2 页两枚瓦片的标题墨迹中心 449 / 元信息墨迹中心 473.5，与「bottom 24 + 元信息间距 0」的解精确吻合（±0.5px）；原型 app.css 的 bottom 16 + margin-top 6 解出的墨迹中心是 447.5/479，元信息比设计稿低 5.5px。铜牌证据：设计稿的标题与元信息是**贴紧**的一组，原型中间多了一行气口。sidePad 20 与原型一致，不变。"
     },
     "dialog": {
       "width": "560px",
@@ -871,6 +914,8 @@
     "geometry.filterBar.innerPadding": "--biu-layout-pill-pad",
     "geometry.grid.tileMinWidth": "--biu-layout-tile-min-w",
     "geometry.grid.gap": "--biu-layout-grid-gap",
+    "geometry.tileCopy.bottom": "--biu-layout-tile-copy-bottom",
+    "geometry.tileCopy.sidePad": "--biu-layout-tile-copy-x",
     "geometry.dialog.width": "--biu-layout-dialog-w",
     "geometry.dialog.height": "--biu-layout-dialog-h",
     "geometry.immersive.gridGap": "--biu-layout-immersive-gap",
