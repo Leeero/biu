@@ -213,10 +213,17 @@ const collectConsumed = () => {
   const consumed = new Set();
   for (const dir of CONSUMER_DIRS) {
     if (!fs.existsSync(path.join(ROOT, dir))) continue;
-    for (const relative of sh("ls-files", dir).split("\n").filter(Boolean)) {
+    // 必须带上 `--others --exclude-standard`：只列索引会让**未跟踪**的新文件隐形。
+    // 而闸门恰恰是在改动过程中跑的——那时新写的消费方还没被 git add。
+    // 实测过这个盲区：P1 提交前枚举出 33 个消费方，提交后同一份工作树变成 49 个，
+    // 差的 16 个全在尚未跟踪的新文件里。漏掉它们意味着「改一个被新文件消费的令牌」
+    // 不会被判为消费型偏差，正好绕开必须显式确认的那道关。
+    for (const relative of sh("ls-files", "--cached", "--others", "--exclude-standard", dir)
+      .split("\n")
+      .filter(Boolean)) {
       if (relative.startsWith("src/ui/tokens/")) continue;
       if (!/\.(tsx?|css|mjs|cjs|js)$/.test(relative)) continue;
-      // `git ls-files` 覆盖「工作树已删除、但仍在索引里」的文件（如刚被重构删掉的目录）。
+      // `--cached` 会列出「工作树已删除、但仍在索引里」的文件（如刚被重构删掉的目录）。
       // 不过滤会让工具在移动/删除文件后直接崩溃，而不是给出判定结果。
       const full = path.join(ROOT, relative);
       if (!fs.existsSync(full)) continue;
