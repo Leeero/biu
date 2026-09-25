@@ -65,6 +65,38 @@
   --biu-danger-soft: var(--c-danger-soft);
   --biu-danger-line: var(--c-danger-line);
 
+  /* ---- 5b. 白色叠加梯度补档（P2） ------------------------------------- */
+
+  /* 与 palette.css §8 一一对应，命名同样按实际不透明度。
+     已具备语义角色的档位不在此重复（surface-* / glass-* / border-*）。
+     业务侧直接 `var(--biu-veil-N)`：它们是**整值**叠加层，
+     再套一层 alpha 只会得到「二次调暗的半透明」，不属于设计意图。 */
+  --biu-veil-4: var(--c-veil-4);
+  --biu-veil-5-5: var(--c-veil-5-5);
+  --biu-veil-8: var(--c-veil-8);
+  --biu-veil-9: var(--c-veil-9);
+  --biu-veil-12: var(--c-veil-12);
+  --biu-veil-14: var(--c-veil-14);
+  --biu-veil-18: var(--c-veil-18);
+  --biu-veil-20: var(--c-veil-20);
+  --biu-veil-22: var(--c-veil-22);
+  --biu-veil-28: var(--c-veil-28);
+
+  /* 顶栏分段项 / 键帽标签文字。与格式色 mp3 同值但角色不同（见 palette.css §8）。 */
+  --biu-text-chrome-label: var(--c-chrome-label-rgb);
+
+  /* 弹层底与影像底板 */
+  --biu-surface-modal: var(--c-modal-surface);
+  --biu-surface-art-bed: var(--c-art-bed-rgb);
+
+  /* ---- 5c. 弹层投影（P2 补档） ----------------------------------------- */
+
+  /* 浮动弹层的投影。与上面的 --biu-shadow-card / -floating 是**不同的两套**：
+     那两个是上一轮遗留的卡片阴影（P7 随兼容层删除），这一条来自原型的 .modal。
+     投影里含颜色函数，按分层规则必须落在令牌层 —— 业务代码里写
+     `shadow-[0_24px_60px_rgb(...)]` 会被 check-literals 当作字面色值拦下。 */
+  --biu-shadow-modal: 0 24px 60px rgb(var(--c-shadow-umbra-rgb) / 50%);
+
   /* ---- 6. 遮罩（整值） ------------------------------------------------- */
   --biu-scrim: var(--c-scrim);
   --biu-scrim-veil: var(--c-scrim-veil);

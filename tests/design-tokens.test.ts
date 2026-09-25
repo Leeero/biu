@@ -22,6 +22,16 @@ type Spec = {
   palette: Record<string, unknown>;
   material: {
     glass: { fill: string; border: string; blur: string; token: string; borderToken: string };
+    modal: {
+      surface: string;
+      surfaceToken: string;
+      border: string;
+      borderToken: string;
+      blur: string;
+      blurToken: string;
+      shadow: string;
+      shadowToken: string;
+    };
     radius: { tokens: Record<string, string>; [key: string]: unknown };
     scrim: { value: string; token: string };
     scrimVeil: { token: string; stops: string[] };
@@ -293,7 +303,34 @@ describe("色板与真值一致", () => {
     (spec.palette.composite ?? {}) as Record<string, { token: string; parts: string[] }>,
   ).map(([key, entry]) => ({ key, ...entry }));
 
-  for (const { token } of [...scalarCases, ...formatCases, ...compositeCases]) ASSERTED.add(token);
+  // 白色叠加梯度与弹层/影像底板。真值里每档都登记了实际不透明度，
+  // 因此这里可以逐档比对：名字里的数字与取值必须一致，对不上就是有人改了值忘了改名。
+  const overlayCases = Object.entries((spec.palette as { overlay?: Record<string, unknown> }).overlay ?? {})
+    .filter(([, entry]) => typeof (entry as { token?: unknown })?.token === "string")
+    .map(([key, entry]) => ({ key, ...(entry as { value: string; token: string; use: string }) }));
+
+  for (const { token } of [...scalarCases, ...formatCases, ...compositeCases, ...overlayCases]) {
+    ASSERTED.add(token);
+  }
+
+  test.each(overlayCases)("叠加层 $key · $token = $value", ({ token, value }) => {
+    expect(canon(resolve(token))).toBe(canon(value));
+  });
+
+  test("叠加层令牌名里的数字与取值一致（防改名不改值）", () => {
+    for (const { key, token, value } of overlayCases) {
+      const nameStep = Number(key.replace(/^veil/, "").replace(/_/g, "."));
+      if (!Number.isFinite(nameStep)) continue; // modalSurface / artBed 等非数值名不参与
+
+      // 真值沿用逗号十进制写法（与 textPlaceholder 一致），CSS 侧是百分比写法，两种都要认。
+      const percent = value.match(/\/\s*([\d.]+)%\s*\)/)?.[1];
+      const decimal = value.match(/,\s*(0?\.\d+|1)\s*\)/)?.[1];
+      const alpha = percent !== undefined ? Number(percent) : decimal !== undefined ? Number(decimal) * 100 : undefined;
+
+      expect(alpha, `${token} 的取值里读不出透明度：${value}`).toBeDefined();
+      expect(alpha, `${token} 命名为 ${nameStep}% 但取值是 ${alpha}%`).toBeCloseTo(nameStep, 3);
+    }
+  });
 
   test.each(compositeCases)("复合背景 $key · $token 含全部成分", ({ token, parts }) => {
     const resolved = canon(resolve(token));
@@ -346,6 +383,16 @@ describe("几何与真值一致", () => {
   ASSERTED.add(spec.material.glass.borderToken);
   ASSERTED.add(spec.material.scrim.token);
   ASSERTED.add(spec.material.scrimVeil.token);
+  // 弹层的四个令牌不走 tokenMap：投影是复合值（0 24px 60px rgba(...)），
+  // canonLength 只做空白归一，比不出颜色的两种写法，必须在下面显式断言。
+  for (const token of [
+    spec.material.modal.surfaceToken,
+    spec.material.modal.borderToken,
+    spec.material.modal.blurToken,
+    spec.material.modal.shadowToken,
+  ]) {
+    ASSERTED.add(token);
+  }
 
   test("tokenMap 覆盖全部硬锚点", () => {
     const anchors = spec.tolerances.hardAnchors as unknown as string[];
@@ -390,6 +437,25 @@ describe("几何与真值一致", () => {
     expect(canon(resolve(token))).toBe(canon(fill));
     expect(canon(resolve(borderToken))).toBe(canon(border));
     expect(canonLength(resolve("--biu-blur-glass"))).toBe(canonLength(blur));
+  });
+
+  test("弹层材质：底、描边、模糊、投影都与玻璃材质不同", () => {
+    const { surface, surfaceToken, border, borderToken, blur, blurToken, shadow, shadowToken } = spec.material.modal;
+
+    expect(canon(resolve(surfaceToken))).toBe(canon(surface));
+    expect(canon(resolve(borderToken))).toBe(canon(border));
+    expect(canonLength(resolve(blurToken))).toBe(canonLength(blur));
+    expect(canon(resolve(shadowToken))).toBe(canon(shadow));
+
+    // 「弹层 ≠ 玻璃」是本组登记的全部理由。若哪天有人把弹层改成复用玻璃的值，
+    // 上面四条会同时通过（因为改成什么就登记成什么），只有这条能拦住。
+    expect(canon(resolve(blurToken)), "弹层模糊被改成了玻璃的 20px").not.toBe(canon(resolve("--biu-blur-glass")));
+    expect(canon(resolve(surfaceToken)), "弹层底色被改成了玻璃的白 16%").not.toBe(
+      canon(resolve(spec.material.glass.token)),
+    );
+    expect(canon(resolve(borderToken)), "弹层描边被改成了玻璃的 18%").not.toBe(
+      canon(resolve(spec.material.glass.borderToken)),
+    );
   });
 
   test("遮罩：统一 26% 且不作为装饰", () => {
