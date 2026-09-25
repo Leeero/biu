@@ -133,7 +133,7 @@ const SettingsPage = () => {
 
   return (
     <ScrollContainer enableBackToTop className="h-full w-full">
-      <div className="mx-auto w-full max-w-[1180px] px-8 py-7">
+      <div className="w-full py-7">
         <div className="mb-7">
           <h1 className="text-2xl font-semibold">设置</h1>
           <p className="text-default-500 mt-1 text-sm">管理 Biu 的界面、播放与本地应用偏好</p>

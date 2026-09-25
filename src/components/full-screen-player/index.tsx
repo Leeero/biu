@@ -7,8 +7,8 @@ import clsx from "classnames";
 import { readableColor } from "color2k";
 import { useShallow } from "zustand/shallow";
 
-import { Themes } from "@/common/constants/theme";
-import { hexToHsl, resolveTheme, isHex } from "@/common/utils/color";
+import { APP_THEME, Themes } from "@/common/constants/theme";
+import { hexToHsl, isHex } from "@/common/utils/color";
 import AudioWaveform from "@/components/audio-waveform";
 import Lyrics from "@/components/lyrics";
 import { useFullScreenPlayerSettings } from "@/store/full-screen-player-settings";
@@ -39,7 +39,6 @@ const FullScreenPlayer = () => {
     })),
   );
   const primaryColor = useSettings(s => s.primaryColor);
-  const themeMode = useSettings(s => s.themeMode);
   const { showLyrics, showSpectrum, showCover, showBlurredBackground, backgroundColor, spectrumColor, lyricsColor } =
     useFullScreenPlayerSettings(
       useShallow(s => ({
@@ -160,27 +159,24 @@ const FullScreenPlayer = () => {
 
   const computedForegroundHex = useMemo(() => {
     if (showBlurredBackground) return undefined;
-    const baseBg =
-      backgroundColor && isHex(backgroundColor) ? backgroundColor : Themes[resolveTheme(themeMode)].colors!.background;
+    const baseBg = backgroundColor && isHex(backgroundColor) ? backgroundColor : Themes[APP_THEME].colors!.background;
     try {
       return readableColor(baseBg as string);
     } catch {
       return undefined;
     }
-  }, [backgroundColor, themeMode, showBlurredBackground]);
+  }, [backgroundColor, showBlurredBackground]);
 
   const themeVars = useMemo(() => {
-    const vars: React.CSSProperties = {
-      ...cssVars,
-      ["--heroui-primary" as any]: hexToHsl(primaryColor),
-    };
+    // 不再覆写 --heroui-primary：自定义主色入口已随 P1 主题收敛移除，
+    // 主色统一由 hero.ts 的主题配置（C+ 强调色）决定。
+    // 继续在这里写入 primaryColor 会让本组件内的 HeroUI 组件停留在旧主色上。
+    const vars: React.CSSProperties = { ...cssVars };
     if (computedForegroundHex) {
       vars["--heroui-foreground" as any] = hexToHsl(computedForegroundHex);
     }
     return vars;
-  }, [cssVars, primaryColor, computedForegroundHex]);
-
-  const appTheme = useMemo(() => resolveTheme(themeMode), [themeMode]);
+  }, [cssVars, computedForegroundHex]);
 
   if (!playItem) return null;
 
@@ -201,8 +197,9 @@ const FullScreenPlayer = () => {
     >
       <DrawerContent
         className={clsx("bg-background text-foreground relative h-full overflow-hidden", {
-          dark: showBlurredBackground || appTheme === "dark",
-          light: !showBlurredBackground && appTheme === "light",
+          // C+ 只有深色一套皮肤（决策 2）：dark 恒真、light 恒假。
+          dark: true,
+          light: false,
         })}
         style={{
           ...themeVars,

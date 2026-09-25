@@ -93,43 +93,25 @@
     radial-gradient(97% 54% at 33% 6%, var(--c-immersive-haze-c), transparent 84%),
     var(--c-immersive-base);
 
-  /* —— 遗留：品牌与状态色（P1 收敛到 --biu-accent，P7 删除） —— */
-  --biu-color-brand: hsl(var(--heroui-primary));
-  --biu-color-focus: hsl(var(--heroui-primary) / 72%);
-  --biu-color-danger: hsl(var(--heroui-danger));
+  /* —— 遗留：品牌与状态色（P1 已收敛到 C+ 色板，P7 删除） —— */
+
+  /* 决策 2「移除自定义主色」：品牌色不再读 HeroUI 主题变量，直接取 C+ 强调色。
+     写成 rgb(var(--biu-accent)) 而非 var(--biu-accent)——后者是三通道
+     （`41 151 255`），不能直接当颜色用。 */
+  --biu-color-brand: rgb(var(--biu-accent));
+  --biu-color-focus: rgb(var(--biu-accent) / 72%);
+  --biu-color-danger: rgb(var(--biu-danger));
+
+  /* C+ 色板暂无 warning / success 语义（原型未出现这两种状态），
+     保留原值，避免凭直觉发明设计稿里没有的颜色。二者当前无消费方，P7 随兼容层删除。 */
   --biu-color-warning: hsl(var(--heroui-warning));
   --biu-color-success: hsl(var(--heroui-success));
-}
 
-/* ============================================================================
-   遗留兼容层 —— 阶段边界声明
-   ----------------------------------------------------------------------------
-   本段是上一轮重构留下的令牌，**P0 不改其值**（保证 P0 不产生行为变更）。
-   处置计划：
-     · P1 · 主题收敛：删除 .light 分支与自定义主色/圆角/背景色入口，
-       --biu-color-brand / -focus 收敛到 var(--biu-accent)。
-     · P7 · 全部删除，业务代码只剩 --biu-surface-* / --biu-text-* / --biu-type-*。
-   过渡期禁止在此新增任何令牌。
-   ========================================================================== */
+  /* —— 遗留：表面与文字（P1 收敛为深色单一皮肤，P7 删除） —— */
 
-:root,
-.light {
-  --biu-color-canvas: 248 248 250;
-  --biu-color-surface: 255 255 255;
-  --biu-color-surface-raised: 255 255 255;
-  --biu-color-surface-hover: 244 244 246;
-  --biu-color-surface-pressed: 238 238 241;
-  --biu-color-border: 0 0 0;
-  --biu-color-text-primary: 24 24 27;
-  --biu-color-text-secondary: 113 113 122;
-  --biu-color-text-tertiary: 161 161 170;
-  --biu-shadow-card:
-    0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 5%), 0 8px 28px rgb(var(--c-shadow-umbra-rgb) / 5%);
-  --biu-shadow-floating: 0 14px 44px rgb(var(--c-shadow-umbra-rgb) / 14%);
-}
-
-/* 顺序敏感：.dark 与 :root 同特异性，必须排在 :root, .light 之后才生效 */
-.dark {
+  /* C+ 只有深色一套皮肤（决策 2）。原 `:root, .light` 浅色分支已删除，
+     深色值直接落在 :root——旧设置文件即便把 .light 类留在根元素上，
+     也只会回落到这里的深色值：不白屏，且不需要迁移脚本。 */
   --biu-color-canvas: 18 18 20;
   --biu-color-surface: 28 28 31;
   --biu-color-surface-raised: 35 35 39;
@@ -143,3 +125,20 @@
     0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 24%), 0 12px 32px rgb(var(--c-shadow-umbra-rgb) / 22%);
   --biu-shadow-floating: 0 18px 54px rgb(var(--c-shadow-umbra-rgb) / 42%);
 }
+
+/* ============================================================================
+   遗留兼容层 —— 阶段边界声明
+   ----------------------------------------------------------------------------
+   本段是上一轮重构留下的令牌名，值已随 P1 收敛（见上方 :root 内的两段）。
+   P1 已完成的收敛：
+     · 删除浅色分支：`:root, .light` 与 `.dark` 合并进唯一的 `:root`。
+       （保持单一 :root 也是 stylelint no-duplicate-selectors 的要求）
+     · --biu-color-brand / -focus / -danger 改为引用 C+ 色板，不再回退 HeroUI 主题。
+   尚未收敛（**有意保留**）：
+     · --biu-color-canvas / surface-* / text-* 仍用上一轮的深色取值。
+       这些令牌被约 20 个尚未重写的页面消费，取值替换属于**各屏自身的视觉重写**，
+       随 P3–P6 逐屏迁移，不在 P1 的「壳层重建」范围内。
+       （新壳层不复用它们，直接用 C+ 的 --biu-surface-* / --biu-text-*。）
+   终局：P7 全部删除，业务代码只剩 --biu-surface-* / --biu-text-* / --biu-type-*。
+   过渡期禁止在此新增任何令牌。
+   ========================================================================== */

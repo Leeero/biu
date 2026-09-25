@@ -9,7 +9,6 @@ import AsyncButton from "@/components/async-button";
 import { postRelationModify, UserRelationAction } from "@/service/relation-modify";
 import { type RelationStatData } from "@/service/relation-stat";
 import { type SpaceAccInfoData } from "@/service/space-wbi-acc-info";
-import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 
 interface Props {
@@ -21,7 +20,6 @@ interface Props {
 
 const SpaceInfo = ({ spaceInfo, relationStats, relationWithMe, refreshRelation }: Props) => {
   const user = useUser(s => s.user);
-  const themeMode = useSettings(s => s.themeMode);
   const { id } = useParams();
   const isSelf = user?.mid === Number(id);
 
@@ -64,9 +62,10 @@ const SpaceInfo = ({ spaceInfo, relationStats, relationWithMe, refreshRelation }
     }
   };
 
-  const isDarkTheme =
-    themeMode === "dark" || (themeMode === "system" && window.matchMedia?.("(prefers-color-scheme: dark)").matches);
-  const overlayOpacity = isDarkTheme ? 0.5 : 0.3;
+  // C+ 只有深色一套皮肤（决策 2）：不再依据系统主题推算遮罩档位，恒取深色档。
+  // 上一轮这里读 themeMode —— 现在那个设置项已不再影响渲染，继续读会得到
+  // 「系统是浅色、界面却是深色」的错配。
+  const overlayOpacity = 0.5;
 
   if (relationWithMe === UserRelation.Blocked) {
     return (

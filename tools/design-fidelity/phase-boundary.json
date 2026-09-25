@@ -1,13 +1,42 @@
 {
   "phase": "P1",
   "baselineRef": "dcecd03",
-  "baselineNote": "基线 = P0 提交 dcecd03（feat(tokens): 冻结 C+ 令牌真值并建立三道保真护栏）。P1 起从该提交开始比对：P1 会真实改动壳层令牌（顶栏 64→71、播放栏 84→88、内容宽度 1440→none、删除侧栏宽度），每一条都必须在此处声明。",
-  "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。未登记的偏差会让 check-phase-drift.mjs 退出码 1；被业务代码消费的令牌若发生有效值变更，必须额外标 visualImpact: true 显式确认「这会掉像素」。",
-  "intendedChanges": {},
+  "baselineNote": "基线 = P0 提交 dcecd03（feat(tokens): 冻结 C+ 令牌真值并建立三道保真护栏）。P1 从该提交开始比对。",
+  "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。任何被业务代码消费的偏差（有效值变更 / 两侧无法求值的表达式改写 / 令牌消失）都必须额外标 visualImpact: true 显式确认「这会掉像素」；未登记的偏差同样让退出码为 1。",
+  "intendedChanges": {
+    "--biu-topbar-height": {
+      "visualImpact": true,
+      "reason": "P1 壳层几何：由 64px 重指到冻结的 --biu-layout-topbar-h = 71px（设计稿实测）。消费方为 AppShell 顶栏与侧栏 Logo——侧栏随本次删除，顶栏在本次重绘。P1 出口标准的 L1 硬锚点即「顶栏 71」。"
+    },
+    "--biu-player-height": {
+      "visualImpact": true,
+      "reason": "P1 壳层几何：由 84px 重指到冻结的 --biu-layout-player-h = 88px（设计稿实测）。消费方为 AppShell 播放区与播放列表抽屉的底部偏移。P1 出口标准的 L1 硬锚点即「播放栏 88」。"
+    },
+    "--biu-content-max-width": {
+      "visualImpact": true,
+      "reason": "决策 1「满幅剧场」：由 1440px 改为 none，内容不再居中收窄。消费方为发现音乐、搜索结果、设计系统三页的 max-w-[]。这是 P1 有意引入的可视变更——页面随后在 P3/P4 逐屏重写时按 --biu-layout-gutter 留白。"
+    },
+    "--biu-sidebar-width": {
+      "visualImpact": false,
+      "reason": "决策 3「移除侧栏」：令牌删除。经机械枚举确认无业务代码引用（侧栏宽度实际由状态 sideMenuWidth 以行内 style 提供），删除它不会使任何消费方拿到无效值。sideMenuCollapsed / sideMenuWidth 两个设置字段保留，只是不再暴露入口。"
+    },
+    "--biu-color-brand": {
+      "visualImpact": true,
+      "reason": "决策 2「移除自定义主色」：由 hsl(var(--heroui-primary)) 改为 rgb(var(--biu-accent))，即 C+ 强调色 #2997FF。原值跟随用户在设置里选的 primaryColor（默认 #EC4141 红），因此这是一处真实配色变更，消费方为 app.css 与 menu-item 的选中指示条。"
+    },
+    "--biu-color-focus": {
+      "visualImpact": true,
+      "reason": "同上：焦点环颜色由 72% 透明度的自定义主色改为 72% 透明度的 C+ 强调色。消费方为无障碍跳转链接与搜索框焦点态。"
+    },
+    "--biu-color-danger": {
+      "visualImpact": false,
+      "reason": "由 hsl(var(--heroui-danger)) 改为 rgb(var(--biu-danger))，对齐色板登记的危险色 #FF6B6B。当前无任何业务代码消费该令牌，故无可视影响；此改动只为消除「状态色回退 HeroUI 主题」的越层引用。--biu-color-warning / -success 有意保留原值：C+ 色板没有这两种语义色，发明它们会违反「颜色必须有设计稿出处」。"
+    }
+  },
   "history": [
     {
       "phase": "P0",
-      "note": "基线已推进到 P0 提交，故以下声明不再生效，仅作留档。若 P1 再次改动同名令牌，必须重新声明——判定要求 visualImpact === true 才认可可视变更，因此旧记录不会掩盖新改动。",
+      "note": "基线已推进到 P0 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明——判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
       "changes": {
         "--biu-radius-lg": {
           "visualImpact": true,

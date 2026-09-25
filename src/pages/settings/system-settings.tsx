@@ -2,21 +2,12 @@ import React from "react";
 import { Controller } from "react-hook-form";
 import type { Control, UseFormSetValue } from "react-hook-form";
 
-import { Button, Form, Input, Radio, RadioGroup, Select, SelectItem, Slider, Switch, Tab, Tabs } from "@heroui/react";
-import {
-  RiArrowRightLongLine,
-  RiComputerLine,
-  RiFileListLine,
-  RiLayoutGridFill,
-  RiListView,
-  RiMoonLine,
-  RiSunLine,
-} from "@remixicon/react";
+import { Button, Form, Input, Radio, RadioGroup, Select, SelectItem, Switch, Tab, Tabs } from "@heroui/react";
+import { RiArrowRightLongLine, RiFileListLine, RiLayoutGridFill, RiListView } from "@remixicon/react";
 
 import FontSelect from "@/components/font-select";
 import UpdateCheckButton from "@/components/update-check-button";
 
-import ColorSettings from "./color-settings";
 import ImportExport from "./export-import";
 
 type SystemSettingsTabProps = {
@@ -92,60 +83,11 @@ export const SystemSettingsTab = ({
               )}
             />
           </div>
-          {/* 主题模式 */}
-          <div className="flex w-full items-center justify-between">
-            <div className="mr-6 space-y-1">
-              <div className="text-medium font-medium">主题</div>
-              <div className="text-sm text-zinc-500">选择浅色或深色主题</div>
-            </div>
-
-            <Controller
-              control={control}
-              name="themeMode"
-              render={({ field }) => (
-                <Tabs
-                  aria-label="主题切换"
-                  classNames={{
-                    cursor: "rounded-medium",
-                  }}
-                  selectedKey={field.value}
-                  onSelectionChange={key => field.onChange(key)}
-                >
-                  <Tab
-                    key="system"
-                    title={
-                      <div className="flex items-center space-x-2">
-                        <RiComputerLine size={18} />
-                        <span>跟随系统</span>
-                      </div>
-                    }
-                  />
-                  <Tab
-                    key="light"
-                    title={
-                      <div className="flex items-center space-x-2">
-                        <RiSunLine size={18} />
-                        <span>浅色</span>
-                      </div>
-                    }
-                  />
-                  <Tab
-                    key="dark"
-                    title={
-                      <div className="flex items-center space-x-2">
-                        <RiMoonLine size={18} />
-                        <span>深色</span>
-                      </div>
-                    }
-                  />
-                </Tabs>
-              )}
-            />
-          </div>
-          {/* color 自定义 */}
-          <div className="w-full">
-            <ColorSettings control={control} />
-          </div>
+          {/* 主题模式、自定义主色/背景色、全局圆角三项入口已在 P1 随主题收敛移除：
+              C+ 只有深色一套皮肤、固定主色与固定圆角（决策 2）。
+              对应的 AppSettings 字段（themeMode / primaryColor / backgroundColor /
+              borderRadius）仍然保留并被 store 读写，旧设置文件因此可无损读取，
+              只是不再产生作用。见 docs/design/biu-cplus-refactor-plan.md §13.1。 */}
           {/* 字体选择 */}
           <div className="flex w-full items-center justify-between">
             <div className="mr-6 space-y-1">
@@ -190,35 +132,6 @@ export const SystemSettingsTab = ({
           />
         </div>
       </div> */}
-          {/* 全局圆角设置 */}
-          <div className="flex w-full items-center justify-between">
-            <div className="mr-6 space-y-1">
-              <div className="text-medium font-medium">圆角</div>
-              <div className="text-sm text-zinc-500">调整界面控件的圆角大小</div>
-            </div>
-            <div className="w-[360px]">
-              <Controller
-                control={control}
-                name="borderRadius"
-                render={({ field }) => (
-                  <Slider
-                    showTooltip={false}
-                    size="sm"
-                    endContent={<span>{field.value}px</span>}
-                    aria-label="全局圆角"
-                    value={field.value}
-                    onChange={v => field.onChange(Number(v))}
-                    minValue={0}
-                    maxValue={24}
-                    step={1}
-                    classNames={{
-                      thumb: "after:hidden",
-                    }}
-                  />
-                )}
-              />
-            </div>
-          </div>
         </>
       )}
       {section === "playback" && (

@@ -30,13 +30,34 @@
   app-region: no-drag;
 }
 
+/* 壳层的三处复合背景。
+   为什么必须是 @utility 而不是 bg-[var(--biu-*-bg)]：
+   这三个令牌是 **background 简写**（渐变色层 + 一个底色层），而 Tailwind 的
+   `bg-[...]` 会生成 background-image —— 底色层不是合法 image，整条声明会被丢弃，
+   表现为「颜色静默消失」。用简写接简写，语义才对得上。 */
+@utility stage-bg {
+  background: var(--biu-app-bg);
+}
+
+@utility stage-bg-immersive {
+  background: var(--biu-immersive-bg);
+}
+
+@utility topbar-bg {
+  background: var(--biu-topbar-bg);
+}
+
+@utility playbar-bg {
+  background: rgb(var(--biu-surface-player) / 86%);
+}
+
 :root {
   text-autospace: normal;
 }
 
 body {
-  background: rgb(var(--biu-color-canvas));
-  color: rgb(var(--biu-color-text-primary));
+  background: var(--biu-app-bg);
+  color: rgb(var(--biu-text-primary));
 }
 
 :focus-visible:not(input, textarea) {

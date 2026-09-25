@@ -1,10 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 
-import { readableColor } from "color2k";
-import { useShallow } from "zustand/react/shallow";
-
-import { Themes } from "@/common/constants/theme";
-import { hexToHsl, resolveTheme, isHex } from "@/common/utils/color";
+import { APP_THEME } from "@/common/constants/theme";
 import { useSettings } from "@/store/settings";
 
 import { ThemeNameContext } from "./use-theme";
@@ -13,83 +9,46 @@ interface Props {
   children: React.ReactNode;
 }
 
+/** 主题名恒定，上下文值也就可以是常量——避免每次渲染都造新对象触发下游重渲染。 */
+const THEME_CONTEXT_VALUE = { theme: APP_THEME } as const;
+
+/**
+ * 决策 2：主题收敛为深色单一皮肤。
+ *
+ * 与上一轮的差别（P1 · 主题收敛）：
+ *
+ * 1. 不再监听系统主题、不再有浅色分支，主题名恒为 `APP_THEME`。
+ *    但 `.dark` 类**必须保留**：`app.css` 里写着
+ *    `@custom-variant dark (&:is(.dark *))`，去掉它会让全部 `dark:` 工具类失效。
+ *    同时显式移除 `.light`，避免开发期热更新把旧类名留在根元素上。
+ * 2. 不再把设置里的 `primaryColor` / `backgroundColor` / `borderRadius` 写进
+ *    `--heroui-*`。这三项的自定义入口已随本阶段移除，颜色与圆角统一由 C+ 令牌决定；
+ *    继续写入会与令牌层争夺同一个变量，产生「改令牌没反应」的假象。
+ * 3. 字体仍可自定义——字体不在收敛范围内。
+ *
+ * 旧设置文件里的 `themeMode` / `primaryColor` / `borderRadius` / `backgroundColor`
+ * 仍会被 store 读取并回写（见 `store/settings.ts` 的 partialize），
+ * 只是不再产生作用：满足「旧设置文件可无损读取」这条出口标准。
+ */
 const Theme = ({ children }: Props) => {
-  const { themeMode, fontFamily, primaryColor, borderRadius, backgroundColor } = useSettings(
-    useShallow(s => ({
-      themeMode: s.themeMode,
-      fontFamily: s.fontFamily,
-      primaryColor: s.primaryColor,
-      borderRadius: s.borderRadius,
-      backgroundColor: s.backgroundColor,
-    })),
-  );
+  const fontFamily = useSettings(s => s.fontFamily);
 
-  const [systemTheme, setSystemTheme] = useState<"light" | "dark" | undefined>(undefined);
-
-  // 当 themeMode 为 system 时，监听系统主题变化并更新本地 systemTheme
-  useEffect(() => {
-    if (themeMode !== "system") {
-      return;
-    }
-
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      setSystemTheme(undefined);
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const applyTheme = (matches: boolean) => {
-      setSystemTheme(matches ? "dark" : "light");
-    };
-
-    applyTheme(mediaQuery.matches);
-
-    const mediaQueryHandler = (event: MediaQueryListEvent) => {
-      applyTheme(event.matches);
-    };
-
-    mediaQuery.addEventListener("change", mediaQueryHandler);
-
-    return () => {
-      mediaQuery.removeEventListener("change", mediaQueryHandler);
-    };
-  }, [themeMode]);
-
-  // 将主题相关样式应用到 :root 和 body，确保挂载在 body 上的组件可读取到
   useEffect(() => {
     const root = document.documentElement;
-    const themeName = resolveTheme(themeMode, systemTheme);
 
-    root.classList.remove("light", "dark");
-    root.classList.add(themeName);
-    root.style.colorScheme = themeName;
-
-    const rootStyle = root.style;
-    const _primaryColor = isHex(primaryColor) ? primaryColor : (Themes[themeName].colors?.primary as string);
-    const _backgroundColor = isHex(backgroundColor)
-      ? backgroundColor
-      : (Themes[themeName].colors?.background as string);
-
-    if (_primaryColor) {
-      rootStyle.setProperty("--heroui-primary", hexToHsl(_primaryColor));
-    }
-    if (_backgroundColor) {
-      rootStyle.setProperty("--heroui-background", hexToHsl(_backgroundColor));
-      const fgHex = readableColor(_backgroundColor);
-      rootStyle.setProperty("--heroui-foreground", hexToHsl(fgHex));
-    }
-    rootStyle.setProperty("--heroui-radius-medium", `${borderRadius}px`);
+    root.classList.remove("light");
+    root.classList.add(APP_THEME);
+    root.style.colorScheme = APP_THEME;
 
     const validFontFamily = fontFamily === "system-default" ? "system-ui" : fontFamily;
-    rootStyle.fontFamily = validFontFamily || rootStyle.fontFamily;
-  }, [fontFamily, primaryColor, borderRadius, themeMode, systemTheme, backgroundColor]);
-
-  const contextValue = useMemo(() => ({ theme: resolveTheme(themeMode, systemTheme) }), [themeMode, systemTheme]);
+    if (validFontFamily) {
+      root.style.fontFamily = validFontFamily;
+    }
+  }, [fontFamily]);
 
   return (
     <main className="h-screen w-screen overflow-hidden">
-      <ThemeNameContext value={contextValue}>{children}</ThemeNameContext>
+      <ThemeNameContext value={THEME_CONTEXT_VALUE}>{children}</ThemeNameContext>
     </main>
   );
 };

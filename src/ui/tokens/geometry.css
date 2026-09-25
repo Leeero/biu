@@ -74,6 +74,7 @@
   --biu-layout-topbar-h: 71px; /* 硬锚点 */
   --biu-layout-player-h: 88px; /* 硬锚点 */
   --biu-layout-gutter: 64px; /* 内容左右最小留白 */
+  --biu-layout-content-pt: 33px; /* 内容区顶部留白（原型 .content 实测） */
 
   /* 列表：行高 68 / 缩略图 100×56（16:9）/ 图→文 31 / 右列 220 + 152 / 右缩进 40。
      设计稿列表**无分隔线**；当前行是整行圆角高亮，左右通栏、上下内缩 2px。 */
@@ -154,20 +155,22 @@
   --biu-ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
   --biu-ease-emphasized: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* —— 遗留壳层令牌（P1 重指/删除，见文件尾的边界声明） —— */
-  --biu-topbar-height: 64px; /* P1 → var(--biu-layout-topbar-h) = 71px */
-  --biu-player-height: 84px; /* P1 → var(--biu-layout-player-h) = 88px */
-  --biu-sidebar-width: 220px; /* P1 删除（侧栏移除） */
-  --biu-content-max-width: 1440px; /* P1 → none（满幅剧场） */
+  /* —— 遗留壳层令牌：P1 已重指到上面冻结的 --biu-layout-* —— */
+  --biu-topbar-height: var(--biu-layout-topbar-h);
+  --biu-player-height: var(--biu-layout-player-h);
+
+  /* 满幅剧场：内容不再居中收窄（决策 1）。`none` 是 max-width 的合法值。 */
+  --biu-content-max-width: none;
 }
 
 /* ============================================================================
    遗留壳层令牌 —— 阶段边界声明
    ----------------------------------------------------------------------------
-   C+ 的目标值已在上面冻结：
-     --biu-layout-topbar-h 71 / --biu-layout-player-h 88 / --biu-layout-gutter 64
-   但**顶栏与播放栏的高度属于壳层几何，其切换由 P1 负责**（P1 出口标准即校验
-   渲染实测 71 / 88）。P0 保持既有高度，避免在旧壳层里造成半迁移状态。
-   P1 动作：把下面四个别名重新指向 --biu-layout-*，并删除 --biu-sidebar-width
-   （侧栏移除，决策 3），--biu-content-max-width 由 1440px 改为 none。
+   P1 已完成重指：
+     · --biu-topbar-height  → var(--biu-layout-topbar-h)  64 → 71
+     · --biu-player-height  → var(--biu-layout-player-h)  84 → 88
+     · --biu-content-max-width → none                     1440 → 满幅
+     · --biu-sidebar-width  → 删除（侧栏移除，决策 3）
+   这三处（含删除项）都是**壳层几何**，其验收即 P1 出口标准的 L1 硬锚点。
+   别名暂留是为了让尚未重写的页面继续可运行；P7 随业务代码迁移完成后删除。
    ========================================================================== */
