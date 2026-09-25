@@ -30,7 +30,7 @@ afterEach(async () => {
 describe("design system components", () => {
   test("AppShell exposes stable navigation, main content and player regions", async () => {
     const container = await render(
-      <AppShell sidebar={<nav>侧栏</nav>} topbar={<div>顶栏</div>} player={<div>播放控制</div>}>
+      <AppShell topbar={<div>顶栏</div>} player={<div>播放控制</div>}>
         <div>页面内容</div>
       </AppShell>,
     );
