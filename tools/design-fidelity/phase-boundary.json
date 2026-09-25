@@ -1,39 +1,44 @@
 {
-  "phase": "P1",
-  "baselineRef": "dcecd03",
-  "baselineNote": "基线 = P0 提交 dcecd03（feat(tokens): 冻结 C+ 令牌真值并建立三道保真护栏）。P1 从该提交开始比对。",
+  "phase": "P2",
+  "baselineRef": "1b1d8a0",
+  "baselineNote": "基线 = P1 提交 1b1d8a0（test(shell): 覆盖壳层模型、路由契约、分段台账与搜索模型）。P2 从该提交开始比对。P1 的令牌改动实际落在 1562e84，取阶段末提交作基线是为了让边界与阶段对齐；两者在令牌层等价（其后两个提交未再触碰令牌声明）。",
   "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。任何被业务代码消费的偏差（有效值变更 / 两侧无法求值的表达式改写 / 令牌消失）都必须额外标 visualImpact: true 显式确认「这会掉像素」；未登记的偏差同样让退出码为 1。",
-  "intendedChanges": {
-    "--biu-topbar-height": {
-      "visualImpact": true,
-      "reason": "P1 壳层几何：由 64px 重指到冻结的 --biu-layout-topbar-h = 71px（设计稿实测）。消费方为 AppShell 顶栏与侧栏 Logo——侧栏随本次删除，顶栏在本次重绘。P1 出口标准的 L1 硬锚点即「顶栏 71」。"
-    },
-    "--biu-player-height": {
-      "visualImpact": true,
-      "reason": "P1 壳层几何：由 84px 重指到冻结的 --biu-layout-player-h = 88px（设计稿实测）。消费方为 AppShell 播放区与播放列表抽屉的底部偏移。P1 出口标准的 L1 硬锚点即「播放栏 88」。"
-    },
-    "--biu-content-max-width": {
-      "visualImpact": true,
-      "reason": "决策 1「满幅剧场」：由 1440px 改为 none，内容不再居中收窄。消费方为发现音乐、搜索结果、设计系统三页的 max-w-[]。这是 P1 有意引入的可视变更——页面随后在 P3/P4 逐屏重写时按 --biu-layout-gutter 留白。"
-    },
-    "--biu-sidebar-width": {
-      "visualImpact": false,
-      "reason": "决策 3「移除侧栏」：令牌删除。经机械枚举确认无业务代码引用（侧栏宽度实际由状态 sideMenuWidth 以行内 style 提供），删除它不会使任何消费方拿到无效值。sideMenuCollapsed / sideMenuWidth 两个设置字段保留，只是不再暴露入口。"
-    },
-    "--biu-color-brand": {
-      "visualImpact": true,
-      "reason": "决策 2「移除自定义主色」：由 hsl(var(--heroui-primary)) 改为 rgb(var(--biu-accent))，即 C+ 强调色 #2997FF。原值跟随用户在设置里选的 primaryColor（默认 #EC4141 红），因此这是一处真实配色变更，消费方为 app.css 与 menu-item 的选中指示条。"
-    },
-    "--biu-color-focus": {
-      "visualImpact": true,
-      "reason": "同上：焦点环颜色由 72% 透明度的自定义主色改为 72% 透明度的 C+ 强调色。消费方为无障碍跳转链接与搜索框焦点态。"
-    },
-    "--biu-color-danger": {
-      "visualImpact": false,
-      "reason": "由 hsl(var(--heroui-danger)) 改为 rgb(var(--biu-danger))，对齐色板登记的危险色 #FF6B6B。当前无任何业务代码消费该令牌，故无可视影响；此改动只为消除「状态色回退 HeroUI 主题」的越层引用。--biu-color-warning / -success 有意保留原值：C+ 色板没有这两种语义色，发明它们会违反「颜色必须有设计稿出处」。"
-    }
-  },
+  "intendedChanges": {},
   "history": [
+    {
+      "phase": "P1",
+      "note": "基线已推进到 P1 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明——判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
+      "changes": {
+        "--biu-topbar-height": {
+          "visualImpact": true,
+          "reason": "P1 壳层几何：由 64px 重指到冻结的 --biu-layout-topbar-h = 71px（设计稿实测）。消费方为 AppShell 顶栏与侧栏 Logo——侧栏随本次删除，顶栏在本次重绘。P1 出口标准的 L1 硬锚点即「顶栏 71」。真机走查已在 14 条路由上实测确认 71px。"
+        },
+        "--biu-player-height": {
+          "visualImpact": true,
+          "reason": "P1 壳层几何：由 84px 重指到冻结的 --biu-layout-player-h = 88px（设计稿实测）。消费方为 AppShell 播放区与播放列表抽屉的底部偏移。P1 出口标准的 L1 硬锚点即「播放栏 88」。真机走查已在 14 条路由上实测确认 88px，且跨路由跳转节点未重建。"
+        },
+        "--biu-content-max-width": {
+          "visualImpact": true,
+          "reason": "决策 1「满幅剧场」：由 1440px 改为 none，内容不再居中收窄。消费方为发现音乐、搜索结果、设计系统三页的 max-w-[]。这是 P1 有意引入的可视变更——页面随后在 P3/P4 逐屏重写时按 --biu-layout-gutter 留白。"
+        },
+        "--biu-sidebar-width": {
+          "visualImpact": false,
+          "reason": "决策 3「移除侧栏」：令牌删除。经机械枚举确认无业务代码引用（侧栏宽度实际由状态 sideMenuWidth 以行内 style 提供），删除它不会使任何消费方拿到无效值。sideMenuCollapsed / sideMenuWidth 两个设置字段保留，只是不再暴露入口。"
+        },
+        "--biu-color-brand": {
+          "visualImpact": true,
+          "reason": "决策 2「移除自定义主色」：由 hsl(var(--heroui-primary)) 改为 rgb(var(--biu-accent))，即 C+ 强调色 #2997FF。原值跟随用户在设置里选的 primaryColor（默认 #EC4141 红），因此这是一处真实配色变更，消费方为 app.css 与 menu-item 的选中指示条。"
+        },
+        "--biu-color-focus": {
+          "visualImpact": true,
+          "reason": "同上：焦点环颜色由 72% 透明度的自定义主色改为 72% 透明度的 C+ 强调色。消费方为无障碍跳转链接与搜索框焦点态。"
+        },
+        "--biu-color-danger": {
+          "visualImpact": false,
+          "reason": "由 hsl(var(--heroui-danger)) 改为 rgb(var(--biu-danger))，对齐色板登记的危险色 #FF6B6B。当前无任何业务代码消费该令牌，故无可视影响；此改动只为消除「状态色回退 HeroUI 主题」的越层引用。--biu-color-warning / -success 有意保留原值：C+ 色板没有这两种语义色，发明它们会违反「颜色必须有设计稿出处」。"
+        }
+      }
+    },
     {
       "phase": "P0",
       "note": "基线已推进到 P0 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明——判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
@@ -60,7 +65,7 @@
         },
         "--biu-ease-emphasized": {
           "visualImpact": false,
-          "reason": "对齐 C+ 真值 cubic-bezier(0.32, 0.72, 0, 1)（原 0.2, 0.8, 0.2, 1）。当前无消费方，无可视影响；注意此刻两条缓动取值相同，P1 应重新区分主次动效。"
+          "reason": "对齐 C+ 真值 cubic-bezier(0.32, 0.72, 0, 1)（原 0.2, 0.8, 0.2, 1）。当前无消费方，无可视影响；注意此刻两条缓动取值相同，建动效体系时应重新区分主次。"
         }
       }
     }
