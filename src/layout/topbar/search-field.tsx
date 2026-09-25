@@ -1,9 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { Chip, Input, Listbox, ListboxItem } from "@heroui/react";
 import { RiSearchLine } from "@remixicon/react";
-import { useRequest, useClickAway } from "ahooks";
+import { useClickAway, useRequest } from "ahooks";
 import classNames from "classnames";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 
@@ -12,17 +12,29 @@ import { useSearchHistory } from "@/store/search-history";
 import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 
-import { normalizeSearchKeyword, shouldSubmitSearch } from "./model";
+import { isSearchShortcut, isTypingTarget, normalizeSearchKeyword, shouldSubmitSearch } from "./search-model";
 
-interface SearchInputProps {
+interface SearchFieldProps {
   onFocusChange?: (focused: boolean) => void;
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
+/**
+ * 顶栏搜索位。
+ *
+ * 交互（搜索建议、历史、清空）沿用上一轮实现，本次只做三件事：
+ *   1. 视觉对齐 C+ 顶栏空白（400 × 40、药丸、`--biu-surface-field` 底、占位符弱化）。
+ *   2. 补上设计稿里那个 `Ctrl K` 提示——**提示可见就必须可用**，
+ *      因此同时注册了全局快捷键（Ctrl 与 ⌘ 都接受），失焦/输入中不抢焦点。
+ *   3. 令牌替换：不再引用 `--heroui-primary` 与遗留 `--biu-color-*`。
+ *
+ * 保持 HeroUI 的 Input 作为交互与无障碍底座（重构方案 §4.3）：
+ * 键盘、焦点环、clearable 都由它保证，不自己重写。
+ */
+const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useUser(s => s.user);
 
-  const location = useLocation();
   const searchHistoryItems = useSearchHistory(s => s.items);
   const keyword = useSearchHistory(s => s.keyword);
   const addSearchHistory = useSearchHistory(s => s.add);
@@ -39,6 +51,19 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
     setOpen(false);
   }, containerRef);
 
+  // Ctrl/⌘ + K 聚焦：与设计稿里的 kbd 提示成对出现，不允许只画提示不接功能。
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (!isSearchShortcut(event) || isTypingTarget(event.target)) return;
+      event.preventDefault();
+      inputRef.current?.focus();
+      setOpen(true);
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
+
   const { data: suggestionsData } = useRequest(
     async () => {
       if (!shouldSubmitSearch(value)) {
@@ -51,11 +76,11 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
     { debounceWait: 300, refreshDeps: [value] },
   );
 
-  const submitSearch = (keyword: string) => {
-    if (!shouldSubmitSearch(keyword)) {
+  const submitSearch = (rawKeyword: string) => {
+    if (!shouldSubmitSearch(rawKeyword)) {
       return;
     }
-    const normalizedKeyword = normalizeSearchKeyword(keyword);
+    const normalizedKeyword = normalizeSearchKeyword(rawKeyword);
     addSearchHistory(normalizedKeyword);
     if (location.pathname !== "/search") {
       navigate("/search");
@@ -73,7 +98,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
   };
 
   return (
-    <div ref={containerRef} className="relative w-[min(32vw,360px)] min-w-[280px]">
+    <div ref={containerRef} className="relative w-[min(32vw,400px)] min-w-[240px]">
       <Input
         ref={inputRef}
         value={value}
@@ -94,18 +119,26 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
         aria-label="搜索音乐视频或创作者"
         placeholder="搜索音乐视频或创作者"
         isClearable
-        startContent={<RiSearchLine size={16} />}
+        startContent={<RiSearchLine size={20} className="text-[rgb(var(--biu-text-quaternary))]" />}
+        endContent={
+          <kbd
+            aria-hidden="true"
+            className="flex h-6 flex-none items-center rounded-[7px] bg-[rgb(var(--biu-text-primary)/0.28)] px-2 text-[length:var(--biu-type-micro-size)] tracking-[0.2px] text-[rgb(var(--biu-film))]"
+          >
+            Ctrl K
+          </kbd>
+        }
         className="window-no-drag w-full"
         classNames={{
           input:
-            "text-sm outline-none focus-visible:outline-none placeholder:text-[rgb(var(--biu-color-text-tertiary))]",
+            "text-[length:var(--biu-type-body-size)] outline-none focus-visible:outline-none placeholder:text-[var(--biu-text-placeholder)]",
           inputWrapper:
-            "h-10 rounded-full border border-transparent bg-[rgb(var(--biu-color-surface-hover))] px-4 shadow-none outline-none transition-[background-color,border-color,box-shadow] group-data-[focus=true]:border-primary/35 group-data-[focus=true]:bg-[rgb(var(--biu-color-surface-raised))] group-data-[focus=true]:shadow-[0_0_0_3px_hsl(var(--heroui-primary)/0.10)] group-data-[focus-visible=true]:ring-0 group-data-[focus-visible=true]:outline-none data-[hover=true]:bg-[rgb(var(--biu-color-surface-pressed))]",
+            "h-10 rounded-[var(--biu-radius-pill)] border border-transparent bg-[var(--biu-surface-field)] px-4 text-[rgb(var(--biu-text-primary))] shadow-none outline-none transition-[background-color,border-color,box-shadow] group-data-[focus=true]:border-[var(--biu-glass-border)] group-data-[focus=true]:bg-[var(--biu-surface-field)] group-data-[focus=true]:shadow-[0_0_0_3px_var(--biu-accent-soft)] group-data-[focus-visible=true]:ring-0 group-data-[focus-visible=true]:outline-none",
         }}
       />
       <div
         className={classNames(
-          "absolute top-full left-0 z-100 mt-2 h-auto max-h-[80dvh] w-full min-w-[360px] overflow-hidden rounded-[var(--biu-radius-lg)] border border-[rgb(var(--biu-color-border)/0.08)] bg-[rgb(var(--biu-color-surface-raised))] shadow-[var(--biu-shadow-floating)]",
+          "absolute top-full left-0 z-100 mt-2 h-auto max-h-[80dvh] w-full min-w-[360px] overflow-hidden rounded-[var(--biu-radius-lg)] border border-[var(--biu-border)] bg-[var(--biu-surface-sunken)] shadow-[var(--biu-shadow-floating)] backdrop-blur-[var(--biu-blur-glass)]",
           {
             hidden: !open,
             "flex flex-col": open,
@@ -132,7 +165,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
                     <span className="text-sm font-medium">搜索历史</span>
                     <button
                       type="button"
-                      className="cursor-pointer text-xs text-[rgb(var(--biu-color-text-tertiary))] hover:text-[rgb(var(--biu-color-text-primary))]"
+                      className="cursor-pointer text-xs text-[rgb(var(--biu-text-quaternary))] hover:text-[rgb(var(--biu-text-primary))]"
                       onMouseDown={e => e.preventDefault()}
                       onClick={e => {
                         e.stopPropagation();
@@ -195,4 +228,4 @@ const SearchInput: React.FC<SearchInputProps> = ({ onFocusChange }) => {
   );
 };
 
-export default SearchInput;
+export default SearchField;

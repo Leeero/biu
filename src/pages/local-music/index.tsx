@@ -137,7 +137,7 @@ const LocalMusicPage = () => {
 
   return (
     <ScrollContainer ref={scrollRef} enableBackToTop className="h-full w-full">
-      <main className="mx-auto w-full max-w-[1440px] px-6 py-5">
+      <main className="w-full py-5">
         <PageHeader
           title="本地音乐"
           description={

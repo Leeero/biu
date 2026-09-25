@@ -1,28 +1,29 @@
 import { useNavigate } from "react-router";
 
 import {
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
   Avatar,
-  useDisclosure,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   addToast,
+  useDisclosure,
   type DropdownItemProps,
 } from "@heroui/react";
 import {
   RiExternalLinkLine,
   RiFeedbackLine,
+  RiHistoryLine,
   RiLoginCircleLine,
   RiLogoutCircleLine,
   RiProfileLine,
   RiRefreshLine,
   RiSettings3Line,
   RiTeamLine,
-  RiHistoryLine,
 } from "@remixicon/react";
 import { twMerge } from "tailwind-merge";
 
+import { DefaultMenuList } from "@/common/constants/menus";
 import { postPassportLoginExit } from "@/service/passport-login-exit";
 import { useFavoritesStore } from "@/store/favorite";
 import { useModalStore } from "@/store/modal";
@@ -32,21 +33,32 @@ import { useSettings } from "@/store/settings";
 import { useToken } from "@/store/token";
 import { useUser } from "@/store/user";
 
-import Login from "../login";
+import Login from "./login";
 
-interface UserCardProps {
+interface AvatarMenuProps {
   onDropdownOpenChange?: (open: boolean) => void;
 }
 
-const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
+/**
+ * 顶栏头像菜单。
+ *
+ * 决策 3 移除侧栏后，这里成了「一级导航」的主要出口——二级与以下入口全部挂在
+ * 头像上，因此菜单第一组就是 `DefaultMenuList`（发现音乐 / 我的音乐库 / 稍后播放 /
+ * 本地音乐 / 下载管理），并沿用既有的两条过滤规则：未登录时隐藏 `needLogin` 项，
+ * 以及设置页里被隐藏的 `hiddenMenuKeys`。
+ *
+ * 视觉上只改了触发件：按设计稿把头像固定为 40 × 40 正圆，其余交互
+ * （登录弹窗、退出确认、刷新数据）沿用上一轮实现，不做行为改动。
+ */
+const AvatarMenu = ({ onDropdownOpenChange }: AvatarMenuProps) => {
   const user = useUser(s => s.user);
   const clearUser = useUser(s => s.clear);
   const clearToken = useToken(s => s.clear);
   const navigate = useNavigate();
   const updateSettings = useSettings(s => s.update);
+  const hiddenMenuKeys = useSettings(s => s.hiddenMenuKeys);
 
   const { isOpen: isLoginModalOpen, onOpen: openLoginModal, onOpenChange: onLoginModalOpenChange } = useDisclosure();
-
   const onOpenConfirmModal = useModalStore(s => s.onOpenConfirmModal);
 
   const logout = async () => {
@@ -87,7 +99,18 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
     }
   };
 
-  const dropdownItems: (DropdownItemProps & { label: string; hidden?: boolean })[] = [
+  const navItems: (DropdownItemProps & { label: string })[] = DefaultMenuList.filter(item =>
+    item.needLogin ? user?.isLogin : true,
+  )
+    .filter(item => (item.href ? !hiddenMenuKeys.includes(item.href) : true))
+    .map(item => ({
+      key: `nav:${item.href}`,
+      label: item.title,
+      startContent: item.icon ? <item.icon size={18} /> : undefined,
+      onPress: () => navigate(item.href!),
+    }));
+
+  const accountItems: (DropdownItemProps & { label: string; hidden?: boolean })[] = [
     {
       key: "login",
       label: "登录",
@@ -116,6 +139,9 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
       hidden: !user?.isLogin,
       onPress: () => navigate("/history"),
     },
+  ];
+
+  const appItems: (DropdownItemProps & { label: string })[] = [
     {
       key: "settings",
       label: "设置",
@@ -171,7 +197,7 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
         });
       },
     },
-  ].filter(item => !item.hidden);
+  ].filter(item => !(item as { hidden?: boolean }).hidden);
 
   return (
     <>
@@ -180,7 +206,7 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
         triggerScaleOnOpen={false}
         radius="md"
         classNames={{
-          content: "min-w-[140px]",
+          content: "min-w-[180px]",
         }}
         onOpenChange={onDropdownOpenChange}
       >
@@ -188,14 +214,14 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
           <Avatar
             isBordered
             showFallback
-            size="sm"
             as="button"
             type="button"
-            className="mr-4 cursor-pointer transition-transform hover:scale-105"
+            aria-label="账户与导航菜单"
+            className="h-10 w-10 flex-none cursor-pointer transition-transform hover:scale-105"
             src={user?.face}
           />
         </DropdownTrigger>
-        <DropdownMenu aria-label="用户操作" variant="flat" items={dropdownItems}>
+        <DropdownMenu aria-label="账户与导航" variant="flat" items={[...navItems, ...accountItems, ...appItems]}>
           {({ key, label, className, ...rest }) => (
             <DropdownItem className={twMerge("rounded-medium", className)} key={key} {...rest}>
               {label}
@@ -208,4 +234,4 @@ const UserCard = ({ onDropdownOpenChange }: UserCardProps) => {
   );
 };
 
-export default UserCard;
+export default AvatarMenu;

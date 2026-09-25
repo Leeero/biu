@@ -211,7 +211,7 @@ const MusicRecommend = () => {
 
   return (
     <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
-      <div className="mx-auto w-full max-w-[var(--biu-content-max-width)] px-6 pt-5 pb-8">
+      <div className="w-full pt-5 pb-8">
         <PageHeader
           title="发现音乐"
           description="浏览来自 B 站音乐分区的推荐内容与新歌，不包含个性化推荐。"

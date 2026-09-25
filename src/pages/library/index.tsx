@@ -45,7 +45,7 @@ const Library = () => {
 
   return (
     <ScrollContainer enableBackToTop className="h-full w-full">
-      <main className="mx-auto w-full max-w-[1440px] px-6 py-5">
+      <main className="w-full py-5">
         <PageHeader
           title="我的收藏"
           description="集中查看你创建和收藏的播放列表，内容同步自 B 站收藏夹与合集。"

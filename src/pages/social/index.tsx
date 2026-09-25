@@ -20,7 +20,7 @@ const SocialPage = () => {
 
   return (
     <main className="flex h-full min-h-0 w-full flex-col">
-      <div className="px-6 pt-5">
+      <div className="pt-5">
         <PageHeader title="关注" description="查看关注的创作者和他们发布的最新音乐内容" className="mb-2" />
         <Tabs
           aria-label="关注栏目"

@@ -38,8 +38,8 @@ const menuItems = [
 ];
 
 const DesignSystemPage = () => (
-  <ScrollContainer className="h-full bg-[rgb(var(--biu-color-canvas))] px-6 pb-10">
-    <div className="mx-auto max-w-[var(--biu-content-max-width)]">
+  <ScrollContainer className="h-full pb-10">
+    <div className="w-full">
       <PageHeader
         title="Biu 设计系统"
         description="仅开发环境可见，用于检查组件、主题和交互状态。"

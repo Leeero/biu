@@ -254,7 +254,7 @@ const History = () => {
   const isEmpty = !loading && list.length === 0;
 
   return (
-    <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full px-4">
+    <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
       <div className="mb-2">
         <div className="flex items-center justify-between">
           <h1>历史记录</h1>

@@ -13,6 +13,8 @@ const Later = lazy(() => import("./pages/later"));
 const Library = lazy(() => import("./pages/library"));
 const LocalMusicPage = lazy(() => import("./pages/local-music"));
 const MiniPlayer = lazy(() => import("./pages/mini-player"));
+const NowPlaying = lazy(() => import("./pages/now-playing"));
+const Queue = lazy(() => import("./pages/queue"));
 const Search = lazy(() => import("./pages/search"));
 const Settings = lazy(() => import("./pages/settings"));
 const SocialPage = lazy(() => import("./pages/social"));
@@ -71,6 +73,19 @@ const routes: RouteObject[] = [
       {
         path: "search",
         element: <Search />,
+      },
+      {
+        // 09 播放队列。壳层状态 default —— 队列页仍要能看进度、能操作播放。
+        // 页面正文随 P5 落地，此处先保证路由可达且入口（播放栏「队列 · N」）有效。
+        path: "queue",
+        element: <Queue />,
+      },
+      {
+        // 10 正在播放。壳层状态 immersive（隐藏顶栏与播放栏）由
+        // layout/route-shell.ts 的路由契约决定，不写在这里——路由表只声明「哪个页面」，
+        // 壳层契约集中在 route-shell.ts，便于与真值文件对照。
+        path: "now-playing",
+        element: <NowPlaying />,
       },
       {
         path: "empty",

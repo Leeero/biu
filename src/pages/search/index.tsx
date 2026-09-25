@@ -22,7 +22,7 @@ const Search = () => {
 
   return (
     <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
-      <div className="mx-auto w-full max-w-[var(--biu-content-max-width)] px-6 pt-5 pb-8">
+      <div className="w-full pt-5 pb-8">
         <PageHeader
           title={`“${keyword}”的搜索结果`}
           description="结果来自 B 站搜索，可按音乐视频或创作者查看。"
