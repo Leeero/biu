@@ -11,6 +11,18 @@ export interface SegmentItem {
   count?: number | string;
   /** 有 `href` 时渲染为链接（导航形态）。 */
   href?: string;
+  /**
+   * 「已声明但交互尚未接线」。
+   *
+   * 顶栏的分段组有个真实的中间态：标签由路由契约给出来了，但对应的子视图
+   * 切换还没落地（`ROUTE_SEGMENTS` 拆到各屏自己的阶段填）。此时渲染成按钮
+   * 就是一个**点了没反应的假控件**，而原型里根本没有「未接线」这一态，
+   * 所以也不能置灰 —— 置灰同样是发明。
+   *
+   * 因此渲染为不可交互元素：读屏能知道它现在不可用，视觉上仍按未激活项着色。
+   * 接线之后这个标记就该消失，而不是留成长期的第三态。
+   */
+  pending?: boolean;
   disabled?: boolean;
 }
 
@@ -145,6 +157,15 @@ export const SegmentedControl = ({
     const tabProps = useTabs
       ? { role: "tab" as const, "aria-selected": isActive, "aria-controls": panelId, id: `${panelId}-tab-${item.key}` }
       : { "aria-pressed": isActive };
+
+    if (item.pending) {
+      return (
+        <span key={item.key} aria-disabled="true" className={itemClass(useTabs ? false : isActive, false)}>
+          {item.label}
+          {item.count !== undefined && <span className={countClass(isActive)}>{item.count}</span>}
+        </span>
+      );
+    }
 
     return (
       <button

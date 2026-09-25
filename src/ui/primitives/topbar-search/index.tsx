@@ -13,6 +13,15 @@ interface TopBarSearchProps {
   placeholder?: string;
   inputRef?: Ref<HTMLInputElement>;
   /**
+   * 根节点 ref。
+   *
+   * 本组件把业务留在调用方（顶栏才知道路由与用户态），而「点输入框外面关掉
+   * 建议浮层」这件事必须由调用方做 —— 它需要能观察到整个搜索位的边界，
+   * 而不是只拿到输入框。没有这个 ref，调用方只能在外层再包一个 div，
+   * 那会让定位基准（`top-full` 相对谁）与宽度约束都多绕一层。
+   */
+  rootRef?: Ref<HTMLDivElement>;
+  /**
    * 右侧快捷键提示。默认渲染 `Ctrl K`。
    * 传 `null` 可关掉——**但关掉前请确认没有注册该快捷键**：
    * 显示一个按不动的提示比不显示更糟（P1 已按「提示可见就必须可用」实现）。
@@ -46,6 +55,7 @@ export const TopBarSearch = ({
   label = "搜索音乐视频或创作者",
   placeholder = "搜索音乐视频或创作者",
   inputRef,
+  rootRef,
   shortcutHint,
   onFocus,
   onBlur,
@@ -54,7 +64,7 @@ export const TopBarSearch = ({
   className,
   children,
 }: TopBarSearchProps) => (
-  <div className={twMerge("relative w-[min(32vw,400px)] min-w-[240px]", className)}>
+  <div ref={rootRef} className={twMerge("relative w-[min(32vw,400px)] min-w-[240px]", className)}>
     <Input
       ref={inputRef}
       value={value}

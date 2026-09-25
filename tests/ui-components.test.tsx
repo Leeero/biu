@@ -1,5 +1,6 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
+import { MemoryRouter } from "react-router";
 
 import { HeroUIProvider } from "@heroui/react";
 import { readFileSync } from "node:fs";
@@ -7,6 +8,7 @@ import path from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { AppShell } from "@/app/shell";
+import SegmentNav from "@/layout/topbar/segment-nav";
 import {
   DEFAULT_COVER_GRADIENT,
   PLACEHOLDER_GRADIENTS,
@@ -36,6 +38,7 @@ import { GlassButton } from "@/ui/primitives/glass-button";
 import { KbdRow } from "@/ui/primitives/kbd-row";
 import { ProgressBar } from "@/ui/primitives/progress-bar";
 import { SegmentedControl } from "@/ui/primitives/segmented-control";
+import { TopBarSearch } from "@/ui/primitives/topbar-search";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -159,6 +162,18 @@ describe("基础件的可访问名称", () => {
     });
     expect(container.querySelector("img")).toBeNull();
   });
+
+  test("顶栏搜索位把根节点交给调用方：点输入框外面关浮层要用整个搜索位的边界", async () => {
+    const rootRef = { current: null as HTMLDivElement | null };
+    const container = await render(<TopBarSearch rootRef={rootRef} value="" onValueChange={() => undefined} />);
+
+    expect(rootRef.current).not.toBeNull();
+    expect(rootRef.current).toBe(container.firstElementChild);
+    // 输入框必须在这个根节点**里面** —— 否则「点在不在搜索位内」永远为假。
+    expect(rootRef.current?.querySelector("input")).not.toBeNull();
+    // 设计稿画了 Ctrl K 提示，提示可见就必须可用，所以默认渲染它。
+    expect(container.textContent).toContain("Ctrl K");
+  });
 });
 
 /* ---------------------------------------------------------------- 键盘路径 */
@@ -213,6 +228,33 @@ describe("键盘路径", () => {
     expect(tab).toHaveAttribute("aria-selected", "true");
     // 未激活项不参与 Tab 停留（roving tabindex）
     expect(container.querySelectorAll('[role="tab"]')[1]).toHaveAttribute("tabindex", "-1");
+  });
+
+  test("分段控件（已声明待接线）：渲染为不可交互元素，不是点了没反应的按钮，也不置灰", async () => {
+    // 导航型分段渲染成 <Link>，需要路由上下文 —— 断言的是它真的渲染成了链接。
+    const container = await render(
+      <MemoryRouter>
+        <SegmentedControl
+          label="顶栏分段导航"
+          activeKey="/library"
+          items={[
+            { key: "/library", label: "我的音乐库", href: "/library" },
+            { key: "我收藏的", label: "我收藏的", pending: true },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+    // 导航型仍在（有 href），整体仍是 <nav>
+    expect(container.querySelector("nav")).not.toBeNull();
+    expect(container.querySelector('a[href="/library"]')).not.toBeNull();
+    // 待接线项：不可交互，但**不置灰** —— 原型里没有「未接线」这一态，置灰是发明。
+    const pending = container.querySelector('[aria-disabled="true"]');
+    expect(pending).not.toBeNull();
+    expect(pending).toHaveTextContent("我收藏的");
+    expect(pending?.tagName).toBe("SPAN");
+    expect(pending?.className).not.toContain("opacity-40");
+    // 组内不应再多出一个按钮：它就是那个「点了没反应」的假控件。
+    expect(Array.from(container.querySelectorAll("button"))).toHaveLength(0);
   });
 
   test("轨道行：重排行只在给了 position 时可拖，且不给行加 tabIndex", async () => {
@@ -399,8 +441,41 @@ describe("瓦片、歌词、进度、创作者行", () => {
   });
 });
 
-/* ------------------------------------------------------- 壳层与标题（回归） */
+/* ------------------------------------------------- 顶栏分段组（消费取证） */
 
+describe("顶栏分段组消费的是原型登记的那几个令牌", () => {
+  /**
+   * 这条测试是防**回退**的：内联版曾把两处白色叠层临时收敛到更接近的
+   * `surface-hover`（白 10%），因为 8% / 9% 当时没登记进色板。P2 登记之后
+   * 改回了原型值 —— 如果哪天又有人「图省事」换回语义档位，这里会红。
+   */
+  test("容器底白 9%、悬停底白 8%、未激活文字用顶栏标签色", async () => {
+    const container = await render(
+      <MemoryRouter initialEntries={["/library"]}>
+        <SegmentNav
+          segments={[
+            { label: "我的音乐库", href: "/library" },
+            { label: "发现音乐", href: "/" },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+
+    const group = container.querySelector("nav");
+    expect(group).not.toBeNull();
+    expect(group?.className).toContain("--biu-veil-9");
+    // 整条顶栏是可拖动窗口区域，分段组必须自己挡住拖动才点得到。
+    expect(group?.className).toContain("window-no-drag");
+    // 导航型：激活态走 aria-current，未激活项才是「标签色 + 8% 悬停」。
+    expect(container.querySelector('a[aria-current="page"]')).toHaveTextContent("我的音乐库");
+
+    const inactive = Array.from(container.querySelectorAll("a")).find(node => node.textContent === "发现音乐");
+    expect(inactive?.className).toContain("--biu-text-chrome-label");
+    expect(inactive?.className).toContain("--biu-veil-8");
+  });
+});
+
+/* ------------------------------------------------------- 壳层与标题（回归） */
 describe("design system components", () => {
   test("AppShell exposes stable navigation, main content and player regions", async () => {
     const container = await render(

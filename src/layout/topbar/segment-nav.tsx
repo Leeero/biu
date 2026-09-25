@@ -1,70 +1,48 @@
-import { Link, useLocation } from "react-router";
-
-import clx from "classnames";
+import { useLocation } from "react-router";
 
 import type { TopbarSegment } from "@/layout/route-shell";
+
+import { SegmentedControl, type SegmentItem } from "@/ui/primitives/segmented-control";
 
 interface SegmentNavProps {
   segments: TopbarSegment[];
 }
 
 /**
- * 顶栏中部的分段控件。
+ * 顶栏中部的分段组 —— 路由契约（`TopbarSegment[]`）到 `SegmentedControl` 的适配层。
  *
- * 几何取自设计稿实测：容器高 40、内边距 8、药丸 999、项间距 2；项高 40、
- * 左右内边距 22、字号 13。激活项是**反色药丸**（近白底 + 近黑字），
- * 用的是色板里登记好的 `--biu-inverse-surface` / `--biu-inverse-ink` 那一对。
+ * 这个文件只剩下「翻译」，视觉与语义全部由 `SegmentedControl` 承担。此前的
+ * 内联实现与组件层是同一份设计的两个副本，而那份副本里有三处取值是**临时收敛**：
  *
- * 两处有意收敛（原型里的临时值不在色板登记范围内，收敛到已登记的透明表面梯度）：
- *   · 容器底：原型为 9% 白色叠层 → `--biu-surface-hover`（10%）
- *   · 悬停底：原型为 8% 白色叠层 → `--biu-surface-hover`（10%）
- * 差额 ≤2%，远低于 L3 整屏亮度差的容差；把一次性取值收敛进梯度是色板存在的意义。
+ *   位置             原型（app.css）          内联曾用        现在
+ *   .tabgroup 底     白 9%    第 104 行       surface-hover   veil-9
+ *   .tab:hover       白 8%    第 122 行       surface-hover   veil-8
+ *   .tab 文字        顶栏标签色 第 116 行     text-secondary  text-chrome-label
  *
- * 分段有两种形态，由 `href` 决定：
- *   · 有 `href`：导航型（当前只有默认一级导航），激活态由当前路径决定；
- *   · 无 `href`：页面子视图切换，只有声明该分段的路由才会产出这种形态，
- *     在页面接上切换逻辑之前渲染为不可交互，避免出现「点了没反应」的假控件。
+ * 当时收敛的理由写在旧注释里：那些一次性的白色叠层**没有登记进色板**，
+ * 只能挑一个最接近的已有档位（白 10%）顶上。P2 已把 4 / 5.5 / 8 / 9 / 12 /
+ * 14 / 18 / 20 / 22 / 28% 十档按实际不透明度登记进 palette.css，收敛的理由
+ * 随之消失，所以这里改回原型值。三处差值分别是 1% / 2% / 通道差 4，
+ * 都落在 L3 整屏亮度差的容差之内。
+ *
+ * `window-no-drag` 必须由本层给出：整条顶栏是可拖动窗口区域，分段组要挡住拖动
+ * 才能被点到。组件层不该知道 Electron 的窗口拖动，那是壳层的事。
  */
 const SegmentNav = ({ segments }: SegmentNavProps) => {
   const location = useLocation();
 
-  const itemClass = (isActive: boolean) =>
-    clx(
-      "flex h-10 flex-none items-center rounded-[var(--biu-radius-pill)] px-[22px]",
-      "text-[length:var(--biu-type-label-size)] whitespace-nowrap",
-      "transition-colors duration-[var(--biu-duration-fast)]",
-      isActive
-        ? "bg-[rgb(var(--biu-inverse-surface))] font-semibold text-[rgb(var(--biu-inverse-ink))]"
-        : "text-[rgb(var(--biu-text-secondary))] hover:bg-[var(--biu-surface-hover)]",
-    );
+  const items: SegmentItem[] = segments.map(segment => ({
+    // 导航型的稳定键就是目标路径；没有 href 的分段用它自己的标签。
+    key: segment.href ?? segment.label,
+    label: segment.label,
+    href: segment.href,
+    // 没有 href 表示「标签已声明、子视图切换还没接线」，如实渲染为不可交互，
+    // 而不是渲染一个点了没反应的按钮。详见 SegmentItem.pending 的说明。
+    pending: !segment.href,
+  }));
 
   return (
-    <nav
-      aria-label="顶栏分段导航"
-      className="window-no-drag flex h-10 flex-none items-center gap-0.5 rounded-[var(--biu-radius-pill)] bg-[var(--biu-surface-hover)] px-2"
-    >
-      {segments.map(segment => {
-        if (!segment.href) {
-          return (
-            <span key={segment.label} aria-disabled="true" className={itemClass(false)}>
-              {segment.label}
-            </span>
-          );
-        }
-
-        const isActive = location.pathname === segment.href;
-        return (
-          <Link
-            key={segment.label}
-            to={segment.href}
-            aria-current={isActive ? "page" : undefined}
-            className={itemClass(isActive)}
-          >
-            {segment.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <SegmentedControl label="顶栏分段导航" activeKey={location.pathname} items={items} className="window-no-drag" />
   );
 };
 
