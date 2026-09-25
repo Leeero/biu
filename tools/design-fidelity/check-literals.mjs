@@ -13,7 +13,7 @@
  *   node tools/design-fidelity/check-literals.mjs --list     # 查看存量违规清单
  */
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
@@ -32,7 +32,10 @@ const TOKEN_LAYER_PREFIX = "src/ui/tokens/";
  */
 const LEGACY_ALLOWLIST = new Map([
   ["src/app.css", "P1 · os-scrollbar 颜色迁入令牌层"],
-  ["src/common/constants/theme.ts", "P1 · 主题收敛后移除浅色主题常量"],
+  [
+    "src/common/constants/theme.ts",
+    "P6 · HeroUI 主题桥接：第三方库要真实色值（吃不了 var()），值须与色板同源，暂由单测钉住",
+  ],
   ["src/components/audio-waveform/index.tsx", "P5 · 频谱改用令牌"],
   ["src/components/color-picker/index.tsx", "P6 · 随自定义外观入口一并移除"],
   ["src/components/confirm-modal/index.tsx", "P2 · Dialog 包装层重绘"],
@@ -41,7 +44,6 @@ const LEGACY_ALLOWLIST = new Map([
   ["src/components/music-list-item/", "P2 · 收敛进 TrackTable 后删除"],
   ["src/components/music-page-list/", "P2 · 收敛进 TrackTable 后删除"],
   ["src/components/music-playlist-drawer/", "P5 · 提升为 /queue 路由页后删除"],
-  ["src/layout/navbar/search/", "P1 · 由 TopBar 搜索位替代后删除"],
   ["src/pages/dynamic-feed/", "P6 · 延展屏迁移"],
   ["src/pages/search/user-list/", "P3 · 第 06 屏重写"],
   ["src/pages/user-profile/", "P6 · 延展屏迁移"],
@@ -96,7 +98,8 @@ function listFiles({ staged }) {
       if (!rel.startsWith("src/")) return false;
       if (!SCAN_EXTENSIONS.has(path.extname(f))) return false;
       return !rel.split("/").some(part => SKIP_DIRS.has(part));
-    });
+    })
+    .filter(f => existsSync(f));
 }
 
 function stripAllowed(text) {

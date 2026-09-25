@@ -13,11 +13,15 @@
  *      否则会把「同值改写」误报成违规。
  *   2. 长度表达式求值。calc(12px + 4px) 与 16px 必须判为相等，否则 4 条圆角全报违规。
  *
- * 判定分类：
- *   · 有效值变了且被业务代码消费   → 违规（真正的行为变更，退出码 1）
- *   · 值变了但只体现在表达式上     → 需人工确认等价性，必须写进声明文件
+ * 判定分类（「显式确认」= 在声明文件里标 visualImpact: true）：
+ *   · 有效值变了且被业务代码消费   → 必须显式确认，否则退出码 1
+ *   · 两侧无法求值等价且被消费     → 同样必须显式确认（工具证明不了等价，只能由人确认）
  *   · 令牌消失且被业务代码消费     → 违规
- *   · 未被消费的偏差               → 必须写进声明文件
+ *   · 未被消费的偏差               → 必须写进声明文件，但无需确认可视影响
+ *
+ * 已知边界：声明按**令牌名**取文件中的最后一次赋值，所以同一令牌若散落在多个
+ * 选择器分支里（如曾经并存的 `:root, .light` 与 `.dark`），只有最后一段参与比对。
+ * 「令牌层保持唯一 :root」是这条规则成立的前提：改动令牌层时不要引入新分支。
  *
  * 声明文件：tools/design-fidelity/phase-boundary.json（先声明，后改代码）
  */
@@ -212,7 +216,11 @@ const collectConsumed = () => {
     for (const relative of sh("ls-files", dir).split("\n").filter(Boolean)) {
       if (relative.startsWith("src/ui/tokens/")) continue;
       if (!/\.(tsx?|css|mjs|cjs|js)$/.test(relative)) continue;
-      const text = fs.readFileSync(path.join(ROOT, relative), "utf8");
+      // `git ls-files` 覆盖「工作树已删除、但仍在索引里」的文件（如刚被重构删掉的目录）。
+      // 不过滤会让工具在移动/删除文件后直接崩溃，而不是给出判定结果。
+      const full = path.join(ROOT, relative);
+      if (!fs.existsSync(full)) continue;
+      const text = fs.readFileSync(full, "utf8");
       for (const match of text.matchAll(/var\(\s*(--biu-[\w-]+)/g)) consumed.add(match[1]);
     }
   }
@@ -240,7 +248,7 @@ const tableOf = declarations => [declarations, theme.vars];
 const numericOrChanged = (name, from, to) => {
   const a = resolve(name, tableOf(from));
   const b = resolve(name, tableOf(to));
-  if (b.value === undefined) return { kind: "disappeared", consumed: consumed.has(name) };
+  if (b.value === undefined) return { kind: "disappeared", name, consumed: consumed.has(name) };
   if (a.value === b.value) return { kind: "same" };
   const na = a.unresolved ? null : evaluateLength(a.value);
   const nb = b.unresolved ? null : evaluateLength(b.value);
@@ -265,9 +273,14 @@ const deviations = [...valueChanges, ...expressionChanges, ...disappeared];
 
 const acknowledged = item => intended.get(item.name)?.visualImpact === true;
 const undeclared = deviations.filter(item => !intended.has(item.name));
-// 被业务代码消费的令牌一旦改变有效值，就是会掉像素的改动：
-// 光写进声明文件不够，必须显式标 visualImpact，否则等于悄悄改外观。
-const unacknowledged = valueChanges.filter(item => item.consumed && !acknowledged(item));
+// 统一口径：**任何**被业务代码消费的偏差都必须显式确认，不只是「有效值变更」。
+//   · 有效值变更        → 会掉像素，当然要确认；
+//   · 表达式改写        → 两侧至少一侧无法求值时，工具证明不了等价，只能由人确认；
+//                        漏掉这一类，「把消费型令牌改成非可求值形式」就成了后门。
+//   · 令牌消失          → 消费方会拿到无效值，同样要确认。
+// 写进声明文件只代表「登记过」，标 visualImpact 才代表「有人确认过它会掉像素」。
+const needsAcknowledgement = deviations.filter(item => item.consumed);
+const unacknowledged = needsAcknowledgement.filter(item => !acknowledged(item));
 
 console.log(`阶段边界检查：基线 ${baselineRef} → 工作区`);
 console.log(`  基线遗留令牌 ${before.size} 个；被业务代码消费 ${consumed.size} 个`);
@@ -283,28 +296,33 @@ for (const item of valueChanges) {
   if (intended.has(item.name)) console.log(`      理由：${intended.get(item.name).reason}`);
 }
 for (const item of expressionChanges) {
-  console.log(
-    `${item.consumed ? "! 需确认" : "· 未消费"} 表达式改写 ${item.name}${intended.has(item.name) ? "（已声明）" : "（未声明）"}`,
-  );
+  // 与 value / disappeared 两个分支同口径：只有「已声明但未确认」才该喊违规。
+  // 之前这里对任何消费型改写都硬编码「需确认」，导致已确认的条目也在报警——
+  // 一个永远在喊的标签只会训练操作者忽略它。
+  const tag = item.consumed ? (acknowledged(item) ? "! 已确认表达式改写" : "✗ 违规") : "· 未消费";
+  console.log(`${tag} 表达式改写 ${item.name}${intended.has(item.name) ? "（已声明）" : "（未声明）"}`);
   console.log(`      ${item.before}\n   →  ${item.after}`);
   const reason = intended.get(item.name)?.reason;
   console.log(reason ? `      理由：${reason}` : "      两侧至少一侧无法求值，需人工确认等价性");
 }
 for (const item of disappeared) {
-  console.log(`${item.consumed ? "✗ 违规" : "· 未消费"} 令牌消失 ${item.name}`);
+  const tag = item.consumed ? (acknowledged(item) ? "! 已确认删除" : "✗ 违规") : "· 未消费";
+  console.log(`${tag} 令牌消失 ${item.name}${intended.has(item.name) ? "（已声明）" : "（未声明）"}`);
 }
 
 console.log();
 if (unacknowledged.length > 0) {
-  console.error(`失败：${unacknowledged.length} 处「被业务代码消费的令牌有效值变更」没有显式确认。`);
-  console.error("这类改动会掉像素。确认后请在 phase-boundary.json 对应条目上标 visualImpact: true 并写明理由。");
+  console.error(`失败：${unacknowledged.length} 处「被业务代码消费的令牌发生变更」没有显式确认。`);
+  console.error("这类改动会掉像素（或无法证明等价）。确认后请在 phase-boundary.json 对应条目上标");
+  console.error("visualImpact: true 并写明理由。");
   for (const item of unacknowledged) console.error(`  · ${item.name}  ${item.before} → ${item.after}`);
 } else if (undeclared.length > 0) {
   console.error(`失败：${undeclared.length} 处偏差未在 phase-boundary.json 中声明。未声明的偏差 = 没人评审过的变更。`);
   for (const item of undeclared) console.error(`  · ${item.name}`);
 } else {
+  const confirmed = needsAcknowledgement.length;
   console.log(
-    `通过：${deviations.length} 处偏差均已声明；其中可视变更 ${valueChanges.filter(item => item.consumed).length} 处（已显式确认）。`,
+    `通过：${deviations.length} 处偏差均已声明${confirmed > 0 ? `，其中影响业务代码的 ${confirmed} 处已显式确认` : "，无可视变化"}。`,
   );
 }
 process.exit(unacknowledged.length > 0 || undeclared.length > 0 ? 1 : 0);
