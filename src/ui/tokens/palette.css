@@ -1,0 +1,143 @@
+/* ============================================================================
+   C+ 设计令牌 · 第 1 层「原始色板」
+   ----------------------------------------------------------------------------
+   真值来源：docs/design/cplus-spec-lock.json（冻结）
+             prototypes/c-plus-2026/assets/tokens.css（原型实现）
+   边界：本文件是**唯一**允许出现字面色值的文件。
+         任何其它文件（含 semantic.css / geometry.css / 业务组件）出现
+         #hex、rgb()、hsl()、oklch() 都会被 tools/design-fidelity/check-literals.mjs 拦下。
+
+   写法约定：
+     · 不透明色 → 定义「三通道」原文 `--c-x-rgb: R G B`，再合成整体色 `--c-x: rgb(var(--c-x-rgb))`。
+       三通道是主形态，因为业务侧需要 `rgb(var(--biu-*) / 0.5)` 这类二次调透明度。
+     · 透明叠加色（玻璃、悬停、描边）→ 直接写 rgba() 整值。它们本身就是叠加层，
+       再套一层透明度没有意义。
+   ========================================================================== */
+
+:root {
+  /* ---- 1. 底板与常驻层 ------------------------------------------------- */
+  --c-image-bed-rgb: 0 0 0; /* #000000 影像底 */
+  --c-app-bg-rgb: 8 8 10; /* #08080A 应用底板（实测，非纯黑） */
+  --c-topbar-rgb: 22 22 24; /* #161618 顶栏底 */
+  --c-playbar-rgb: 14 14 17; /* #0E0E11 播放栏底 */
+  --c-image-bed: rgb(var(--c-image-bed-rgb));
+  --c-app-bg: rgb(var(--c-app-bg-rgb));
+  --c-topbar: rgb(var(--c-topbar-rgb));
+  --c-playbar: rgb(var(--c-playbar-rgb));
+
+  /* 底板环境光：两层极弱径向叠色，叠在 --c-app-bg 之上 */
+  --c-app-sheen-a: rgb(255 255 255 / 2.2%);
+  --c-app-sheen-b: rgb(90 140 255 / 3%);
+
+  /* 顶栏合成渐变（实测：上缘更亮、下缘更沉） */
+  --c-topbar-top-rgb: 26 26 28; /* #1A1A1C */
+  --c-topbar-bottom-rgb: 19 19 21; /* #131315 */
+  --c-topbar-top: rgb(var(--c-topbar-top-rgb));
+  --c-topbar-bottom: rgb(var(--c-topbar-bottom-rgb));
+
+  /* ---- 2. 文字色阶 ----------------------------------------------------- */
+  --c-text-rgb: 255 255 255; /* #FFFFFF 主文字与播放键 */
+  --c-text-2-rgb: 204 204 204; /* #CCCCCC 次文字 */
+  --c-text-3-rgb: 161 161 166; /* #A1A1A6 三级文字 */
+  --c-text-4-rgb: 142 142 147; /* #8E8E93 注解带 */
+  --c-text-5-rgb: 110 110 115; /* #6E6E73 禁用 / 弱标注 */
+  --c-text: rgb(var(--c-text-rgb));
+  --c-text-2: rgb(var(--c-text-2-rgb));
+  --c-text-3: rgb(var(--c-text-3-rgb));
+  --c-text-4: rgb(var(--c-text-4-rgb));
+  --c-text-5: rgb(var(--c-text-5-rgb));
+  --c-text-placeholder: rgb(255 255 255 / 42%); /* 输入框占位符 */
+  --c-text-lyrics-dim: rgb(255 255 255 / 56%); /* 非当前行歌词 */
+
+  /* ---- 3. 反色与能力色 ------------------------------------------------- */
+
+  /* 反色对：激活药丸 / 主操作 / 播放键底 + 其上的深色文字 */
+  --c-inverse-surface-rgb: 242 242 242; /* #F2F2F2 */
+  --c-inverse-surface-hover-rgb: 232 232 234; /* #E8E8EA */
+  --c-inverse-ink-rgb: 10 10 12; /* #0A0A0C */
+  --c-inverse-surface: rgb(var(--c-inverse-surface-rgb));
+  --c-inverse-surface-hover: rgb(var(--c-inverse-surface-hover-rgb));
+  --c-inverse-ink: rgb(var(--c-inverse-ink-rgb));
+  --c-accent-rgb: 41 151 255; /* #2997FF 强调 */
+  --c-accent-ink-rgb: 124 188 255; /* #7CBCFF 强调药丸上的文字 */
+  --c-accent: rgb(var(--c-accent-rgb));
+  --c-accent-ink: rgb(var(--c-accent-ink-rgb));
+  --c-accent-soft: rgb(41 151 255 / 22%); /* 已生效筛选条件的底 */
+  --c-quality-rgb: 90 180 255; /* #5AB4FF 音质徽标 */
+  --c-dir-rgb: 41 151 255; /* #2997FF 本地目录徽标 */
+  --c-film-rgb: 210 210 215; /* #D2D2D7 胶片灰 */
+  --c-danger-rgb: 255 107 107; /* #FF6B6B 危险操作 */
+  --c-quality: rgb(var(--c-quality-rgb));
+  --c-dir: rgb(var(--c-dir-rgb));
+  --c-film: rgb(var(--c-film-rgb));
+  --c-danger: rgb(var(--c-danger-rgb));
+  --c-danger-soft: rgb(255 107 107 / 16%);
+  --c-danger-line: rgb(255 107 107 / 32%);
+
+  /* ---- 4. 本地格式色 --------------------------------------------------- */
+  --c-fmt-flac-rgb: 90 180 255; /* #5AB4FF */
+  --c-fmt-wav-rgb: 126 216 168; /* #7ED8A8 */
+  --c-fmt-aiff-rgb: 229 192 123; /* #E5C07B —— 原实现误写 #E05C07，以设计稿为准 */
+  --c-fmt-m4a-rgb: 185 155 232; /* #B99BE8 */
+  --c-fmt-mp3-rgb: 200 200 206; /* #C8C8CE */
+  --c-fmt-wma-rgb: 200 200 206; /* #C8C8CE */
+  --c-fmt-flac: rgb(var(--c-fmt-flac-rgb));
+  --c-fmt-wav: rgb(var(--c-fmt-wav-rgb));
+  --c-fmt-aiff: rgb(var(--c-fmt-aiff-rgb));
+  --c-fmt-m4a: rgb(var(--c-fmt-m4a-rgb));
+  --c-fmt-mp3: rgb(var(--c-fmt-mp3-rgb));
+  --c-fmt-wma: rgb(var(--c-fmt-wma-rgb));
+
+  /* ---- 5. 透明表面与描边 ----------------------------------------------- */
+
+  /* 玻璃：白 16% + 描边白 + 背景模糊（模糊半径见 geometry.css） */
+  --c-glass: rgb(255 255 255 / 16%);
+  --c-glass-border: rgb(255 255 255 / 18%);
+  --c-glass-strong: rgb(255 255 255 / 24%); /* 玻璃按下态 */
+  --c-surface: rgb(255 255 255 / 6%); /* 抬升面板 */
+  --c-surface-hover: rgb(255 255 255 / 10%); /* 悬停 */
+  --c-surface-sunken: rgb(255 255 255 / 13%); /* 凹槽 / 歌词面板 */
+  --c-surface-field: rgb(255 255 255 / 17%); /* 输入框 */
+  --c-surface-current: rgb(255 255 255 / 7%); /* 列表当前行整行高亮 */
+  --c-line: rgb(255 255 255 / 10%); /* 标准描边 */
+  --c-line-weak: rgb(255 255 255 / 6%); /* 弱分隔 */
+  --c-line-strong: rgb(255 255 255 / 16%); /* 强调描边 */
+
+  /* 阴影本影（三通道黑，供 rgb(var(--c-shadow-umbra) / 5%) 使用） */
+  --c-shadow-umbra-rgb: 0 0 0;
+
+  /* ---- 6. 遮罩 --------------------------------------------------------- */
+
+  /* 规则：只用于可读性（压在影像上的文字），统一 26% + 底部渐隐，不作为装饰 */
+  --c-scrim: rgb(0 0 0 / 26%);
+  --c-scrim-veil: linear-gradient(
+    to top,
+    rgb(0 0 0 / 92%) 0%,
+    rgb(0 0 0 / 62%) 38%,
+    rgb(0 0 0 / 26%) 72%,
+    rgb(0 0 0 / 0%) 100%
+  );
+
+  /* ---- 7. 沉浸态背景 --------------------------------------------------- */
+
+  /* 设计稿实测结论：右上与右下是纯暗底，**不存在右下蓝光**。
+     真实结构是「左缘竖向紫雾（峰值 y≈43%）+ 顶部横向冷蓝雾」。
+     数值拟合：14 个采样点平均色差 6.27 → 1.65。
+     切勿凭直觉改成「右下蓝光」或「中心聚光」——有疑虑时以
+     `bash tools/design-fidelity/run.sh --screen 10-now-playing` 的采样色差为准。 */
+  --c-immersive-base-rgb: 6 6 11; /* #06060B */
+  --c-immersive-base: rgb(var(--c-immersive-base-rgb));
+  --c-immersive-haze-a: rgb(30 114 166 / 49%); /* 顶部冷蓝雾 */
+  --c-immersive-haze-b: rgb(108 78 158 / 47%); /* 左缘紫雾 */
+  --c-immersive-haze-c: rgb(55 49 90 / 60%); /* 左上大面积承接 */
+
+  /* ==========================================================================
+     不进色板（有意排除）
+     --------------------------------------------------------------------------
+     · 占位封面渐变：`linear-gradient(150deg, #3a3a46, #1c1c22)` 等十余条，
+       属于**数据夹具**而非设计令牌 —— 真实封面来自数据源。它们应落在
+       tools/design-fidelity/fixtures/，不得进入本文件。
+     · 单组件私有合成色：在对应组件阶段（P2 起）按原型实测补入本文件，
+       并同步 cplus-spec-lock.json，**禁止在组件里就地写字面值**。
+     ========================================================================== */
+}

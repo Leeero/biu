@@ -1,0 +1,173 @@
+/* ============================================================================
+   C+ 设计令牌 · 第 3 层「非色彩令牌」
+   ----------------------------------------------------------------------------
+   内容：几何骨架、排版、圆角、间距、层级、动效、模糊、字体族。
+   边界：只允许字面长度与 CSS 关键字，**不得出现任何色值**。
+   来源：docs/design/cplus-spec-lock.json 的 geometry / typography / material.radius。
+   ========================================================================== */
+
+:root {
+  /* ---- 1. 字体族 ------------------------------------------------------- */
+  --biu-font-sans:
+    -apple-system, "BlinkMacSystemFont", "SF Pro Display", "SF Pro Text", "PingFang SC",
+    "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  --biu-font-numeric: "SF Pro Display", -apple-system, "Helvetica Neue", sans-serif;
+
+  /* ---- 2. 排版 --------------------------------------------------------- */
+
+  /* 每个字阶给出四个原子令牌 + 一个 font 简写。
+     原子令牌是唯一真值，简写由它们拼出，两者不会漂移。
+     数字（时长、进度、计数）一律配合 font-variant-numeric: tabular-nums。 */
+
+  --biu-type-page-title-size: 56px; /* 满幅标题 */
+  --biu-type-page-title-weight: 600;
+  --biu-type-page-title-leading: 1.16;
+  --biu-type-page-title-tracking: -1px;
+  --biu-type-page-title:
+    var(--biu-type-page-title-weight) var(--biu-type-page-title-size) /
+    var(--biu-type-page-title-leading);
+  --biu-type-track-title-size: 40px; /* 曲名 */
+  --biu-type-track-title-weight: 600;
+  --biu-type-track-title-leading: 1.2;
+  --biu-type-track-title-tracking: -0.8px;
+  --biu-type-track-title:
+    var(--biu-type-track-title-weight) var(--biu-type-track-title-size) /
+    var(--biu-type-track-title-leading);
+  --biu-type-lead-size: 22px; /* 页面副标题 */
+  --biu-type-lead-weight: 400;
+  --biu-type-lead-leading: 1.27;
+  --biu-type-lead-tracking: normal;
+  --biu-type-lead:
+    var(--biu-type-lead-weight) var(--biu-type-lead-size) / var(--biu-type-lead-leading);
+  --biu-type-small-size: 17px; /* 歌词与浮层小字 */
+  --biu-type-small-weight: 400;
+  --biu-type-small-leading: 1.62;
+  --biu-type-small-tracking: normal;
+  --biu-type-small:
+    var(--biu-type-small-weight) var(--biu-type-small-size) / var(--biu-type-small-leading);
+  --biu-type-body-size: 15px; /* 列表正文与元信息 */
+  --biu-type-body-weight: 400;
+  --biu-type-body-leading: 1.33;
+  --biu-type-body-tracking: normal;
+  --biu-type-body:
+    var(--biu-type-body-weight) var(--biu-type-body-size) / var(--biu-type-body-leading);
+  --biu-type-label-size: 13px; /* 标签与徽标 */
+  --biu-type-label-weight: 400;
+  --biu-type-label-leading: 1.6;
+  --biu-type-label-tracking: normal;
+  --biu-type-label:
+    var(--biu-type-label-weight) var(--biu-type-label-size) / var(--biu-type-label-leading);
+  --biu-type-micro-size: 12px; /* 表头与角标 */
+  --biu-type-micro-weight: 400;
+  --biu-type-micro-leading: 1.33;
+  --biu-type-micro-tracking: normal;
+  --biu-type-micro:
+    var(--biu-type-micro-weight) var(--biu-type-micro-size) / var(--biu-type-micro-leading);
+
+  /* ---- 3. 骨架几何 ----------------------------------------------------- */
+
+  /* 设计基准画布。**不作为运行期缩放**：自适应策略是「令牌锚定 + 弹性容器」，
+     实测值固定为令牌，只有中间标题列用 minmax(0, 1fr) 伸缩。
+     这两个值只用于验收比对。 */
+  --biu-layout-stage-w: 1440px;
+  --biu-layout-stage-h: 900px;
+  --biu-layout-topbar-h: 71px; /* 硬锚点 */
+  --biu-layout-player-h: 88px; /* 硬锚点 */
+  --biu-layout-gutter: 64px; /* 内容左右最小留白 */
+
+  /* 列表：行高 68 / 缩略图 100×56（16:9）/ 图→文 31 / 右列 220 + 152 / 右缩进 40。
+     设计稿列表**无分隔线**；当前行是整行圆角高亮，左右通栏、上下内缩 2px。 */
+  --biu-layout-row-h: 68px;
+  --biu-layout-art-w: 100px;
+  --biu-layout-art-h: 56px;
+  --biu-layout-art-radius: 6px;
+  --biu-layout-track-gap: 31px;
+  --biu-layout-col-4: 220px;
+  --biu-layout-col-5: 152px;
+  --biu-layout-list-pad-r: 40px;
+  --biu-layout-current-inset: 2px; /* 当前行高亮上下内缩 */
+
+  /* 筛选条：条高 48，药丸 36，药丸间隔 4，组内留白 6 */
+  --biu-layout-filterbar-h: 48px;
+  --biu-layout-pill-h: 36px;
+  --biu-layout-pill-gap: 4px;
+  --biu-layout-pill-pad: 6px;
+
+  /* 瓦片栅格 */
+  --biu-layout-tile-min-w: 206px;
+  --biu-layout-grid-gap: 20px;
+
+  /* 沉浸态（无顶栏、无播放栏）。
+     art-w 以设计稿索引原文 639 为准；原型实现为 649，差 10px（1.6%），
+     已登记为已知残差，P5 收敛。 */
+  --biu-layout-immersive-art-w: 639px;
+  --biu-layout-immersive-art-h: 359px;
+  --biu-layout-immersive-gap: 47px;
+  --biu-layout-immersive-progress-y: 700px;
+  --biu-layout-immersive-times-y: 720px;
+  --biu-layout-immersive-controls-top: 752px;
+  --biu-layout-immersive-controls-bottom: 808px;
+  --biu-layout-immersive-controls-h: 56px;
+  --biu-layout-play-button: 56px;
+
+  /* ---- 4. 圆角 --------------------------------------------------------- */
+
+  /* 设计稿明确「0 满幅影像 / 999 圆片，界面里没有直角卡片」。
+     因此圆角是固定值，**不是可调项**：不再由 --heroui-radius-medium 派生。
+     现有自定义圆角设置入口在 P1 随主题收敛一并移除。 */
+  --biu-radius-image: 0px;
+  --biu-radius-sm: 8px; /* 药丸内片 / 角标 */
+  --biu-radius-md: 12px; /* 瓦片、缩略图、迷你窗口 */
+  --biu-radius-lg: 20px; /* 面板、歌词、弹层 */
+  --biu-radius-xl: 20px; /* 别名，与 lg 同值 */
+  --biu-radius-window: 12px;
+  --biu-radius-pill: 999px; /* 药丸、搜索框、播放键 */
+  --biu-radius-round: 999px; /* 遗留名，P7 删除 */
+
+  /* ---- 5. 间距 --------------------------------------------------------- */
+  --biu-space-1: 4px;
+  --biu-space-2: 8px;
+  --biu-space-3: 12px;
+  --biu-space-4: 16px;
+  --biu-space-5: 20px;
+  --biu-space-6: 24px;
+  --biu-space-8: 32px;
+  --biu-space-10: 40px;
+  --biu-space-12: 48px; /* 补齐，对齐原型 --sp-12 */
+  --biu-space-16: 64px; /* 补齐，对齐原型 --sp-16 */
+
+  /* ---- 6. 模糊 --------------------------------------------------------- */
+  --biu-blur-glass: 20px;
+
+  /* ---- 7. 层级 --------------------------------------------------------- */
+  --biu-z-content: 1;
+  --biu-z-note: 20;
+  --biu-z-player: 40;
+  --biu-z-topbar: 50;
+
+  /* ---- 8. 动效 --------------------------------------------------------- */
+
+  /* 缓动曲线以原型为准：cubic-bezier(0.32, 0.72, 0, 1)。 */
+  --biu-duration-fast: 120ms;
+  --biu-duration-normal: 180ms;
+  --biu-duration-slow: 240ms;
+  --biu-ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --biu-ease-emphasized: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* —— 遗留壳层令牌（P1 重指/删除，见文件尾的边界声明） —— */
+  --biu-topbar-height: 64px; /* P1 → var(--biu-layout-topbar-h) = 71px */
+  --biu-player-height: 84px; /* P1 → var(--biu-layout-player-h) = 88px */
+  --biu-sidebar-width: 220px; /* P1 删除（侧栏移除） */
+  --biu-content-max-width: 1440px; /* P1 → none（满幅剧场） */
+}
+
+/* ============================================================================
+   遗留壳层令牌 —— 阶段边界声明
+   ----------------------------------------------------------------------------
+   C+ 的目标值已在上面冻结：
+     --biu-layout-topbar-h 71 / --biu-layout-player-h 88 / --biu-layout-gutter 64
+   但**顶栏与播放栏的高度属于壳层几何，其切换由 P1 负责**（P1 出口标准即校验
+   渲染实测 71 / 88）。P0 保持既有高度，避免在旧壳层里造成半迁移状态。
+   P1 动作：把下面四个别名重新指向 --biu-layout-*，并删除 --biu-sidebar-width
+   （侧栏移除，决策 3），--biu-content-max-width 由 1440px 改为 none。
+   ========================================================================== */

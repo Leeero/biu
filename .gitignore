@@ -109,3 +109,9 @@ api.example.json
 .trae
 .vscode/mcp.json
 .github/instructions
+
+# 保真度校验工具的本地 Python 环境
+tools/design-fidelity/.venv
+
+# 智能体工作区（本地记忆与技能，与 .trae 同类）
+.workbuddy/

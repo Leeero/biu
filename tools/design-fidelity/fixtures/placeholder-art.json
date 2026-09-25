@@ -1,0 +1,28 @@
+{
+  "note": "封面占位渐变。来源：prototypes/c-plus-2026/screens/*.html 的 --tile-art 与 .hero-art 内联值。这些是数据夹具，不是设计令牌 —— 真实封面由数据源提供，因此它们不应进入 src/ui/tokens/palette.css。",
+  "rule": "仅可作为封面、头像、频谱等影像区域的占位填充。禁止用于任何控件底色、文字、描边。",
+  "gradients": [
+    "linear-gradient(150deg, #2b3550, #171a24)",
+    "linear-gradient(150deg, #30303a, #1a1a1f)",
+    "linear-gradient(150deg, #333940, #191d20)",
+    "linear-gradient(150deg, #333c37, #191d1b)",
+    "linear-gradient(150deg, #343a42, #1a1d21)",
+    "linear-gradient(150deg, #35405c, #191d28)",
+    "linear-gradient(150deg, #383644, #1c1b22)",
+    "linear-gradient(150deg, #3a3a46, #1c1c22)",
+    "linear-gradient(150deg, #3b352c, #201d18)",
+    "linear-gradient(150deg, #3c3644, #1d1b22)",
+    "linear-gradient(150deg, #3d3a33, #1e1d19)",
+    "linear-gradient(150deg, #403a4c, #1d1b24)",
+    "linear-gradient(150deg, #42402f, #22211a)"
+  ],
+  "default": "linear-gradient(150deg, #2f2f37, #17171b)",
+  "radialVariants": [
+    "radial-gradient(120% 120% at 30% 20%, #55555a, #2f2f33)",
+    "radial-gradient(120% 120% at 30% 25%, #4a4a52, #1c1c21 70%)",
+    "radial-gradient(120% 120% at 30% 25%, #4d4d55, #1e1e23 72%)",
+    "linear-gradient(150deg, #2b3550, #14161d)",
+    "linear-gradient(150deg, #242b3d, #171c28)",
+    "linear-gradient(150deg, #1b2131, #14161d)"
+  ]
+}

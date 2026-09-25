@@ -1,0 +1,32 @@
+{
+  "phase": "P0",
+  "baselineRef": "HEAD",
+  "baselineNote": "P0 尚未提交，基线取 HEAD（P0 前最后一个提交 5aa60d6）。P0 提交后请把本字段改为该提交的短 SHA，作为 P1 的基线。",
+  "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。未登记的偏差会让 check-phase-drift.mjs 退出码 1；被业务代码消费的令牌若发生有效值变更，必须额外标 visualImpact: true 显式确认「这会掉像素」。",
+  "intendedChanges": {
+    "--biu-radius-lg": {
+      "visualImpact": true,
+      "reason": "P0 起圆角不再由 --heroui-radius-medium(12px) 派生，改用冻结的 C+ 固定值。有效值由 16px 变为 20px，且本令牌被 8 个组件消费（mini-player、full-screen-player、music-recommend、video-collection、playlist-card、navbar/search、design-system）。这是 P0 唯一有意引入的可视变更，已随重构方案 §13 声明。"
+    },
+    "--biu-radius-sm": {
+      "visualImpact": false,
+      "reason": "由 max(4px, calc(12px - 4px)) 改写为字面值 8px，有效值不变（求值均为 8px）。当前无消费方。"
+    },
+    "--biu-radius-md": {
+      "visualImpact": false,
+      "reason": "由 var(--heroui-radius-medium) 改写为字面值 12px，有效值不变。被 6 个组件消费，但取值一致，无可视影响。"
+    },
+    "--biu-radius-xl": {
+      "visualImpact": false,
+      "reason": "由 calc(12px + 8px) 改写为字面值 20px，有效值不变。被 2 个组件消费，但取值一致，无可视影响。"
+    },
+    "--biu-ease-standard": {
+      "visualImpact": false,
+      "reason": "对齐 C+ 真值 cubic-bezier(0.32, 0.72, 0, 1)（原 0.2, 0, 0, 1）。当前无消费方，无可视影响；P1 起由新动效令牌承接。"
+    },
+    "--biu-ease-emphasized": {
+      "visualImpact": false,
+      "reason": "对齐 C+ 真值 cubic-bezier(0.32, 0.72, 0, 1)（原 0.2, 0.8, 0.2, 1）。当前无消费方，无可视影响；注意此刻两条缓动取值相同，P1 应重新区分主次动效。"
+    }
+  }
+}

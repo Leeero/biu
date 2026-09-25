@@ -1,52 +1,474 @@
+/**
+ * C+ 令牌真值对照测试。
+ *
+ * 这是「闸门 1 · 冻结的真值」的强制执行点：把 docs/design/cplus-spec-lock.json
+ * 的每条值断言到 CSS 令牌，任一侧漂移即失败。
+ *
+ * 之所以要通用断言而不是手写常量：手写常量等于把真值抄第二遍，
+ * 抄的那一份迟早与真值分叉 —— P0 落地时就在沉浸态背景渐变上发生过一次。
+ *
+ * 约定见 cplus-spec-lock.json 的 meta.tokenConventions。
+ */
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
 
-const css = readFileSync(path.resolve(process.cwd(), "src/ui/tokens/index.css"), "utf8");
+const ROOT = process.cwd();
+const TOKENS_DIR = path.resolve(ROOT, "src/ui/tokens");
+const LAYERS = ["palette.css", "semantic.css", "geometry.css", "index.css"] as const;
 
-const readRgb = (scope: "light" | "dark", token: string) => {
-  const blockPattern = scope === "light" ? /:root,\s*\.light\s*{([^}]*)}/s : /\.dark\s*{([^}]*)}/s;
-  const block = css.match(blockPattern)?.[1] ?? "";
-  const value = block.match(new RegExp(`--${token}:\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)`));
-  if (!value) throw new Error(`Missing ${scope} token: ${token}`);
-  return [Number(value[1]), Number(value[2]), Number(value[3])] as const;
+type Spec = {
+  meta: { version: string; tokenConventions: Record<string, string> };
+  palette: Record<string, unknown>;
+  material: {
+    glass: { fill: string; border: string; blur: string; token: string; borderToken: string };
+    radius: { tokens: Record<string, string>; [key: string]: unknown };
+    scrim: { value: string; token: string };
+    scrimVeil: { token: string; stops: string[] };
+  };
+  typography: {
+    scale: Record<
+      string,
+      {
+        token: string;
+        size: string;
+        weight: number;
+        lineHeight: number;
+        letterSpacing?: string;
+      }
+    >;
+  };
+  tokenMap: Record<string, string>;
+  immersiveGeometry: Record<string, unknown>;
+  tolerances: { contrastDeltaMax: number; [key: string]: unknown };
 };
 
-const luminance = ([red, green, blue]: readonly number[]) => {
-  const [r, g, b] = [red, green, blue].map(value => {
+const spec: Spec = JSON.parse(readFileSync(path.resolve(ROOT, "docs/design/cplus-spec-lock.json"), "utf8")) as Spec;
+
+/* ------------------------------------------------------------------ 解析层 */
+
+const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+
+const squash = (value: string) => value.replace(/\s+/g, " ").trim();
+
+/**
+ * 只收集**不处于 @media / @supports 等 at-rule 内**的自定义属性声明。
+ * 这样 `@media (prefers-reduced-motion: reduce)` 里的归零值不会覆盖真值。
+ */
+const parseDeclarations = (css: string): Map<string, string> => {
+  const out = new Map<string, string>();
+  const stack: boolean[] = [];
+  let buffer = "";
+
+  for (const char of stripComments(css)) {
+    if (char === "{") {
+      const opener = buffer.trim().startsWith("@") || stack.at(-1) === true;
+      stack.push(opener);
+      buffer = "";
+      continue;
+    }
+    if (char === "}") {
+      stack.pop();
+      buffer = "";
+      continue;
+    }
+    if (char === ";") {
+      if (stack.at(-1) !== true) {
+        const matched = buffer.trim().match(/^(--[\w-]+)\s*:\s*([\s\S]+)$/);
+        if (matched) out.set(matched[1], squash(matched[2]));
+      }
+      buffer = "";
+      continue;
+    }
+    buffer += char;
+  }
+  return out;
+};
+
+const files = new Map(LAYERS.map(name => [name, readFileSync(path.join(TOKENS_DIR, name), "utf8")]));
+const tokens = new Map<string, string>();
+for (const name of LAYERS) {
+  for (const [key, value] of parseDeclarations(files.get(name) ?? "")) tokens.set(key, value);
+}
+
+const resolve = (name: string, chain: string[] = []): string => {
+  if (chain.includes(name)) throw new Error(`令牌循环引用：${[...chain, name].join(" → ")}`);
+  const raw = tokens.get(name);
+  if (raw === undefined) throw new Error(`令牌未定义：${name}（引用链 ${chain.join(" → ") || "起点"}）`);
+  return raw.replace(/var\(\s*(--[\w-]+)\s*\)/g, (_all, ref: string) => resolve(ref, [...chain, name]));
+};
+
+/* -------------------------------------------------------------- 归一化层 */
+
+const hexToTriple = (hex: string): string => {
+  let body = hex.replace("#", "");
+  if (body.length === 3) body = [...body].map(char => char + char).join("");
+  return (body.match(/../g) ?? []).map(pair => String(parseInt(pair, 16))).join(" ");
+};
+
+/**
+ * 把 `16%` 与 `0.16` 两种透明度写法归一到同一个数字表示，
+ * 否则真值写 `rgba(255,255,255,0.16)`、CSS 被 stylelint 改成
+ * `rgb(255 255 255 / 16%)` 时会被判成两回事。
+ */
+const canonAlpha = (raw: string): string => {
+  const trimmed = raw.trim();
+  const scaled = trimmed.endsWith("%") ? Number(trimmed.slice(0, -1)) / 100 : Number(trimmed);
+  return String(Number(scaled.toFixed(4)));
+};
+
+const canonRgb = (_all: string, r: string, g: string, b: string, alpha?: string): string =>
+  alpha === undefined ? `${r} ${g} ${b}` : `rgba(${r},${g},${b},${canonAlpha(alpha)})`;
+
+const canonRgba = (_all: string, r: string, g: string, b: string, alpha: string): string =>
+  `rgba(${r},${g},${b},${canonAlpha(alpha)})`;
+
+/**
+ * 把色值归一成可比形式：
+ *   #08080A                     → "8 8 10"
+ *   rgb(8 8 10)                 → "8 8 10"
+ *   rgb(255 255 255 / 16%)      → "rgba(255,255,255,0.16)"   ← stylelint 的现代写法
+ *   rgba(255, 255, 255, 0.16)   → "rgba(255,255,255,0.16)"
+ *
+ * 之所以要接受两种写法：样式表在 stylelint 下统一用空格 + 斜杠，真值表按
+ * 设计稿原文用逗号 + 小数，两侧都不能改，只能在比较前归一。
+ */
+const canon = (value: string): string =>
+  squash(value)
+    .replace(/#[0-9a-fA-F]{6}\b/g, hexToTriple)
+    .replace(/#[0-9a-fA-F]{3}\b/g, hexToTriple)
+    .replace(/\brgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*(?:\/\s*([\d.]+%?)\s*)?\)/gi, canonRgb)
+    .replace(/\brgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/gi, "$1 $2 $3")
+    .replace(/\brgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+%?)\s*\)/gi, canonRgba)
+    .replace(/\brgba\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\/\s*([\d.]+%?)\s*\)/gi, canonRgba);
+
+/** 真值里 `700` 这类纯数字视为 px，与 CSS 的 `700px` 对齐。 */
+const canonLength = (value: unknown): string => (typeof value === "number" ? `${value}px` : squash(String(value)));
+
+const triple = (name: string): [number, number, number] => {
+  const parts = canon(resolve(name)).split(" ");
+  if (parts.length !== 3) throw new Error(`${name} 不是三通道令牌：${resolve(name)}`);
+  return parts.map(Number) as [number, number, number];
+};
+
+const luminance = ([r, g, b]: readonly number[]): number => {
+  const [red, green, blue] = [r, g, b].map(value => {
     const channel = value / 255;
     return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
 };
 
-const contrast = (foreground: readonly number[], background: readonly number[]) => {
-  const light = Math.max(luminance(foreground), luminance(background));
-  const dark = Math.min(luminance(foreground), luminance(background));
-  return (light + 0.05) / (dark + 0.05);
+const contrast = (foreground: readonly number[], background: readonly number[]): number => {
+  const [light, dark] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
 };
 
-describe.each(["light", "dark"] as const)("%s design tokens", theme => {
-  test("primary text exceeds WCAG AA contrast", () => {
-    expect(
-      contrast(readRgb(theme, "biu-color-text-primary"), readRgb(theme, "biu-color-canvas")),
-    ).toBeGreaterThanOrEqual(4.5);
+const pick = (dottedPath: string): unknown =>
+  dottedPath
+    .split(".")
+    .reduce<unknown>(
+      (node, key) => (typeof node === "object" && node !== null ? (node as Record<string, unknown>)[key] : undefined),
+      spec as unknown,
+    );
+
+/* -------------------------------------------------------------- 覆盖账本 */
+
+/**
+ * 被断言覆盖的令牌集合。
+ *
+ * 存在的理由：真值「登记了令牌」与测试「断言了令牌」是两件事，两者一旦脱钩，
+ * 漂移就不会报警 —— P0 收尾时就是这样漏掉了 --biu-radius-image /
+ * --biu-radius-window / --biu-scrim / --biu-scrim-veil 四个。
+ *
+ * 末位的「登记即断言」用例消费本集合，所以每个 describe 在构造用例时
+ * 必须把令牌登记进来；文件顺序即账本累积顺序。
+ */
+const ASSERTED = new Set<string>();
+
+/** 递归收集真值里所有「声明了令牌名」的位置：token / borderToken / tokens.*。 */
+const collectDeclared = (node: unknown, found = new Set<string>()): Set<string> => {
+  if (Array.isArray(node)) {
+    for (const item of node) collectDeclared(item, found);
+    return found;
+  }
+  if (typeof node !== "object" || node === null) return found;
+  for (const [key, value] of Object.entries(node)) {
+    if ((key === "token" || key === "borderToken") && typeof value === "string") {
+      found.add(value);
+    } else if (key === "tokens" && typeof value === "object" && value !== null) {
+      for (const name of Object.values(value)) if (typeof name === "string") found.add(name);
+    }
+    collectDeclared(value, found);
+  }
+  return found;
+};
+
+/* ------------------------------------------------------------------ 结构 */
+
+describe("令牌层结构", () => {
+  test("index.css 是纯聚合器，按 palette → semantic → geometry 顺序引入", () => {
+    const index = files.get("index.css") ?? "";
+    const imports = [...index.matchAll(/@import\s+"\.\/([\w-]+\.css)"/g)].map(match => match[1]);
+    expect(imports).toEqual(["palette.css", "semantic.css", "geometry.css"]);
   });
 
-  test("secondary text exceeds WCAG AA contrast", () => {
-    expect(
-      contrast(readRgb(theme, "biu-color-text-secondary"), readRgb(theme, "biu-color-canvas")),
-    ).toBeGreaterThanOrEqual(4.5);
+  test("字面色值只出现在 palette.css", () => {
+    const hex = /#[0-9a-fA-F]{3,8}\b/;
+    const colorFunction = /\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\s*\(/i;
+    for (const name of ["semantic.css", "geometry.css", "index.css"] as const) {
+      const body = stripComments(files.get(name) ?? "").replace(
+        /\b(?:rgba?|hsla?)\(\s*var\(--[\w-]+\)(?:\s*\/\s*[\d.]+%?)?\s*\)/gi,
+        " ",
+      );
+      expect(hex.test(body), `${name} 出现字面十六进制色值`).toBe(false);
+      expect(colorFunction.test(body), `${name} 出现字面颜色函数`).toBe(false);
+    }
   });
 
-  test("surface text remains readable", () => {
-    expect(
-      contrast(readRgb(theme, "biu-color-text-primary"), readRgb(theme, "biu-color-surface")),
-    ).toBeGreaterThanOrEqual(4.5);
+  test("原始色板引用只出现在 palette.css 与 semantic.css", () => {
+    for (const name of ["geometry.css", "index.css"] as const) {
+      expect(/var\(\s*--c-/.test(files.get(name) ?? ""), `${name} 越层引用原始色板`).toBe(false);
+    }
+  });
+
+  test("所有 var(--c-*) 与 var(--biu-*) 引用都能解析到终点", () => {
+    const seen = new Set<string>();
+    for (const name of LAYERS) {
+      // 必须先去掉注释：文档里会出现 `var(--c-x-rgb)` 这类占位写法，不是真实引用
+      const body = stripComments(files.get(name) ?? "");
+      for (const match of body.matchAll(/var\(\s*(--(?:c|biu)-[\w-]+)\s*\)/g)) {
+        seen.add(match[1] as string);
+      }
+    }
+    // 声明总量与原位引用量都要有下限：防止某次改动把整段令牌静默删掉
+    expect(tokens.size).toBeGreaterThanOrEqual(200);
+    expect(seen.size).toBeGreaterThanOrEqual(70);
+    const dangling: string[] = [];
+    for (const name of seen) {
+      try {
+        const resolved = resolve(name);
+        if (/var\(/.test(resolved)) dangling.push(`${name} → ${resolved}`);
+      } catch (error) {
+        dangling.push((error as Error).message);
+      }
+    }
+    expect(dangling).toEqual([]);
   });
 });
 
-test("motion tokens honor reduced-motion preferences", () => {
-  expect(css).toContain("@media (prefers-reduced-motion: reduce)");
-  expect(css).toContain("--biu-duration-normal: 0ms");
+/* ------------------------------------------------------------------ 色板 */
+
+describe("色板与真值一致", () => {
+  // 用对象数组而非 [key, entry] 元组：元组会被 vitest 展开成多个实参，
+  // 导致 $token 之类的用例名插值失效。
+  const scalarCases = Object.entries(spec.palette)
+    .filter(
+      ([key, entry]) =>
+        key !== "composite" &&
+        key !== "format" &&
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof (entry as { token?: unknown }).token === "string",
+    )
+    .map(([key, entry]) => ({ key, ...(entry as { value: string; token: string; use: string }) }));
+
+  test("palette 条目数量与真值一致（防止静默漏项）", () => {
+    expect(scalarCases.length).toBeGreaterThanOrEqual(16);
+  });
+
+  test.each(scalarCases)("$key · $token = $value", ({ token, value }) => {
+    expect(canon(resolve(token))).toBe(canon(value));
+  });
+
+  const formatCases = Object.entries(
+    (spec.palette.format ?? {}) as Record<string, { value: string; token: string }>,
+  ).map(([key, entry]) => ({ key, ...entry }));
+
+  test.each(formatCases)("本地格式色 $key · $token = $value", ({ token, value }) => {
+    expect(canon(resolve(token))).toBe(canon(value));
+  });
+
+  const compositeCases = Object.entries(
+    (spec.palette.composite ?? {}) as Record<string, { token: string; parts: string[] }>,
+  ).map(([key, entry]) => ({ key, ...entry }));
+
+  for (const { token } of [...scalarCases, ...formatCases, ...compositeCases]) ASSERTED.add(token);
+
+  test.each(compositeCases)("复合背景 $key · $token 含全部成分", ({ token, parts }) => {
+    const resolved = canon(resolve(token));
+    for (const part of parts) {
+      expect(resolved, `${token} 缺少成分 ${part}`).toContain(canon(part));
+    }
+  });
+});
+
+/* ------------------------------------------------------------------ 排版 */
+
+describe("排版与真值一致", () => {
+  const roles = Object.entries(spec.typography.scale);
+  for (const [, entry] of roles) ASSERTED.add(entry.token);
+
+  test.each(roles)("$token 的四个原子令牌", (_role, entry) => {
+    expect(canon(resolve(`${entry.token}-size`))).toBe(canon(entry.size));
+    expect(canon(resolve(`${entry.token}-weight`))).toBe(String(entry.weight));
+    expect(canon(resolve(`${entry.token}-leading`))).toBe(String(entry.lineHeight));
+    expect(canon(resolve(`${entry.token}-tracking`))).toBe(entry.letterSpacing ? canon(entry.letterSpacing) : "normal");
+  });
+
+  test.each(roles)("$token 的 font 简写由原子令牌拼出", (_role, entry) => {
+    const shorthand = canon(resolve(entry.token));
+    expect(shorthand).toContain(canon(entry.size));
+    expect(shorthand).toContain(String(entry.weight));
+    expect(shorthand).toContain(String(entry.lineHeight));
+  });
+
+  test("字体族令牌存在", () => {
+    expect(resolve("--biu-font-sans")).toContain("PingFang SC");
+    expect(resolve("--biu-font-numeric")).toContain("SF Pro Display");
+  });
+});
+
+/* ------------------------------------------------------------------ 几何 */
+
+describe("几何与真值一致", () => {
+  const mapped = Object.entries(spec.tokenMap);
+  const radius = spec.material.radius;
+  const radiusCases = Object.entries(radius.tokens).map(([role, token]) => ({
+    role,
+    token,
+    value: radius[role],
+  }));
+
+  for (const token of mapped.map(([, name]) => name)) ASSERTED.add(token);
+  for (const { token } of radiusCases) ASSERTED.add(token);
+  ASSERTED.add(spec.material.glass.token);
+  ASSERTED.add(spec.material.glass.borderToken);
+  ASSERTED.add(spec.material.scrim.token);
+  ASSERTED.add(spec.material.scrimVeil.token);
+
+  test("tokenMap 覆盖全部硬锚点", () => {
+    const anchors = spec.tolerances.hardAnchors as unknown as string[];
+    expect(anchors.length).toBeGreaterThanOrEqual(11);
+    expect(mapped.length).toBeGreaterThanOrEqual(24);
+  });
+
+  test.each(mapped)("%s → %s", (dottedPath, token) => {
+    const expected = pick(dottedPath);
+    expect(expected, `真值缺少 ${dottedPath}`).toBeDefined();
+    expect(canonLength(resolve(token))).toBe(canonLength(expected));
+  });
+
+  test("沉浸态封面尺寸与底部控制带", () => {
+    const art = String(pick("geometry.immersive.art"));
+    const [, width, height] = art.match(/(\d+)\s*×\s*(\d+)/) ?? [];
+    expect(canonLength(resolve("--biu-layout-immersive-art-w"))).toBe(`${width}px`);
+    expect(canonLength(resolve("--biu-layout-immersive-art-h"))).toBe(`${height}px`);
+
+    const top = parseFloat(resolve("--biu-layout-immersive-controls-top"));
+    const bottom = parseFloat(resolve("--biu-layout-immersive-controls-bottom"));
+    const band = pick("geometry.immersive.controlsBand") as number[];
+    expect(top).toBe(band[0]);
+    expect(bottom).toBe(band[1]);
+    expect(parseFloat(resolve("--biu-layout-immersive-controls-h"))).toBe(band[1]! - band[0]!);
+  });
+
+  test("圆角是固定值，不由 HeroUI 圆角派生", () => {
+    for (const { token } of radiusCases) {
+      expect(resolve(token), `${token} 仍由 --heroui-radius-* 派生`).not.toMatch(/var\(--heroui-/);
+    }
+  });
+
+  // 逐个角色与 material.radius 的几何值比对，而不是只抽查四个：
+  // 抽查过的令牌会漂移，没抽查的（image / window）当时就漂了没人知道。
+  test.each(radiusCases)("圆角 $role · $token = $value", ({ token, value }) => {
+    expect(canonLength(resolve(token))).toBe(canonLength(value));
+  });
+
+  test("玻璃材质：填充、描边、模糊", () => {
+    const { fill, border, blur, token, borderToken } = spec.material.glass;
+    expect(canon(resolve(token))).toBe(canon(fill));
+    expect(canon(resolve(borderToken))).toBe(canon(border));
+    expect(canonLength(resolve("--biu-blur-glass"))).toBe(canonLength(blur));
+  });
+
+  test("遮罩：统一 26% 且不作为装饰", () => {
+    const { token, value } = spec.material.scrim;
+    expect(canon(resolve(token))).toBe(canon(value));
+  });
+
+  test("遮罩底部渐隐含全部停止点", () => {
+    const { token, stops } = spec.material.scrimVeil;
+    const resolved = canon(resolve(token));
+    for (const stop of stops) {
+      expect(resolved, `${token} 缺少停止点 ${stop}`).toContain(canon(stop));
+    }
+  });
+});
+
+/* ---------------------------------------------------------------- 完备性 */
+
+describe("真值完备性：登记即断言", () => {
+  test("真值里声明的每个令牌都被某个断言覆盖", () => {
+    const declared = [...collectDeclared(spec)].sort();
+    const uncovered = declared.filter(name => !ASSERTED.has(name));
+
+    expect(uncovered, `这些令牌在真值里登记了、却没有任何断言，漂移不会报警：${uncovered.join(", ")}`).toEqual([]);
+
+    // 账本本身也要有量级下限，否则上游 describe 被重排/清空时会静默通过。
+    // 现值为 declared 46 / asserted 47（tokenMap 里另有 --biu-radius-xl 不在 radius.tokens）。
+    expect(declared.length, "真值声明的令牌数异常偏少").toBeGreaterThanOrEqual(40);
+    expect(ASSERTED.size, "断言账本为空或严重偏少").toBeGreaterThanOrEqual(40);
+  });
+});
+
+/* ---------------------------------------------------------------- 无障碍 */
+
+describe("文字对比度", () => {
+  const canvas = triple("--biu-surface-canvas");
+
+  const ramp = [
+    ["--biu-text-primary", "textPrimary"],
+    ["--biu-text-secondary", "textSecondary"],
+    ["--biu-text-tertiary", "textTertiary"],
+    ["--biu-text-quaternary", "textQuaternary"],
+    ["--biu-text-disabled", "textDisabled"],
+  ] as const;
+
+  test("底板是实测值 #08080A，不是纯黑", () => {
+    expect(canvas).toEqual([8, 8, 10]);
+  });
+
+  test.each(ramp)("%s 的实测对比度与真值一致", (token, key) => {
+    const entry = spec.palette[key] as { contrastOnCanvas: number };
+    expect(contrast(triple(token), canvas)).toBeCloseTo(entry.contrastOnCanvas, 1);
+    expect(Math.abs(contrast(triple(token), canvas) - entry.contrastOnCanvas)).toBeLessThanOrEqual(
+      spec.tolerances.contrastDeltaMax,
+    );
+  });
+
+  test("前四档达到 WCAG AA（≥ 4.5）", () => {
+    for (const [token] of ramp.slice(0, 4)) {
+      expect(contrast(triple(token), canvas), token).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  test("disabled 档低于 AA，但仍在 3:1 以上（仅限非正文标注）", () => {
+    const ratio = contrast(triple("--biu-text-disabled"), canvas);
+    expect(ratio).toBeLessThan(4.5);
+    expect(ratio).toBeGreaterThan(3);
+  });
+
+  test("反色对在其自身底色上达到 AA", () => {
+    expect(contrast(triple("--biu-inverse-ink"), triple("--biu-inverse-surface"))).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+/* ---------------------------------------------------------------- 动效与层级 */
+
+test("减少动效时三档时长归零，且覆盖规则排在令牌层之后", () => {
+  const index = files.get("index.css") ?? "";
+  expect(index).toContain("@media (prefers-reduced-motion: reduce)");
+  expect(index).toContain("--biu-duration-normal: 0ms");
+  expect(index.indexOf("@media (prefers-reduced-motion")).toBeGreaterThan(index.indexOf('@import "./geometry.css"'));
 });

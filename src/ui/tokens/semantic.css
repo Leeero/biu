@@ -1,0 +1,145 @@
+/* ============================================================================
+   C+ 设计令牌 · 第 2 层「语义令牌」
+   ----------------------------------------------------------------------------
+   边界：
+     · 本文件**只能**引用 var(--c-*) 与 var(--biu-*)，不得出现任何字面色值。
+     · 业务代码**只能**引用 var(--biu-*)，不得直接引用 var(--c-*)。
+   命名约定：
+     · 三通道令牌（不透明色）：`--biu-surface-*` / `--biu-text-*` / `--biu-accent` 等，
+       业务侧写成 `rgb(var(--biu-surface-canvas))` 或 `rgb(var(--biu-accent) / 0.4)`。
+     · 整值令牌（透明叠加层）：`--biu-surface-glass` / `--biu-border` 等，直接 `var(...)`。
+     · 易混淆点：`--biu-text-primary` 是**文字颜色**；
+       字号字重一行见 geometry.css 的 `--biu-type-*`。
+   ========================================================================== */
+
+:root {
+  /* ---- 1. 表面与底板（三通道） ----------------------------------------- */
+  --biu-surface-image: var(--c-image-bed-rgb); /* 影像底 */
+  --biu-surface-canvas: var(--c-app-bg-rgb); /* 应用底板 */
+  --biu-surface-topbar: var(--c-topbar-rgb); /* 顶栏底 */
+  --biu-surface-player: var(--c-playbar-rgb); /* 播放栏底 */
+
+  /* ---- 2. 文字色阶（三通道） ------------------------------------------- */
+  --biu-text-primary: var(--c-text-rgb); /* 18.9 : 1 */
+  --biu-text-secondary: var(--c-text-2-rgb); /* 12.1 : 1 */
+  --biu-text-tertiary: var(--c-text-3-rgb); /* 7.5 : 1 */
+  --biu-text-quaternary: var(--c-text-4-rgb); /* 5.9 : 1 —— 注解带 */
+  --biu-text-disabled: var(--c-text-5-rgb); /* 3.6 : 1 —— 仅限非正文 */
+
+  /* 输入框占位符与歌词非当前行：不接受二次调透明度，直接整值 */
+  --biu-text-placeholder: var(--c-text-placeholder);
+  --biu-text-lyrics-dim: var(--c-text-lyrics-dim);
+
+  /* ---- 3. 反色对与能力色 ----------------------------------------------- */
+  --biu-inverse-surface: var(--c-inverse-surface-rgb); /* 激活药丸 / 主操作 */
+  --biu-inverse-surface-hover: var(--c-inverse-surface-hover-rgb);
+  --biu-inverse-ink: var(--c-inverse-ink-rgb); /* 反色底上的文字 */
+  --biu-accent: var(--c-accent-rgb); /* 强调 / 目录徽标 / 注解标记 / 进度 */
+  --biu-accent-ink: var(--c-accent-ink-rgb);
+  --biu-quality: var(--c-quality-rgb); /* 音质徽标 */
+  --biu-dir: var(--c-dir-rgb); /* 本地目录徽标 */
+  --biu-film: var(--c-film-rgb); /* 胶片灰 */
+  --biu-danger: var(--c-danger-rgb); /* 危险操作 */
+
+  /* ---- 4. 本地格式色 --------------------------------------------------- */
+  --biu-fmt-flac: var(--c-fmt-flac-rgb);
+  --biu-fmt-wav: var(--c-fmt-wav-rgb);
+  --biu-fmt-aiff: var(--c-fmt-aiff-rgb);
+  --biu-fmt-m4a: var(--c-fmt-m4a-rgb);
+  --biu-fmt-mp3: var(--c-fmt-mp3-rgb);
+  --biu-fmt-wma: var(--c-fmt-wma-rgb);
+
+  /* ---- 5. 透明表面与描边（整值） --------------------------------------- */
+  --biu-surface-glass: var(--c-glass); /* 玻璃圆片底 */
+  --biu-surface-glass-strong: var(--c-glass-strong); /* 玻璃按下态 */
+  --biu-glass-border: var(--c-glass-border); /* 玻璃描边 */
+  --biu-surface-raised: var(--c-surface); /* 抬升面板 */
+  --biu-surface-hover: var(--c-surface-hover); /* 悬停 */
+  --biu-surface-sunken: var(--c-surface-sunken); /* 凹槽 / 歌词面板 */
+  --biu-surface-field: var(--c-surface-field); /* 输入框 */
+  --biu-surface-current: var(--c-surface-current); /* 列表当前行 */
+  --biu-border: var(--c-line); /* 标准描边 */
+  --biu-border-weak: var(--c-line-weak); /* 弱分隔 */
+  --biu-border-strong: var(--c-line-strong); /* 强调描边 */
+  --biu-accent-soft: var(--c-accent-soft); /* 已生效筛选条件底 */
+  --biu-danger-soft: var(--c-danger-soft);
+  --biu-danger-line: var(--c-danger-line);
+
+  /* ---- 6. 遮罩（整值） ------------------------------------------------- */
+  --biu-scrim: var(--c-scrim);
+  --biu-scrim-veil: var(--c-scrim-veil);
+
+  /* ---- 7. 复合背景 ----------------------------------------------------- */
+
+  /* 应用底板：两层极弱环境光叠在底板色上 */
+  --biu-app-bg:
+    radial-gradient(120% 90% at 12% 0%, var(--c-app-sheen-a), transparent 58%),
+    radial-gradient(110% 80% at 92% 100%, var(--c-app-sheen-b), transparent 62%),
+    var(--c-app-bg);
+
+  /* 顶栏：合成渐变，不是纯色 */
+  --biu-topbar-bg: linear-gradient(
+    to bottom,
+    var(--c-topbar-top) 0%,
+    var(--c-topbar) 46%,
+    var(--c-topbar-bottom) 100%
+  );
+
+  /* 沉浸态背景：左缘竖向紫雾 + 顶部横向冷蓝雾，右上/右下为纯暗底。
+     参数与来历见 palette.css §7，不得凭直觉改写。 */
+  --biu-immersive-bg:
+    radial-gradient(20% 22% at 0% 0%, var(--c-immersive-haze-a), transparent 64%),
+    radial-gradient(21% 73% at 0% 43%, var(--c-immersive-haze-b), transparent 77%),
+    radial-gradient(97% 54% at 33% 6%, var(--c-immersive-haze-c), transparent 84%),
+    var(--c-immersive-base);
+
+  /* —— 遗留：品牌与状态色（P1 收敛到 --biu-accent，P7 删除） —— */
+  --biu-color-brand: hsl(var(--heroui-primary));
+  --biu-color-focus: hsl(var(--heroui-primary) / 72%);
+  --biu-color-danger: hsl(var(--heroui-danger));
+  --biu-color-warning: hsl(var(--heroui-warning));
+  --biu-color-success: hsl(var(--heroui-success));
+}
+
+/* ============================================================================
+   遗留兼容层 —— 阶段边界声明
+   ----------------------------------------------------------------------------
+   本段是上一轮重构留下的令牌，**P0 不改其值**（保证 P0 不产生行为变更）。
+   处置计划：
+     · P1 · 主题收敛：删除 .light 分支与自定义主色/圆角/背景色入口，
+       --biu-color-brand / -focus 收敛到 var(--biu-accent)。
+     · P7 · 全部删除，业务代码只剩 --biu-surface-* / --biu-text-* / --biu-type-*。
+   过渡期禁止在此新增任何令牌。
+   ========================================================================== */
+
+:root,
+.light {
+  --biu-color-canvas: 248 248 250;
+  --biu-color-surface: 255 255 255;
+  --biu-color-surface-raised: 255 255 255;
+  --biu-color-surface-hover: 244 244 246;
+  --biu-color-surface-pressed: 238 238 241;
+  --biu-color-border: 0 0 0;
+  --biu-color-text-primary: 24 24 27;
+  --biu-color-text-secondary: 113 113 122;
+  --biu-color-text-tertiary: 161 161 170;
+  --biu-shadow-card:
+    0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 5%), 0 8px 28px rgb(var(--c-shadow-umbra-rgb) / 5%);
+  --biu-shadow-floating: 0 14px 44px rgb(var(--c-shadow-umbra-rgb) / 14%);
+}
+
+/* 顺序敏感：.dark 与 :root 同特异性，必须排在 :root, .light 之后才生效 */
+.dark {
+  --biu-color-canvas: 18 18 20;
+  --biu-color-surface: 28 28 31;
+  --biu-color-surface-raised: 35 35 39;
+  --biu-color-surface-hover: 43 43 47;
+  --biu-color-surface-pressed: 51 51 56;
+  --biu-color-border: 255 255 255;
+  --biu-color-text-primary: 250 250 250;
+  --biu-color-text-secondary: 161 161 170;
+  --biu-color-text-tertiary: 113 113 122;
+  --biu-shadow-card:
+    0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 24%), 0 12px 32px rgb(var(--c-shadow-umbra-rgb) / 22%);
+  --biu-shadow-floating: 0 18px 54px rgb(var(--c-shadow-umbra-rgb) / 42%);
+}
