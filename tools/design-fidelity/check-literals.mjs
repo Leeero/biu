@@ -6,6 +6,9 @@
  *   1. 字面色值（#hex / rgb() / hsl() / oklch()）只允许出现在 src/ui/tokens/palette.css
  *   2. 原始色板引用 var(--c-*) 只允许出现在 palette.css 与 semantic.css
  *   3. 业务代码禁止回退 HeroUI 主题色 var(--heroui-*)
+ *   4. 唯一例外：src/ui/fixtures/placeholder-art.ts（占位素材是**数据**，不是设计令牌）。
+ *      该文件反过来要接受更严的检查：字面值不得与 palette.css 里的任何颜色重合。
+ *      例外精确到文件，不写成前缀白名单。
  *
  * 用法：
  *   node tools/design-fidelity/check-literals.mjs            # 全量检查
@@ -24,6 +27,18 @@ const PALETTE_FILE = "src/ui/tokens/palette.css";
 const SEMANTIC_FILE = "src/ui/tokens/semantic.css";
 /** 令牌层整体：允许桥接 HeroUI 主题变量 */
 const TOKEN_LAYER_PREFIX = "src/ui/tokens/";
+/**
+ * 数据豁免：唯一允许出现字面色值的**非令牌层**文件。
+ *
+ * 这不是「遗留违规」，而是另一类东西：占位封面渐变是**数据**（真实封面来自数据源），
+ * 设计上就不该进色板 —— 把数据混进色板会让「这个颜色代表什么设计意图」无法回答。
+ * 见 tools/design-fidelity/fixtures/README.md。
+ *
+ * 豁免范围必须精确到单个文件，且该文件要接受**更严的**检查：它的字面值不得与
+ * palette.css 里的任何颜色重合（重合即说明有人把设计决策混进了数据）。
+ * 不允许写成前缀白名单 —— 那样等于把整个目录都放行了。
+ */
+const DATA_ART_FILE = "src/ui/fixtures/placeholder-art.ts";
 
 /**
  * 存量违规白名单：{ 路径前缀: 计划清理阶段 } —— 只减不增。
@@ -110,6 +125,41 @@ function stripAllowed(text) {
   return out;
 }
 
+/**
+ * 把文本里出现的颜色字面值统一归一化成 `r,g,b`（忽略 alpha），用于**跨文件比对**。
+ * 只支持本项目实际出现的写法：`#rrggbb` / `#rgb` / `rgb(r g b / a)` / `rgba(r, g, b, a)`。
+ * 认不出来的一律跳过 —— 这个函数的用途是发现「数据文件撞上了设计令牌色」，
+ * 不是做完整的 CSS 颜色解析器，宁可漏报也不要误报。
+ */
+function colorTriples(text) {
+  const found = new Set();
+  for (const match of text.matchAll(/#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g)) {
+    const hex = match[1];
+    const full =
+      hex.length === 3
+        ? hex
+            .split("")
+            .map(c => c + c)
+            .join("")
+        : hex;
+    const [r, g, b] = [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16));
+    found.add(`${r},${g},${b}`);
+  }
+  for (const match of text.matchAll(/\brgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/g)) {
+    found.add(`${Number(match[1])},${Number(match[2])},${Number(match[3])}`);
+  }
+  return found;
+}
+
+/** palette.css 里登记的全部颜色，归一化后的集合。 */
+function paletteTriples() {
+  // 必须先去掉注释：palette.css 的说明性注释里会举出夹具渐变的例子
+  // （例如「占位封面渐变，如 linear-gradient(150deg, #3a3a46, #1c1c22)」），
+  // 那些是**文档引用**不是登记值。把注释算进去会让这条检查误报自己写的注释。
+  const body = readFileSync(path.join(ROOT, PALETTE_FILE), "utf8").replace(/\/\*[\s\S]*?\*\//g, " ");
+  return colorTriples(body);
+}
+
 function checkFile(absPath) {
   const rel = path.relative(ROOT, absPath);
   const isPalette = rel === PALETTE_FILE;
@@ -118,6 +168,16 @@ function checkFile(absPath) {
   const raw = readFileSync(absPath, "utf8");
   const lines = raw.split("\n");
   const issues = [];
+
+  if (rel === DATA_ART_FILE) {
+    const forbidden = paletteTriples();
+    for (const triple of colorTriples(raw)) {
+      if (forbidden.has(triple)) {
+        issues.push([0, "数据文件里出现了设计令牌色", `rgb(${triple.split(",").join(" ")})`]);
+      }
+    }
+    return issues.length ? { file: rel, issues, allowlisted: false } : null;
+  }
 
   lines.forEach((line, index) => {
     const cleaned = stripAllowed(line);
