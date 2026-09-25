@@ -100,6 +100,7 @@
   /* ---- 6. 遮罩（整值） ------------------------------------------------- */
   --biu-scrim: var(--c-scrim);
   --biu-scrim-veil: var(--c-scrim-veil);
+
   /* 瓦片来源徽标芯片。黑 45% 与蓝 84% 都是设计稿实测（见 material.badge），
      不是从 --biu-veil-14 挑的近似档。dir 芯片上的文字用反色墨，不走 --biu-dir。 */
   --biu-scrim-badge: var(--c-scrim-badge);

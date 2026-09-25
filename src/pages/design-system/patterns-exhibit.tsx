@@ -432,8 +432,7 @@ export const PatternsExhibit = () => {
               meta="42 首 · 3 小时 12 分"
               artKey={`tile-${state}`}
               badge="收藏夹"
-              primaryAction={{ key: "play", label: "播放", icon: "play", onPress: noop }}
-              actions={TILE_ACTIONS}
+              actions={[{ key: "play", label: "播放", icon: "play", onPress: noop }, ...TILE_ACTIONS]}
               forceActionsVisible={state === "loading"}
               current={state === "disabled"}
             />

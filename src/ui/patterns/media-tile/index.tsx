@@ -18,13 +18,18 @@ export interface TileActionSpec {
 }
 
 interface TileActionBandProps {
-  primary?: TileActionSpec;
-  actions?: readonly TileActionSpec[];
+  actions: readonly TileActionSpec[];
   className?: string;
 }
 
 /**
  * 瓦片玻璃操作带。原型 `.actionband`。
+ *
+ * 构成来自设计稿实测（spec-lock material.tileActionBand）：**五枚等大** 34px
+ * 玻璃圆片，没有主操作反色档、没有分隔线。原型 app.css 里的 `.round--lead`
+ * （反色主操作）与 `.sep` 是原型的发挥 —— 设计稿第 2 页横向实测 210px =
+ * 5×34 + 4×6 + 2×8，与「五枚等大 + 无分隔线」精确吻合，且设计稿注解原文
+ * 是「露出 5 个主操作」，五个并列、没有层级。
  *
  * **为什么不与 `TrackTableActions` 合并**：两者在原型的取值几乎每一项都不同，
  * 合并必然要选一套值去覆盖另一套，那就是静默改设计。逐项对比：
@@ -34,14 +39,14 @@ interface TileActionBandProps {
  *   间距        4                        6
  *   内边距      5 × 6                    7 × 8
  *   描边        白 18%                   白 20%
- *   圆片        30 / 主操作 38           34 / 主操作 34
- *   图标字号    15 / 17                  17 / 19
- *   分隔线      1 × 18，白 20%           1 × 20，白 22%
- *   圆片悬停    无                       有（主操作用反色悬停档）
+ *   圆片        30 / 主操作 38           五枚等大 34
+ *   图标字号    15 / 17                  17
+ *   分隔线      1 × 18，白 20%           无
+ *   圆片悬停    无                       有（白 18%）
  *
- * 九项里有七项不同 —— 它们不是同一个组件的两个变体，而是两个组件。
+ * 八项里六项不同 —— 它们不是同一个组件的两个变体，而是两个组件。
  */
-export const TileActionBand = ({ primary, actions, className }: TileActionBandProps) => (
+export const TileActionBand = ({ actions, className }: TileActionBandProps) => (
   <div
     className={twMerge(
       // z-index 3：压过瓦片遮罩（after 的默认层）与文案（z-2）。原型同此。
@@ -51,21 +56,7 @@ export const TileActionBand = ({ primary, actions, className }: TileActionBandPr
       className,
     )}
   >
-    {primary && (
-      <GlassButton
-        tone="inverse"
-        size={34}
-        iconSize={19}
-        label={primary.label}
-        icon={primary.icon}
-        disabled={primary.disabled}
-        onClick={primary.onPress}
-      />
-    )}
-    {primary && actions && actions.length > 0 && (
-      <span aria-hidden className="mx-[2px] h-5 w-px bg-[var(--biu-veil-22)]" />
-    )}
-    {actions?.map(action => (
+    {actions.map(action => (
       <GlassButton
         key={action.key}
         // 瓦片带**有**悬停反馈（原型 `.actionband .round:hover`），
@@ -92,9 +83,8 @@ interface MediaTileProps {
   /** 左上角来源徽标（`收藏夹` / `合集` / `系列` / `本地目录`）。 */
   badge?: ReactNode;
   badgeVariant?: BadgeVariant;
-  /** 操作带。传入即渲染，但**默认只在悬停或当前项时露出**（原型注解原文：
+  /** 操作带。传入即渲染，但**默认只在悬停或当前项时露出**（设计稿注解原文：
    *  「悬停或选中瓦片：玻璃操作带直接露出 5 个主操作」）。 */
-  primaryAction?: TileActionSpec;
   actions?: readonly TileActionSpec[];
   /**
    * 当前项（选中 / 播放中）。
@@ -131,14 +121,13 @@ export const MediaTile = ({
   artKey,
   badge,
   badgeVariant = "default",
-  primaryAction,
   actions,
   current = false,
   forceActionsVisible = false,
   onPress,
   className,
 }: MediaTileProps) => {
-  const hasBand = Boolean(primaryAction || (actions && actions.length > 0));
+  const hasBand = Boolean(actions && actions.length > 0);
   const bandVisible = forceActionsVisible || current;
 
   return (
@@ -159,9 +148,8 @@ export const MediaTile = ({
         </Badge>
       )}
 
-      {hasBand && (
+      {hasBand && actions && (
         <TileActionBand
-          primary={primaryAction}
           actions={actions}
           className={twMerge(
             "transition-opacity duration-[var(--biu-duration-fast)]",
@@ -182,17 +170,18 @@ export const MediaTile = ({
         />
       )}
 
-      {/* `pointer-events-none` 是重构新增的，原型不需要（原型没有交互）：
+      {/* 文案块的落点来自设计稿实测（spec-lock geometry.tileCopy）：
+          bottom 24、元信息与标题间距 0。原型 app.css 的 16 / 6 会把元信息
+          推低 5.5px —— 设计稿的标题与元信息是贴紧的一组。
+          `pointer-events-none` 是重构新增的，原型不需要（原型没有交互）：
           文案叠在铺满整块的透明按钮之上，若它可以接收指针事件，标题那一条就点不动了。
           代价是封面标题不可选中 —— 标题本身在领域数据里，需要复制时从详情页取。 */}
-      <div className="pointer-events-none absolute right-5 bottom-4 left-5 z-[2]">
+      <div className="pointer-events-none absolute right-[var(--biu-layout-tile-copy-x)] bottom-[var(--biu-layout-tile-copy-bottom)] left-[var(--biu-layout-tile-copy-x)] z-[2]">
         <div className="text-[24px] leading-[1.2] font-semibold tracking-[-0.3px] text-[rgb(var(--biu-text-primary))]">
           {title}
         </div>
         {meta !== undefined && meta !== null && (
-          <div className="mt-[6px] text-[length:var(--biu-type-body-size)] text-[rgb(var(--biu-text-secondary))]">
-            {meta}
-          </div>
+          <div className="text-[length:var(--biu-type-body-size)] text-[rgb(var(--biu-text-secondary))]">{meta}</div>
         )}
       </div>
     </article>
