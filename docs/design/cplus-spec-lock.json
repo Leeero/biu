@@ -2,13 +2,32 @@
   "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
   "meta": {
     "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
-    "version": "1.2.0",
+    "version": "1.3.1",
     "frozenAt": "2026-09-25",
     "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
+      {
+        "version": "1.3.1",
+        "at": "2026-09-25",
+        "phase": "P2",
+        "changes": [
+          "补录 material.modal：浮动弹层的玻璃材质原本只登记了底色（palette.overlay.modalSurface = rgba(28,28,32,0.86)），而描边白 14%、背景模糊 28px、投影 0 24px 60px rgba(0,0,0,.5) 三项只在 app.css 的 .modal 里，真值未收录。建 Dialog 组件时若不补录，28px 模糊与 60px 投影只能写死在组件里。",
+          "同一修订说明：弹层模糊 28px 与玻璃材质模糊 20px 是**两个不同的值**，不得为了复用 --biu-blur-glass 而把弹层改成 20px。",
+          "补录 geometry.dialog = 560 × 153（.modal--download 实测）。原型的 left 752 / top 225 是 1440×900 基准画布下的定位，不参与组件几何，故不登记。"
+        ]
+      },
+      {
+        "version": "1.3.0",
+        "at": "2026-09-25",
+        "phase": "P2",
+        "changes": [
+          "补录 material.radius.tag = 6px。原型的 .tag（音质 / 属性标签）圆角是 6px，而真值只登记了 chip = 8px（.badge 用），两者是不同的值。建 Tag 组件时若不补录，就只能把 6px 写死在组件里、或在无声明的情况下改用 8px —— 前者让真值出现未收录的视觉值，后者是与原型的静默背离。现按「先改真值、再改实现」补录并新增 --biu-radius-tag。",
+          "同一修订明确了 chip 的使用范围（.badge 与筛选条内片），避免 6/8 两个相邻圆角再次混用。"
+        ]
+      },
       {
         "version": "1.2.0",
         "at": "2026-09-25",
@@ -204,6 +223,87 @@
       "origin": "原型实测（.lyrics-line）",
       "use": "非当前行歌词"
     },
+    "chromeLabel": {
+      "value": "#C8C8CE",
+      "token": "--biu-text-chrome-label",
+      "origin": "原型实测（.tab / .search kbd）",
+      "use": "顶栏分段项与快捷键键帽上的标签文字。取值与格式色 mp3/wma 相同但角色不同，色板按角色分别登记：合并会导致「改格式色顺带改掉顶栏文字」。"
+    },
+    "overlay": {
+      "rule": "白色叠加梯度。原型里这些取值是一串手调值，彼此无数学关系（4 / 5.5 / 8 / 9 / 12 / 14 / 20 / 22 / 28%），因此令牌按**实际不透明度**命名：名字与取值互为证明，对不上即错。已经具备语义角色的档位不在此登记（6% surface / 7% surface-current / 10% surface-hover / 13% surface-sunken / 16% glass / 17% surface-field / 18% glass-border / 24% glass-strong）。P2 建组件层时按原型逐条实测补录，目的是让「组件里不得出现字面色值」这条规则真的可满足，而不是逼着实现者把 12% 收敛到邻近的 10%。",
+      "veil4": {
+        "value": "rgba(255,255,255,0.04)",
+        "token": "--biu-veil-4",
+        "origin": "原型实测（.track-row:hover::before）",
+        "use": "列表行悬停"
+      },
+      "veil5_5": {
+        "value": "rgba(255,255,255,0.055)",
+        "token": "--biu-veil-5-5",
+        "origin": "原型实测（.mini-card）",
+        "use": "迷你窗底"
+      },
+      "veil8": {
+        "value": "rgba(255,255,255,0.08)",
+        "token": "--biu-veil-8",
+        "origin": "原型实测（.tab:hover）",
+        "use": "分段项悬停"
+      },
+      "veil9": {
+        "value": "rgba(255,255,255,0.09)",
+        "token": "--biu-veil-9",
+        "origin": "原型实测（.tabgroup）",
+        "use": "分段容器底"
+      },
+      "veil12": {
+        "value": "rgba(255,255,255,0.12)",
+        "token": "--biu-veil-12",
+        "origin": "原型实测（.badge 描边 / .tag--plain 描边 / .follow.is-on）",
+        "use": "徽标与标签描边、已关注态底"
+      },
+      "veil14": {
+        "value": "rgba(255,255,255,0.14)",
+        "token": "--biu-veil-14",
+        "origin": "原型实测（.badge 底 / .track-actions 底 / .pill--neutral 描边 / .modal 描边）",
+        "use": "徽标底、行内操作带底、弹层描边"
+      },
+      "veil18": {
+        "value": "rgba(255,255,255,0.18)",
+        "token": "--biu-veil-18",
+        "origin": "原型实测（.progress-inline .bar / .mini-bar）",
+        "use": "进度槽底"
+      },
+      "veil20": {
+        "value": "rgba(255,255,255,0.2)",
+        "token": "--biu-veil-20",
+        "origin": "原型实测（.actionband 描边 / .track-actions .sep）",
+        "use": "玻璃操作带描边、操作带分隔线"
+      },
+      "veil22": {
+        "value": "rgba(255,255,255,0.22)",
+        "token": "--biu-veil-22",
+        "origin": "原型实测（.actionband .sep / .follow 描边）",
+        "use": "动作分隔线、关注按钮描边"
+      },
+      "veil28": {
+        "value": "rgba(255,255,255,0.28)",
+        "token": "--biu-veil-28",
+        "origin": "原型实测（.search kbd）",
+        "use": "顶栏快捷键键帽底"
+      },
+      "modalSurface": {
+        "value": "rgba(28,28,32,0.86)",
+        "token": "--biu-surface-modal",
+        "origin": "原型实测（.modal）",
+        "use": "浮动弹层底"
+      },
+      "artBed": {
+        "value": "#1C1C20",
+        "token": "--biu-surface-art-bed",
+        "origin": "原型实测（.tile 的底色）",
+        "use": "瓦片在封面未就位时的底板色"
+      }
+    },
     "composite": {
       "appBackground": {
         "token": "--biu-app-bg",
@@ -241,20 +341,36 @@
       "stops": ["rgba(0,0,0,0.92)", "rgba(0,0,0,0.62)", "rgba(0,0,0,0.26)", "rgba(0,0,0,0)"],
       "rule": "底部渐隐：0.92 → 0.62(38%) → 0.26(72%) → 0(100%)"
     },
+    "modal": {
+      "surface": "rgba(28,28,32,0.86)",
+      "surfaceToken": "--biu-surface-modal",
+      "border": "rgba(255,255,255,0.14)",
+      "borderToken": "--biu-veil-14",
+      "blur": "28px",
+      "blurToken": "--biu-blur-modal",
+      "shadow": "0 24px 60px rgba(0,0,0,0.5)",
+      "shadowToken": "--biu-shadow-modal",
+      "rule": "浮动弹层（.modal）的玻璃材质。四处取值都与 glass 材质不同，因此单列一组：底 86% 深灰而非白 16%（弹层要压住底下的内容），描边白 14% 而非 18%，模糊 28px 而非 20px，另有投影。**不要为了复用 --biu-surface-glass / --biu-blur-glass 而把弹层改成玻璃那套值** —— 那会让浮层失去「浮起」的层次。surfaceToken 与 palette.overlay.modalSurface 指向同一个令牌，此处只是把它并入材质描述，值仍以 palette 为准。投影是复合值（多重阴影），无法走 tokenMap 的 canonLength 通用断言，故四个令牌都在 tests/design-tokens.test.ts 的几何段显式登记。",
+      "geometry": "560 × 153（见 geometry.dialog）"
+    },
     "radius": {
       "image": "0px",
       "tile": "12px",
       "panel": "20px",
       "chip": "8px",
+      "tag": "6px",
+      "fieldLarge": "18px",
       "window": "12px",
       "pill": "999px",
       "field": "999px",
-      "rule": "界面里没有直角卡片",
+      "rule": "界面里没有直角卡片。chip 用于 .badge（来源徽标）与筛选条内片；tag 单列 6px 用于 .tag（音质 / 属性标签）；field 为 999px 的是顶栏搜索（.search），fieldLarge 为 18px 的是搜索结果页的大搜索框（.searchfield）—— 两者都叫「搜索」但圆角不同，取名时按尺寸区分以免再次混用。tag 与 fieldLarge 都是原型现值而非派生，此前只在 app.css 里、真值未收录，P2 建组件时补录。",
       "tokens": {
         "image": "--biu-radius-image",
         "tile": "--biu-radius-md",
         "panel": "--biu-radius-lg",
         "chip": "--biu-radius-sm",
+        "tag": "--biu-radius-tag",
+        "fieldLarge": "--biu-radius-field-lg",
         "window": "--biu-radius-window",
         "pill": "--biu-radius-pill",
         "field": "--biu-radius-pill"
@@ -363,6 +479,11 @@
       "tileMinWidth": "206px",
       "gap": "20px",
       "tileArtRatio": "16:9"
+    },
+    "dialog": {
+      "width": "560px",
+      "height": "153px",
+      "rule": "浮动弹层固定几何。原型 .modal--download 的 left 752 / top 225 是 1440×900 基准画布下的定位，属静态展示位置，不进入组件几何。"
     }
   },
   "tolerances": {
@@ -750,6 +871,8 @@
     "geometry.filterBar.innerPadding": "--biu-layout-pill-pad",
     "geometry.grid.tileMinWidth": "--biu-layout-tile-min-w",
     "geometry.grid.gap": "--biu-layout-grid-gap",
+    "geometry.dialog.width": "--biu-layout-dialog-w",
+    "geometry.dialog.height": "--biu-layout-dialog-h",
     "geometry.immersive.gridGap": "--biu-layout-immersive-gap",
     "geometry.immersive.progressY": "--biu-layout-immersive-progress-y",
     "geometry.immersive.timesY": "--biu-layout-immersive-times-y",
