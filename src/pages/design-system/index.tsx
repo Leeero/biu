@@ -1,93 +1,53 @@
-import { Button, Chip } from "@heroui/react";
-import { RiHeartLine, RiMore2Line, RiPlayFill } from "@remixicon/react";
-
-import type { PlaylistSummary } from "@/domain/playlist";
-import type { Track } from "@/domain/track";
-
 import ScrollContainer from "@/components/scroll-container";
-import { ActionMenu } from "@/ui/patterns/action-menu";
 import { PageHeader } from "@/ui/patterns/page-header";
-import { PlaylistCard } from "@/ui/patterns/playlist-card";
-import { TrackRow } from "@/ui/patterns/track-row";
-import { IconButton } from "@/ui/primitives/icon-button";
-import { PageState } from "@/ui/states/page-state";
 
-const sampleTrack: Track = {
-  id: "bilibili-video:design-system",
-  source: "bilibili-video",
-  title: "晚风经过唱片店",
-  cover: "",
-  creator: { id: "1", name: "Biu Music" },
-  duration: 246,
-  playCount: 128_000,
-  publishedAt: "2026-09-22T00:00:00.000Z",
-  sourceRef: { aid: "1", bvid: "BV-design-system" },
-};
+import { PatternsExhibit } from "./patterns-exhibit";
+import { PrimitivesExhibit } from "./primitives-exhibit";
+import { TokensExhibit } from "./tokens-exhibit";
 
-const samplePlaylist: PlaylistSummary = {
-  id: "favorite-folder:design-system",
-  source: "favorite-folder",
-  title: "今天适合循环",
-  creator: { id: "1", name: "Biu Music" },
-  trackCount: 24,
-};
-
-const menuItems = [
-  { key: "play", label: "立即播放", icon: <RiPlayFill size={18} /> },
-  { key: "favorite", label: "收藏", icon: <RiHeartLine size={18} /> },
-];
-
+/**
+ * 设计系统展示页。
+ *
+ * 这个页面不是「组件陈列」——它是 P2 出口标准的**检查工具**：
+ *   1. 方案 §5 清单里的每个组件都要有独立展位；
+ *   2. 每个展位标注对应的**原型类**与**设计页**，以便随时回到设计稿核对；
+ *   3. 每个组件覆盖 §5.3 的状态矩阵。
+ *
+ * 三条组织原则：
+ *   · **令牌在前**。组件是令牌的用法，先看令牌才看得懂组件为什么长这样。
+ *   · **按 5.1 / 5.2 分段**（基础件 / 模式件），与方案的编号对齐 —— 这里的编号
+ *     不是装饰，是「去文档里找哪一条」的索引。
+ *   · **不复制数值**。色卡只给观感与令牌名，取值唯一来源是
+ *     `docs/design/cplus-spec-lock.json`；抄一份到页面上，那份迟早与真值分叉。
+ *
+ * 页面本身只用 `--biu-*` 令牌，不放任何字面长度以外的设计值：
+ * 它是组件的消费者，和别的页面受同一套约束。
+ */
 const DesignSystemPage = () => (
-  <ScrollContainer className="h-full pb-10">
+  <ScrollContainer className="h-full pb-16">
     <div className="w-full">
       <PageHeader
-        title="Biu 设计系统"
-        description="仅开发环境可见，用于检查组件、主题和交互状态。"
-        actions={
-          <>
-            <Chip color="primary" variant="flat">
-              Stage 2
-            </Chip>
-            <IconButton label="更多设计选项">
-              <RiMore2Line size={18} />
-            </IconButton>
-          </>
+        title="设计系统"
+        lead="仅开发环境可见。P2 组件层的活文档：令牌 → 基础件 → 模式件，每件标注原型类与设计页。"
+        baseline="flat"
+        aside={
+          <aside className="rounded-[var(--biu-radius-lg)] border border-[var(--biu-glass-border)] bg-[var(--biu-surface-glass)] px-[22px] py-5 backdrop-blur-[var(--biu-blur-glass)]">
+            <p className="m-0 mb-2 text-[length:var(--biu-type-small-size)] leading-6 text-[rgb(var(--biu-text-secondary))]">
+              怎么用这一页
+            </p>
+            <ul className="m-0 list-none p-0 text-[length:var(--biu-type-label-size)] leading-[26px] text-[rgb(var(--biu-text-primary))]">
+              <li>逐项对照 app.css 的原型类</li>
+              <li>带 ↗ 的状态需真实交互才可见</li>
+              <li>数值以 cplus-spec-lock.json 为准</li>
+              <li>色卡不显示十六进制，避免抄第二遍</li>
+            </ul>
+          </aside>
         }
       />
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold">操作</h2>
-        <div className="flex flex-wrap items-center gap-3 rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface))] p-5 shadow-[var(--biu-shadow-card)]">
-          <Button color="primary" startContent={<RiPlayFill size={18} />}>
-            播放全部
-          </Button>
-          <Button variant="flat">次要操作</Button>
-          <Button isDisabled>禁用状态</Button>
-          <IconButton label="收藏歌曲">
-            <RiHeartLine size={18} />
-          </IconButton>
-          <ActionMenu items={menuItems} />
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h2 className="mb-3 text-lg font-semibold">音乐内容</h2>
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
-          <div className="rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface))] p-3 shadow-[var(--biu-shadow-card)]">
-            <TrackRow track={sampleTrack} index={1} actions={menuItems} />
-          </div>
-          <PlaylistCard playlist={samplePlaylist} onPress={() => undefined} onPlay={() => undefined} />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">页面状态</h2>
-        <div className="grid overflow-hidden rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface))] shadow-[var(--biu-shadow-card)] md:grid-cols-3">
-          <PageState kind="loading" className="min-h-72" />
-          <PageState kind="empty" className="min-h-72 border-[rgb(var(--biu-color-border)/8%)] md:border-x" />
-          <PageState kind="error" actionLabel="重新加载" onAction={() => undefined} className="min-h-72" />
-        </div>
-      </section>
+      <TokensExhibit />
+      <PrimitivesExhibit />
+      <PatternsExhibit />
     </div>
   </ScrollContainer>
 );
