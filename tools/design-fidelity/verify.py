@@ -38,6 +38,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SPEC_LOCK = ROOT / "docs/design/cplus-spec-lock.json"
 REFERENCE_DIR = ROOT / "tools/design-fidelity/reference"
 PROTOTYPE_DIR = ROOT / "prototypes/c-plus-2026/screens"
+FIXTURES_DIR = ROOT / "tools/design-fidelity/fixtures"
 FALLBACK_REFERENCE_DIR = pathlib.Path("/tmp/biu-design")
 
 CANVAS = (1440, 900)
@@ -344,8 +345,17 @@ def resolve_target(screen: dict, args) -> str | None:
     if args.target == "prototype":
         path = PROTOTYPE_DIR / screen["prototype"].split("/")[-1]
         return path.as_uri() if path.exists() else None
+    # 应用是 HashRouter：路由（含查询参数）必须放进 # 号后面，
+    # 否则 useSearchParams / useParams 读不到，路由也匹配不上。
     route = screen["route"].replace(":id", args.sample_id)
-    return f"{args.base_url.rstrip('/')}{route}"
+    base = f"{args.base_url.rstrip('/')}/#{route}"
+    # 夹具注入（见 fixtures/README.md 契约 4）：目标屏有夹具时通过 ?fixture=
+    # 让应用渲染固定内容，否则真实数据的波动会让内容带无法判定。
+    # 应用侧由 src/features/library/fixture.ts 读取该参数（随屏扩展）。
+    fixture = FIXTURES_DIR / (screen["prototype"].split("/")[-1].replace(".html", "") + ".json")
+    if fixture.exists():
+        return f"{base}?fixture={fixture.stem}"
+    return base
 
 
 def screen_keys(screen: dict) -> set[str]:

@@ -34,6 +34,14 @@ interface ArtworkProps {
    */
   gradient?: "linear" | PlaceholderRadial;
   /**
+   * 显式占位底图（完整 background-image 值）。给定即**逐字采用**，
+   * 压过 `gradient` 的哈希选择 —— 夹具/演示位用：设计稿第 2 页每枚瓦片的
+   * 封面渐变是逐字对齐的比对目标，绝不能让哈希另选一条。
+   * 注意 `src` 是**网络地址**，把渐变字符串塞进 `src` 会得到一个必然
+   * 404 的 `<img>`，然后静默回落到哈希渐变 —— 颜色错位且无报错。
+   */
+  placeholder?: string;
+  /**
    * B 站图床的缩放参数（`672w_378h_1c.avif` 之类）。
    * 只有该图床的 URL 吃这个后缀，其他来源传了反而会 404，所以默认不拼。
    */
@@ -62,6 +70,7 @@ export const Artwork = ({
   alt,
   radius = "md",
   gradient = "linear",
+  placeholder,
   params,
   className,
   style,
@@ -69,7 +78,8 @@ export const Artwork = ({
 }: ArtworkProps) => {
   const [failed, setFailed] = useState(false);
 
-  const background = gradient === "linear" ? pickPlaceholderGradient(artKey) : PLACEHOLDER_RADIALS[gradient];
+  const picked = gradient === "linear" ? pickPlaceholderGradient(artKey) : PLACEHOLDER_RADIALS[gradient];
+  const background = placeholder ?? picked;
   const resolved = src ? (params ? `${src}@${params}` : src) : undefined;
   const showImage = Boolean(resolved) && !failed;
 

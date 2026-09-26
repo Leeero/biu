@@ -98,6 +98,12 @@
   --biu-layout-tile-min-w: 206px;
   --biu-layout-grid-gap: 20px;
 
+  /* 分组标题与下方栅格的间距。设计稿第 2 页实测：标题墨迹下缘 → 瓦片顶缘
+     两处一致 12px（320→332、552→564），扣掉墨迹—盒缘偏移 4px 即 margin 8px。
+     原型 .section-head 的 4px 与设计稿不符（原型—设计稿第 4 处分歧）。
+     取证过程见 spec-lock 的 geometry.sectionHead.rule。 */
+  --biu-layout-section-head-mb: 8px;
+
   /* 瓦片文案块（.tile-copy）。设计稿第 2 页实测：bottom 24（原型 16）、
      元信息与标题间距 0（原型 6）—— 设计稿的标题与元信息是贴紧的一组。
      取证过程见 spec-lock 的 geometry.tileCopy.rule。 */

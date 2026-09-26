@@ -2,13 +2,23 @@
   "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
   "meta": {
     "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
-    "version": "1.3.2",
+    "version": "1.3.3",
     "frozenAt": "2026-09-25",
     "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
+      {
+        "version": "1.3.3",
+        "at": "2026-09-26",
+        "phase": "P3",
+        "changes": [
+          "P3 屏 01 首次 --target app 比对（list 50% / right 33% / note 50%）后的像素取证补录。先修掉实现侧一处夹具走线：夹具把渐变字符串塞进 cover（网络地址口），<img> 必然 404 后静默回落哈希渐变，导致封面色与设计稿错位 —— Artwork/MediaTile 增加 placeholder/artGradient 显式占位口，夹具改走 coverGradient（不改任何设计值，属实现 bug）。",
+          "补录 geometry.sectionHead：分组标题与瓦片栅格的间距是 **8px**（原型 .section-head 是 4px）。证据：设计稿第 2 页两处分组的「标题墨迹下缘 → 瓦片顶缘」距离一致为 12px（320→332、552→564），应用以 mb-1(4px) 渲染时同距离为 8px（322→330、553→561）；标题字体的墨迹—盒缘偏移两者相同（同字体同行高），差值 4px 即 margin。原型与设计稿的第 4 处分歧（前三处见 1.3.2），实现按设计稿改 8px。",
+          "校准记录：修正后 --target app 屏 01 的内容带覆盖率 list 62%→、L3 11.62（<12）；瓦片行 2 顶缘差从 3px 收敛到 1px。行 1 残余 ±2px 来自筛选条带的亚像素舍入，在 L1/L2 容差内。"
+        ]
+      },
       {
         "version": "1.3.2",
         "at": "2026-09-25",
@@ -69,8 +79,14 @@
     }
   },
   "canvas": {
-    "reference": [1440, 900],
-    "sourcePixels": [2200, 1375],
+    "reference": [
+      1440,
+      900
+    ],
+    "sourcePixels": [
+      2200,
+      1375
+    ],
     "sourceToReferenceScale": 0.654545,
     "stage": "浏览器窗口 ≥ 1440 × 900 时按 1:1 渲染；小于时不得缩放界面（与原型 .stage 等比缩放方案不同，见方案 §2.3）",
     "artboardNote": "设计稿页为白底文档页内嵌圆角画板，四角约 16 CSS px 圆角。以 H1 左缘实测 66 与画板内留白 64 对齐，残差 ≤ 2 px，落在 band 容差内。"
@@ -318,17 +334,30 @@
     "composite": {
       "appBackground": {
         "token": "--biu-app-bg",
-        "parts": ["#08080A", "rgba(255,255,255,0.022)", "rgba(90,140,255,0.03)"],
+        "parts": [
+          "#08080A",
+          "rgba(255,255,255,0.022)",
+          "rgba(90,140,255,0.03)"
+        ],
         "rule": "两层极弱径向环境光叠在底板色上；不得替换为纯色 #08080A。"
       },
       "topbarBackground": {
         "token": "--biu-topbar-bg",
-        "parts": ["#1A1A1C", "#161618", "#131315"],
+        "parts": [
+          "#1A1A1C",
+          "#161618",
+          "#131315"
+        ],
         "rule": "顶栏底是纵向合成渐变，不是纯色 #161618。停止点 0% / 46% / 100%。"
       },
       "immersiveBackground": {
         "token": "--biu-immersive-bg",
-        "parts": ["#06060B", "rgba(30,114,166,0.49)", "rgba(108,78,158,0.47)", "rgba(55,49,90,0.6)"],
+        "parts": [
+          "#06060B",
+          "rgba(30,114,166,0.49)",
+          "rgba(108,78,158,0.47)",
+          "rgba(55,49,90,0.6)"
+        ],
         "rule": "左缘竖向紫雾（峰值 y≈43%）+ 顶部横向冷蓝雾；右上与右下是纯暗底，**不存在右下蓝光**。参数为 14 个采样点的数值拟合结果（平均色差 1.65）。若视觉上有疑虑，以 run.sh --screen 10-now-playing 的采样色差为准。"
       }
     }
@@ -349,7 +378,12 @@
     },
     "scrimVeil": {
       "token": "--biu-scrim-veil",
-      "stops": ["rgba(0,0,0,0.92)", "rgba(0,0,0,0.62)", "rgba(0,0,0,0.26)", "rgba(0,0,0,0)"],
+      "stops": [
+        "rgba(0,0,0,0.92)",
+        "rgba(0,0,0,0.62)",
+        "rgba(0,0,0,0.26)",
+        "rgba(0,0,0,0)"
+      ],
       "rule": "底部渐隐：0.92 → 0.62(38%) → 0.26(72%) → 0(100%)"
     },
     "badge": {
@@ -508,7 +542,10 @@
       "gridGap": "47px",
       "progressY": 700,
       "timesY": 720,
-      "controlsBand": [752, 808],
+      "controlsBand": [
+        752,
+        808
+      ],
       "playButton": "56px",
       "playButtonShape": "56 × 56 圆片"
     },
@@ -527,6 +564,10 @@
       "width": "560px",
       "height": "153px",
       "rule": "浮动弹层固定几何。原型 .modal--download 的 left 752 / top 225 是 1440×900 基准画布下的定位，属静态展示位置，不进入组件几何。"
+    },
+    "sectionHead": {
+      "marginBottom": "8px",
+      "rule": "分组标题（.section-head / Section header）与下方瓦片栅格的间距。P3 屏 01 补录：设计稿第 2 页两处分组的「标题墨迹下缘 → 瓦片顶缘」距离一致为 12px（我创建的 320→332、我收藏的 552→564）；应用同字体同行高下墨迹—盒缘偏移 4px，故 margin = 8px。原型 .section-head 的 margin-bottom 4px 与设计稿不符（原型—设计稿第 4 处分歧），实现按设计稿。"
     }
   },
   "tolerances": {
@@ -558,13 +599,20 @@
       "route": "/library",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 121,
         "leadTop": 197,
         "filterTop": 222,
         "noteTop": 693
       },
-      "variants": ["page-lead--low", "filterbar--tight", "note--low"],
+      "variants": [
+        "page-lead--low",
+        "filterbar--tight",
+        "note--low"
+      ],
       "hasRowPitch": false
     },
     {
@@ -575,13 +623,19 @@
       "route": "/collection/:id",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": ["note", "modal"],
+      "variants": [
+        "note",
+        "modal"
+      ],
       "hasRowPitch": true
     },
     {
@@ -592,13 +646,19 @@
       "route": "/later",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": ["page-head--narrow", "note"],
+      "variants": [
+        "page-head--narrow",
+        "note"
+      ],
       "hasRowPitch": true
     },
     {
@@ -609,13 +669,20 @@
       "route": "/local-music",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 121,
         "leadTop": 198,
         "filterTop": 244,
         "noteTop": 694
       },
-      "variants": ["page-lead--low", "filterbar--loose", "note--lower"],
+      "variants": [
+        "page-lead--low",
+        "filterbar--loose",
+        "note--lower"
+      ],
       "hasRowPitch": false
     },
     {
@@ -626,13 +693,19 @@
       "route": "/download-list",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": ["note", "tracklist--download"],
+      "variants": [
+        "note",
+        "tracklist--download"
+      ],
       "hasRowPitch": true
     },
     {
@@ -643,13 +716,20 @@
       "route": "/search",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 131,
         "leadTop": 197,
         "filterTop": 240,
         "noteTop": 598
       },
-      "variants": ["note--high", "tracklist--search", "section--tight"],
+      "variants": [
+        "note--high",
+        "tracklist--search",
+        "section--tight"
+      ],
       "hasRowPitch": true
     },
     {
@@ -660,13 +740,21 @@
       "route": "/",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 111,
         "leadTop": 186,
         "filterTop": 226,
         "noteTop": 698
       },
-      "variants": ["head-main--flat", "section--push", "note--lowest", "topbar-note"],
+      "variants": [
+        "head-main--flat",
+        "section--push",
+        "note--lowest",
+        "topbar-note"
+      ],
       "hasRowPitch": false
     },
     {
@@ -677,13 +765,19 @@
       "route": "/",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": ["note", "topbar-note"],
+      "variants": [
+        "note",
+        "topbar-note"
+      ],
       "hasRowPitch": true
     },
     {
@@ -694,13 +788,18 @@
       "route": "/queue",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": ["note"],
+      "variants": [
+        "note"
+      ],
       "shellChange": "由 components/music-playlist-drawer 提升为独立路由页，播放栏保留",
       "hasRowPitch": true
     },
@@ -715,11 +814,22 @@
       "anchors": {
         "topbar": null,
         "playbar": null,
-        "art": [0, 0, 649, 365],
+        "art": [
+          0,
+          0,
+          649,
+          365
+        ],
         "progressY": 700,
-        "controlsBand": [752, 808]
+        "controlsBand": [
+          752,
+          808
+        ]
       },
-      "variants": ["note--inline", "np-mode-seg"],
+      "variants": [
+        "note--inline",
+        "np-mode-seg"
+      ],
       "shellChange": "由 components/full-screen-player 提升为沉浸态路由，隐藏顶栏与播放栏",
       "hasRowPitch": false
     },
@@ -731,13 +841,19 @@
       "route": "/settings",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": ["note", "tracklist--settings"],
+      "variants": [
+        "note",
+        "tracklist--settings"
+      ],
       "hasRowPitch": true
     },
     {
@@ -748,13 +864,19 @@
       "route": "/mini-player",
       "scroll": true,
       "anchors": {
-        "topbar": [0, 71],
+        "topbar": [
+          0,
+          71
+        ],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 704
       },
-      "variants": ["note--footer", "tracklist--mini"],
+      "variants": [
+        "note--footer",
+        "tracklist--mini"
+      ],
       "hasRowPitch": false
     }
   ],
@@ -793,17 +915,59 @@
   "topbarSegments": {
     "rule": "顶栏中部分段组由当前路由决定，不是全局导航。品牌点击回 /，头像承载次级入口。",
     "byRoute": {
-      "/library": ["我的歌单", "我收藏的", "发现音乐"],
-      "/collection/:id": ["收藏夹 · 11", "合集 · 21", "系列 · 31"],
-      "/later": ["全部", "近 7 天", "近 30 天"],
-      "/local-music": ["全部目录", "D 盘 · Lossless", "E 盘 · Live 录音"],
-      "/download-list": ["全部", "音频", "视频"],
-      "/search": ["音乐视频 · 9", "创作者 · 2"],
-      "/": ["音乐分区", "单一模块"],
-      "/queue": ["全部", "音乐视频", "本地文件"],
-      "/settings": ["常规", "播放", "高级"],
-      "/mini-player": ["迷你播放器", "托盘", "全局快捷键"],
-      "/now-playing": ["封面", "歌词", "视频"]
+      "/library": [
+        "我的歌单",
+        "我收藏的",
+        "发现音乐"
+      ],
+      "/collection/:id": [
+        "收藏夹 · 11",
+        "合集 · 21",
+        "系列 · 31"
+      ],
+      "/later": [
+        "全部",
+        "近 7 天",
+        "近 30 天"
+      ],
+      "/local-music": [
+        "全部目录",
+        "D 盘 · Lossless",
+        "E 盘 · Live 录音"
+      ],
+      "/download-list": [
+        "全部",
+        "音频",
+        "视频"
+      ],
+      "/search": [
+        "音乐视频 · 9",
+        "创作者 · 2"
+      ],
+      "/": [
+        "音乐分区",
+        "单一模块"
+      ],
+      "/queue": [
+        "全部",
+        "音乐视频",
+        "本地文件"
+      ],
+      "/settings": [
+        "常规",
+        "播放",
+        "高级"
+      ],
+      "/mini-player": [
+        "迷你播放器",
+        "托盘",
+        "全局快捷键"
+      ],
+      "/now-playing": [
+        "封面",
+        "歌词",
+        "视频"
+      ]
     }
   },
   "globalChrome": {
@@ -817,7 +981,16 @@
       "constraint": "search_type 仅 video / bili_user，不得承诺搜索歌曲、专辑、歌手"
     },
     "avatar": {
-      "menu": ["我的音乐库", "发现音乐", "B站历史", "我的关注", "设置", "检查更新", "关于", "退出登录"]
+      "menu": [
+        "我的音乐库",
+        "发现音乐",
+        "B站历史",
+        "我的关注",
+        "设置",
+        "检查更新",
+        "关于",
+        "退出登录"
+      ]
     }
   },
   "copyConstraints": [
@@ -846,11 +1019,17 @@
     "screens": {
       "01": {
         "meanLuminanceDiff": 12.2,
-        "failedGates": ["L3", "list", "right"]
+        "failedGates": [
+          "L3",
+          "list",
+          "right"
+        ]
       },
       "02": {
         "meanLuminanceDiff": 12.17,
-        "failedGates": ["L3"]
+        "failedGates": [
+          "L3"
+        ]
       },
       "03": {
         "meanLuminanceDiff": 9.45,
@@ -858,19 +1037,41 @@
       },
       "04": {
         "meanLuminanceDiff": 7.94,
-        "failedGates": ["list", "right"]
+        "failedGates": [
+          "list",
+          "right"
+        ]
       },
       "05": {
         "meanLuminanceDiff": 8.73,
-        "failedGates": ["note", "rowPitch"]
+        "failedGates": [
+          "note",
+          "rowPitch"
+        ]
       },
       "06": {
         "meanLuminanceDiff": 9.18,
-        "failedGates": ["filter", "list", "note", "right", "rowPitch"]
+        "failedGates": [
+          "filter",
+          "list",
+          "note",
+          "right",
+          "rowPitch"
+        ]
       },
       "07": {
         "meanLuminanceDiff": 14.55,
-        "failedGates": ["L3", "filter", "lead", "list", "note", "playbar", "playbarHeight", "right", "topbarHeight"]
+        "failedGates": [
+          "L3",
+          "filter",
+          "lead",
+          "list",
+          "note",
+          "playbar",
+          "playbarHeight",
+          "right",
+          "topbarHeight"
+        ]
       },
       "08": {
         "meanLuminanceDiff": 9.66,
@@ -882,7 +1083,10 @@
       },
       "10": {
         "meanLuminanceDiff": 11.46,
-        "failedGates": ["infoTitle", "lyrics"]
+        "failedGates": [
+          "infoTitle",
+          "lyrics"
+        ]
       },
       "11": {
         "meanLuminanceDiff": 7.06,
@@ -890,7 +1094,11 @@
       },
       "12": {
         "meanLuminanceDiff": 9.73,
-        "failedGates": ["list", "note", "right"]
+        "failedGates": [
+          "list",
+          "note",
+          "right"
+        ]
       }
     }
   },
@@ -922,7 +1130,8 @@
     "geometry.immersive.progressY": "--biu-layout-immersive-progress-y",
     "geometry.immersive.timesY": "--biu-layout-immersive-times-y",
     "geometry.immersive.playButton": "--biu-layout-play-button",
-    "material.glass.blur": "--biu-blur-glass"
+    "material.glass.blur": "--biu-blur-glass",
+    "geometry.sectionHead.marginBottom": "--biu-layout-section-head-mb"
   },
   "excludedFromPalette": {
     "placeholderArt": {

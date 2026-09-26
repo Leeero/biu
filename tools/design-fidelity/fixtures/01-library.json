@@ -1,0 +1,36 @@
+{
+  "note": "第 01 屏「我的音乐库」的展示内容夹具。来源：设计稿第 2 页（tools/design-fidelity/reference/page-02.png）与原型 screens/01-library.html 的逐字内容。夹具只描述展示内容（标题、条数、元信息、占位封面序号），不描述布局；布局真值在 cplus-spec-lock.json。",
+  "artIndexRule": "artIndex 指向 placeholder-art.json 的 gradients 数组下标 —— 设计稿每个瓦片的封面就是这个渐变，逐字对应，不做哈希挑选。",
+  "no": "01",
+  "name": "我的音乐库",
+  "route": "/library",
+  "user": { "mid": 10000, "isLogin": true },
+  "library": {
+    "created": [
+      { "id": 901, "type": 11, "title": "夜航电子", "trackCount": 42, "metaNote": "3 小时 12 分", "artIndex": 1 },
+      { "id": 902, "type": 21, "title": "器乐练习", "trackCount": 28, "metaNote": "2 小时 04 分", "artIndex": 6 },
+      {
+        "id": 903,
+        "type": 31,
+        "title": "Live 现场",
+        "trackCount": 19,
+        "metaNote": "1 小时 38 分",
+        "artIndex": 2,
+        "demoActions": true
+      },
+      { "id": 0, "type": "dir", "title": "本地无损库", "trackCount": 56, "metaNote": "4 小时 05 分 · FLAC", "artIndex": 8 }
+    ],
+    "collected": [
+      { "id": 951, "type": 11, "title": "深夜循环", "trackCount": 63, "metaNote": "无损", "artIndex": 1 },
+      { "id": 952, "type": 21, "title": "睡前歌单", "trackCount": 31, "metaNote": "无损", "artIndex": 6 }
+    ],
+    "overview": {
+      "localDirs": 3,
+      "localFiles": 1284,
+      "tracks": 214,
+      "qualityLabel": "无损优先",
+      "downloadsDone": 18,
+      "downloadsActive": 2
+    }
+  }
+}

@@ -11,6 +11,8 @@ export interface FavoriteItem {
   cover?: string;
   type?: number;
   mid?: number;
+  /** 收藏夹内容数（B 站 media_count）。旧持久化数据没有此字段，可选。 */
+  trackCount?: number;
 }
 
 interface State {
@@ -217,6 +219,7 @@ async function getAllCreatedFavorites(userMid: number | string) {
           cover: item.cover,
           type: item.type,
           mid: item.mid,
+          trackCount: item.media_count,
         });
       }
     });
@@ -250,6 +253,7 @@ async function getAllCollectedFavorites(userMid: number | string) {
           cover: item.cover,
           type: item.type,
           mid: item.mid,
+          trackCount: item.media_count,
         });
       }
     });
@@ -292,6 +296,7 @@ async function getAllCollectedFavorites(userMid: number | string) {
           cover: item.cover,
           type: item.type,
           mid: item.mid,
+          trackCount: item.media_count,
         });
       }
     });

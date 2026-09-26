@@ -1,26 +1,49 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { Button } from "@heroui/react";
-import { RiHistoryLine } from "@remixicon/react";
-
-import ScrollContainer from "@/components/scroll-container";
-import { adaptFavoriteItemToPlaylist, getFavoriteItemHref } from "@/features/library/model";
+import { countDownloadStatuses } from "@/features/downloads/model";
+import { useLibraryFixtureData } from "@/features/library/fixture";
+import { LibraryView } from "@/features/library/library-view";
+import {
+  adaptFavoriteItemToTile,
+  adaptLocalDirToTile,
+  buildLibraryOverviewLines,
+  type LibraryTile,
+} from "@/features/library/model";
+import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
+import { loadAllPlaylistTracks, type PlaylistTrackSource } from "@/features/playlist/load-tracks";
 import { useFavoritesStore } from "@/store/favorite";
+import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
-import { PageHeader } from "@/ui/patterns/page-header";
-import { PlaylistCard } from "@/ui/patterns/playlist-card";
+import { AnnotationBand } from "@/ui/patterns/annotation-band";
 import { PageState } from "@/ui/states/page-state";
 
+/** 设置里音质档位的展示文案（与 system-settings 的 SelectItem 一致）。 */
+const QUALITY_LABELS: Record<string, string> = {
+  auto: "自动",
+  lossless: "无损优先",
+  high: "高品质",
+  medium: "中等",
+  low: "低品质",
+};
+
+/** LibraryTile.source → 曲目加载器支持的来源；本地目录没有远程加载器。 */
+const TRACK_SOURCES = new Set<PlaylistTrackSource>(["favorite-folder", "season", "series"]);
+
 const Library = () => {
-  const navigate = useNavigate();
+  const fixture = useLibraryFixtureData();
   const user = useUser(state => state.user);
   const createdFavorites = useFavoritesStore(state => state.createdFavorites);
   const collectedFavorites = useFavoritesStore(state => state.collectedFavorites);
   const updateCreatedFavorites = useFavoritesStore(state => state.updateCreatedFavorites);
   const updateCollectedFavorites = useFavoritesStore(state => state.updateCollectedFavorites);
+  const localMusicDirs = useSettings(state => state.localMusicDirs);
+  const audioQuality = useSettings(state => state.audioQuality);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [bulkPending, setBulkPending] = useState(false);
+  const [downloadCounts, setDownloadCounts] = useState<{ done: number; active: number }>();
 
   const refresh = useCallback(async () => {
     if (!user?.mid) return;
@@ -36,86 +59,168 @@ const Library = () => {
   }, [updateCollectedFavorites, updateCreatedFavorites, user?.mid]);
 
   useEffect(() => {
+    if (fixture) return; // 夹具模式不触网：比对需要确定性。
     void refresh();
-  }, [refresh]);
+  }, [fixture, refresh]);
+
+  useEffect(() => {
+    if (fixture) return;
+    let cancelled = false;
+    void window.electron
+      .getMediaDownloadTaskList()
+      .then(list => {
+        if (cancelled) return;
+        const counts = countDownloadStatuses(list);
+        setDownloadCounts({ done: counts.completed, active: counts.waiting + counts.downloading + counts.processing });
+      })
+      .catch(() => {
+        /* 下载统计拿不到时概览面板少一行，不阻塞页面。 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fixture]);
+
+  /** 把一组瓦片的曲目全部加载完（收藏族）。加载失败返回空数组。 */
+  const loadTilesTracks = useCallback(async (tiles: LibraryTile[]) => {
+    const remote = tiles.filter(tile => tile.source !== "local-dir" && TRACK_SOURCES.has(tile.source));
+    const results = await Promise.allSettled(
+      remote.map(tile => loadAllPlaylistTracks(tile.source as PlaylistTrackSource, String(tile.favorite?.id ?? ""))),
+    );
+    return results.flatMap(result => (result.status === "fulfilled" ? result.value : []));
+  }, []);
+
+  const playTiles = useCallback(
+    async (tiles: LibraryTile[], shuffle: boolean) => {
+      setBulkPending(true);
+      try {
+        const tracks = await loadTilesTracks(tiles);
+        if (!tracks.length) return;
+        // 随机播放 = 以乱序一次性入列播放；不改全局播放模式
+        //（那会改变用户已选的循环 / 单曲偏好，超出「这次点一下」的语义）。
+        const items = shuffle ? [...tracks].sort(() => Math.random() - 0.5) : tracks;
+        await executePlaylistBulkAction("play-all", items);
+      } finally {
+        setBulkPending(false);
+      }
+    },
+    [loadTilesTracks],
+  );
+
+  const onTileAction = useCallback(async (tile: LibraryTile, actionKey: string) => {
+    // 「入队」在播放列表这一层是批量能力（add-all）；「下一首 / 收藏 / 下载音频」
+    // 是单曲能力，落点在详情页与行内上下文（features/track/actions），
+    // 瓦片层不重复接线 —— 见施工矩阵 01 的能力对齐表。
+    if (actionKey !== "play" && actionKey !== "queue-add") return;
+    if (tile.source === "local-dir" || !tile.favorite) return;
+    const action: "play-all" | "add-all" = actionKey === "play" ? "play-all" : "add-all";
+    setBulkPending(true);
+    try {
+      const tracks = await loadAllPlaylistTracks(tile.source as PlaylistTrackSource, String(tile.favorite.id));
+      await executePlaylistBulkAction(action, tracks);
+    } finally {
+      setBulkPending(false);
+    }
+  }, []);
+
+  if (fixture) {
+    const { created, collected, demoActionKeys, overview } = fixture;
+    const total = created.length + collected.length;
+
+    return (
+      <>
+        <LibraryView
+          lead={`${total} 个播放列表 · ${overview.tracks} 首 · 我创建 ${created.length} / 我收藏 ${collected.length}`}
+          overviewLines={buildLibraryOverviewLines({
+            createdCount: created.length,
+            collectedCount: collected.length,
+            qualityLabel: overview.qualityLabel,
+            localDirs: overview.localDirs,
+            localFiles: overview.localFiles,
+            tracks: overview.tracks,
+            downloadsDone: overview.downloadsDone,
+            downloadsActive: overview.downloadsActive,
+          })}
+          qualityPillText={`音质偏好 · ${overview.qualityLabel}`}
+          createdTiles={created}
+          collectedTiles={collected}
+          demoActionKeys={demoActionKeys}
+          onTilePress={() => {
+            /* 夹具模式下不跳转：比对需要画面稳定。 */
+          }}
+          onTileAction={() => {
+            /* 夹具模式下不触网。 */
+          }}
+          onPlayAll={() => undefined}
+          onShuffleAll={() => undefined}
+        />
+        <AnnotationBand anchor="low">
+          悬停或选中瓦片：玻璃操作带直接露出 5 个主操作（播放 / 下一首 / 入队 / 收藏 /
+          下载音频），其余进入右键菜单——每个 Track 的 8 项能力都有落点。
+        </AnnotationBand>
+      </>
+    );
+  }
 
   if (!user?.isLogin) {
     return <PageState kind="empty" title="登录后查看我的收藏" description="收藏内容同步自当前 B 站账号" />;
   }
 
+  const createdTiles: LibraryTile[] = [
+    ...createdFavorites.map(item => adaptFavoriteItemToTile(item, true)),
+    ...localMusicDirs.map(dir => adaptLocalDirToTile(dir)),
+  ];
+  const collectedTiles: LibraryTile[] = collectedFavorites.map(item => adaptFavoriteItemToTile(item, false));
+  const trackTotal = [...createdFavorites, ...collectedFavorites].reduce(
+    (sum, item) => sum + (item.trackCount ?? 0),
+    0,
+  );
+  const hasTrackCounts = [...createdFavorites, ...collectedFavorites].some(item => item.trackCount !== undefined);
+
+  const overviewLines = buildLibraryOverviewLines({
+    createdCount: createdFavorites.length,
+    collectedCount: collectedFavorites.length,
+    qualityLabel: QUALITY_LABELS[audioQuality] ?? audioQuality,
+    localDirs: localMusicDirs.length,
+    tracks: hasTrackCounts ? trackTotal : undefined,
+    downloadsDone: downloadCounts?.done,
+    downloadsActive: downloadCounts?.active,
+  });
+
   return (
-    <ScrollContainer enableBackToTop className="h-full w-full">
-      <main className="w-full py-5">
-        <PageHeader
-          title="我的收藏"
-          description="集中查看你创建和收藏的播放列表，内容同步自 B 站收藏夹与合集。"
-          actions={
-            <Button
-              variant="flat"
-              size="sm"
-              startContent={<RiHistoryLine size={17} />}
-              onPress={() => navigate("/history")}
-            >
-              B站历史
-            </Button>
-          }
-        />
-
-        {loading && !createdFavorites.length && !collectedFavorites.length ? (
-          <PageState kind="loading" className="min-h-[320px]" />
-        ) : loadError ? (
-          <PageState kind="error" actionLabel="重新加载" onAction={() => void refresh()} />
-        ) : !createdFavorites.length && !collectedFavorites.length ? (
-          <PageState kind="empty" title="暂无收藏内容" description="在 B 站创建或收藏的播放列表会显示在这里" />
-        ) : (
-          <div className="space-y-9 pb-8">
-            {createdFavorites.length > 0 && (
-              <section aria-labelledby="created-playlists-title">
-                <div className="mb-4 flex items-baseline gap-2">
-                  <h2 id="created-playlists-title" className="text-lg font-semibold">
-                    我创建的
-                  </h2>
-                  <span className="text-xs text-[rgb(var(--biu-color-text-tertiary))]">
-                    {createdFavorites.length} 个播放列表
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                  {createdFavorites.map(item => (
-                    <PlaylistCard
-                      key={item.id}
-                      playlist={adaptFavoriteItemToPlaylist(item, true)}
-                      onPress={() => navigate(getFavoriteItemHref(item))}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {collectedFavorites.length > 0 && (
-              <section aria-labelledby="collected-playlists-title">
-                <div className="mb-4 flex items-baseline gap-2">
-                  <h2 id="collected-playlists-title" className="text-lg font-semibold">
-                    我收藏的
-                  </h2>
-                  <span className="text-xs text-[rgb(var(--biu-color-text-tertiary))]">
-                    {collectedFavorites.length} 个播放列表
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                  {collectedFavorites.map(item => (
-                    <PlaylistCard
-                      key={`${item.type ?? "favorite"}-${item.id}`}
-                      playlist={adaptFavoriteItemToPlaylist(item, false)}
-                      onPress={() => navigate(getFavoriteItemHref(item))}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-      </main>
-    </ScrollContainer>
+    <>
+      {loading && !createdFavorites.length && !collectedFavorites.length ? (
+        <PageState kind="loading" className="min-h-[320px]" />
+      ) : loadError ? (
+        <PageState kind="error" actionLabel="重新加载" onAction={() => void refresh()} />
+      ) : !createdFavorites.length && !collectedFavorites.length ? (
+        <PageState kind="empty" title="暂无收藏内容" description="在 B 站创建或收藏的播放列表会显示在这里" />
+      ) : (
+        <>
+          <LibraryView
+            lead={
+              hasTrackCounts
+                ? `${createdTiles.length + collectedTiles.length} 个播放列表 · ${trackTotal} 首 · 我创建 ${createdFavorites.length} / 我收藏 ${collectedFavorites.length}`
+                : `${createdTiles.length + collectedTiles.length} 个播放列表 · 我创建 ${createdFavorites.length} / 我收藏 ${collectedFavorites.length}`
+            }
+            overviewLines={overviewLines}
+            qualityPillText={`音质偏好 · ${QUALITY_LABELS[audioQuality] ?? audioQuality}`}
+            createdTiles={createdTiles}
+            collectedTiles={collectedTiles}
+            demoActionKeys={[]}
+            onTilePress={tile => navigate(tile.href)}
+            onTileAction={(tile, key) => void onTileAction(tile, key)}
+            onPlayAll={() => void playTiles(createdTiles, false)}
+            onShuffleAll={() => void playTiles(createdTiles, true)}
+            bulkPending={bulkPending}
+          />
+          <AnnotationBand anchor="low">
+            悬停或选中瓦片：玻璃操作带直接露出 5 个主操作（播放 / 下一首 / 入队 / 收藏 /
+            下载音频），其余进入右键菜单——每个 Track 的 8 项能力都有落点。
+          </AnnotationBand>
+        </>
+      )}
+    </>
   );
 };
 

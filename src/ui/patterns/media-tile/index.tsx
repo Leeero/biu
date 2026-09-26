@@ -78,6 +78,13 @@ interface MediaTileProps {
   meta?: ReactNode;
   /** 封面地址；缺省用占位渐变。 */
   art?: string;
+  /**
+   * 显式占位渐变（完整 background-image 值），逐字压过 artKey 哈希选择。
+   * 夹具 / 演示位用：设计稿对每枚瓦片的封面渐变是逐字比对的。
+   * 注意它与 `art`（网络地址）是两个口 —— 渐变塞进 `art` 会得到一张
+   * 必然加载失败的 `<img>`，随后静默回落到哈希渐变。
+   */
+  artGradient?: string;
   /** 稳定占位键（通常是领域 ID），同一条内容每次拿到同一个占位色。 */
   artKey?: string;
   /** 左上角来源徽标（`收藏夹` / `合集` / `系列` / `本地目录`）。 */
@@ -118,6 +125,7 @@ export const MediaTile = ({
   title,
   meta,
   art,
+  artGradient,
   artKey,
   badge,
   badgeVariant = "default",
@@ -140,7 +148,14 @@ export const MediaTile = ({
         className,
       )}
     >
-      <Artwork src={art} artKey={artKey} alt="" radius="none" className="absolute inset-0 h-full w-full" />
+      <Artwork
+        src={art}
+        placeholder={artGradient}
+        artKey={artKey}
+        alt=""
+        radius="none"
+        className="absolute inset-0 h-full w-full"
+      />
 
       {badge && (
         <Badge variant={badgeVariant} className="absolute top-3 left-3 z-[2]">
