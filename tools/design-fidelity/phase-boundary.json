@@ -1,7 +1,7 @@
 {
   "phase": "P3",
-  "baselineRef": "44fee80",
-  "baselineNote": "基线 = P2 提交 44fee80（chore(design-fidelity): 字面色护栏放行占位素材数据文件）。P3 从该提交开始比对。P2 的令牌改动实际落在 b4ee475（feat(tokens): 补档白色叠加梯度、弹层材质与弹层几何），取阶段末提交作基线是为了让边界与阶段对齐；其后四个提交未再触碰令牌声明。",
+  "baselineRef": "0ad93a8",
+  "baselineNote": "基线 = P3-S1 提交 0ad93a8（feat(library): 屏 01 我的音乐库过 --target app 比对）。P3-S1 期间新增了 geometry.sectionHead 令牌（--biu-layout-section-head-mb = 8px，spec-lock 1.3.3 勘定），属新增令牌而非基线偏差；其余阶段内改动均为组件/页面/工具层，未触碰基线令牌的有效值。",
   "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。任何被业务代码消费的偏差（有效值变更 / 两侧无法求值的表达式改写 / 令牌消失）都必须额外标 visualImpact: true 显式确认「这会掉像素」；未登记的偏差同样让退出码为 1。",
   "intendedChanges": {},
   "history": [
