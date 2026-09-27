@@ -80,8 +80,14 @@ const expr = exprFile ? readFileSync(exprFile, "utf8") : DEFAULT_EXPR;
 const chrome = findChrome();
 const port = 9333 + Math.floor(Math.random() * 200);
 
+// `--no-sandbox` 与 verify.py 的 capture() 同理，是本机必需的：受限环境下 Chrome
+// 起不来自己的进程沙箱，标签页随之无法建立调试 WebSocket —— 表现为
+// `await send("Page.enable")` 永不 resolve，Node 只打印一行
+// 「Detected unsettled top-level await」，看起来像脚本问题，实际是浏览器没起来。
+// 沙箱是进程隔离，与页面渲染无关，关掉它不改变任何像素。
 const child = spawn(chrome, [
   "--headless=new",
+  "--no-sandbox",
   "--disable-gpu",
   "--hide-scrollbars",
   "--force-device-scale-factor=1",
@@ -158,6 +164,18 @@ await new Promise((resolve, reject) => {
 
 await send("Page.enable");
 await send("Runtime.enable");
+
+// 强制视口 1440 × 900 —— 与 verify.py 的 CANVAS / 截图窗口一致。
+// 不设这一步时 headless 的 innerHeight 只有 813（窗口框占掉了 87px），
+// 所有 y 坐标整体上移 87，无法与设计稿的像素坐标直接对照 —— 而「播放栏内某元素
+// 的垂直位置对不对」正是本工具最常见的用途（见文件头说明）。
+await send("Emulation.setDeviceMetricsOverride", {
+  width: 1440,
+  height: 900,
+  deviceScaleFactor: 1,
+  mobile: false,
+});
+await send("Page.reload", { ignoreCache: false });
 
 // 等首屏渲染 + 夹具数据注入
 await sleep(3500);

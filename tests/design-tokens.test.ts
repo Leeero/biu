@@ -43,6 +43,15 @@ type Spec = {
     radius: { tokens: Record<string, string>; [key: string]: unknown };
     scrim: { value: string; token: string };
     scrimVeil: { token: string; stops: string[] };
+    /** 播放栏材质（1.3.9 补录）。 */
+    playbar: {
+      surface: string;
+      surfaceToken: string;
+      progressTrack: string;
+      progressTrackToken: string;
+      queuePillSurface: string;
+      queuePillSurfaceToken: string;
+    };
   };
   typography: {
     scale: Record<
@@ -432,6 +441,11 @@ describe("几何与真值一致", () => {
     // CSS 侧是 rgb(0 0 0 / 45%)，canonLength 比不出这种写法差。
     spec.material.badge.defaultChipToken,
     spec.material.badge.dirChipToken,
+    // 播放栏材质（1.3.9）：底板走组合式（`rgb(var(--biu-surface-player) / 86%)`），
+    // 与进度槽 / 药丸底一样不是新色，故三者的令牌都显式登记。
+    spec.material.playbar.surfaceToken,
+    spec.material.playbar.progressTrackToken,
+    spec.material.playbar.queuePillSurfaceToken,
   ]) {
     ASSERTED.add(token);
   }
@@ -460,6 +474,116 @@ describe("几何与真值一致", () => {
     expect(top).toBe(band[0]);
     expect(bottom).toBe(band[1]);
     expect(parseFloat(resolve("--biu-layout-immersive-controls-h"))).toBe(band[1]! - band[0]!);
+  });
+
+  /**
+   * 播放栏构成（1.3.9 补录）。
+   *
+   * 补录前播放栏在真值里只有 `height: 88px`，内部构成既无处断言、也就从未被
+   * 闸门看过 —— 比对的 `playbar` 探针是 `(64, 200, 795, 900, 12)`，只在 x64–200
+   * 那条窄带里读上缘 y，判的是「存在且高 88」，栏内一律看不见。
+   *
+   * 三个「`A × B`」形态的值（封面、播放键）与沉浸态封面同理：真值写的是
+   * 人读的尺寸串，令牌是两个独立的长度，故在这里按串解析后分别断言 ——
+   * 比在真值里再抄一遍 `coverWidth` / `coverHeight` 少一次漂移机会。
+   */
+  test("播放栏封面与播放键尺寸", () => {
+    const cover = String(pick("geometry.playbar.left.cover"));
+    const [, coverW, coverH] = cover.match(/(\d+)\s*×\s*(\d+)/) ?? [];
+    expect(canonLength(resolve("--biu-playbar-cover-w"))).toBe(`${coverW}px`);
+    expect(canonLength(resolve("--biu-playbar-cover-h"))).toBe(`${coverH}px`);
+
+    const play = String(pick("geometry.playbar.mid.playButton"));
+    const [, playW] = play.match(/(\d+)\s*×\s*(\d+)/) ?? [];
+    expect(canonLength(resolve("--biu-playbar-play-size"))).toBe(`${playW}px`);
+  });
+
+  test("播放栏进度槽与队列药丸底的材质与真值一致", () => {
+    const { progressTrack, progressTrackToken, queuePillSurface, queuePillSurfaceToken } = spec.material.playbar;
+    expect(canon(resolve(progressTrackToken))).toBe(canon(progressTrack));
+    expect(canon(resolve(queuePillSurfaceToken))).toBe(canon(queuePillSurface));
+  });
+
+  /**
+   * 播放栏底板：真值登记的是**组合式**声明而不是新色，因此断言点是
+   * `src/app.css` 里那条唯一的实现（`@utility playbar-bg`）逐字与真值一致。
+   * 只断言「令牌存在」在这里是不够的 —— 底板的不透明度（86%）与色相来源
+   * 都写在那一条声明里，令牌本身只是色相。
+   */
+  test("播放栏底板声明与真值逐字一致", () => {
+    const { surface } = spec.material.playbar;
+    const appCss = readFileSync(path.resolve(ROOT, "src/app.css"), "utf8");
+    const utility = appCss.match(/@utility\s+playbar-bg\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(utility.replace(/\s+/g, " ").trim(), "src/app.css 的 playbar-bg 与真值不一致").toBe(
+      `background: ${surface};`,
+    );
+  });
+
+  /**
+   * 播放栏过渡控件簇的预算恒等式（1.3.10）。
+   *
+   * 设计稿的播放栏里**没有**这 5 枚控件（播放模式 / 下载 / 抽屉入口 / 音量 / 倍速），
+   * 但能力此刻不能丢（方案 §5.4「保留能力、只改外观」、§6 要求能力不退化），于是只能
+   * 放进设计**唯一**未被占用的横向区带：左段与中段之间。这段的宽度不是拍出来的，是三个
+   * 已登记量的差 —— 而「差」最容易在某次调整后悄悄变负，所以把恒等式本身钉住。
+   *
+   * 恒等式只由令牌构成，不含字体宽度、不含业务数据，故可以精确断言（是 `=`，不是 `≤`）：
+   *   左段最右可达 + gutter + 簇宽 + gutter ≡ 中段原点
+   *   32 + 100 + 21 + 300 + 12 + (5 × 22 + 4 × 4) + 12 = 603
+   *
+   * 为什么不是「≤ 中段原点」就够：`metaMaxWidth` 的成文用途正是「防长标题撞进中段」，
+   * 若簇只是不越中段、却盖住左段的最右可达，长标题就会钻到图标底下。两侧各留 12
+   * 才是这条恒等式的实际内容。
+   */
+  test("播放栏过渡控件簇恰好填满设计预留的缓冲，两侧各余 gutter", () => {
+    const px = (token: string) => parseFloat(resolve(token));
+    const midOrigin = px("--biu-layout-stage-w") / 2 - px("--biu-playbar-mid-offset");
+    const leftMax =
+      px("--biu-playbar-inset-l") +
+      px("--biu-playbar-cover-w") +
+      px("--biu-playbar-meta-gap") +
+      px("--biu-playbar-meta-max-w");
+    const gutter = px("--biu-playbar-deferred-gutter");
+    const gap = px("--biu-playbar-deferred-gap");
+    // 5 枚，尺寸复用中段传输按钮的档位（不是新造值）
+    const clusterW = 5 * px("--biu-playbar-transport-icon") + 4 * gap;
+
+    expect(String(pick("geometry.playbar.deferred.width"))).toContain(String(clusterW));
+    expect(leftMax + gutter + clusterW + gutter, "簇没有恰好填满设计预留的缓冲").toBe(midOrigin);
+    expect(midOrigin - gutter - clusterW - leftMax, "左侧余量与右侧不对称").toBe(gutter);
+  });
+
+  /**
+   * 上面那条恒等式只证明「预算算得对」，不证明**实现落在了那个位置**。
+   * 这一条读源码钉住两件事：
+   *   1. 簇的锚点是「中段原点 − gutter」（不是右段、也不是左段自身宽度）；
+   *   2. 那 5 枚**不得再回到右段** —— 1.3.9 正是把它们留在右段，右段左缘被推到
+   *      x1080.8 而压住了中段的尾随时间（x1088.5–1172），且当时没有任何探针覆盖
+   *      x1080–1194，所以全绿通过。
+   */
+  test("过渡控件簇锚在中段原点左侧，右段只留药丸", () => {
+    const playbarSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/index.tsx"), "utf8");
+    expect(playbarSrc, "簇的锚点不再是「中段原点 − gutter」").toContain(
+      "right-[calc(50%_+_var(--biu-playbar-mid-offset)_+_var(--biu-playbar-deferred-gutter))]",
+    );
+
+    const deferredSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/deferred/index.tsx"), "utf8");
+    expect(deferredSrc, "簇没有用登记过的间隔令牌").toContain("gap-[var(--biu-playbar-deferred-gap)]");
+    expect(deferredSrc, "簇没有把按钮收到传输按钮档位").toContain(
+      "[&>button]:size-[var(--biu-playbar-transport-icon)]",
+    );
+
+    const rightSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/right/index.tsx"), "utf8");
+    expect(rightSrc).toContain("QueueButton");
+    for (const stray of [
+      "MusicPlayMode",
+      "MusicVolume",
+      "MusicRate",
+      "MusicDownloadButton",
+      "OpenPlaylistDrawerButton",
+    ]) {
+      expect(rightSrc, `右段又混进了 ${stray}（设计稿右段只有一枚药丸）`).not.toContain(stray);
+    }
   });
 
   test("圆角是固定值，不由 HeroUI 圆角派生", () => {
@@ -541,7 +665,10 @@ describe("真值完备性：登记即断言", () => {
     expect(uncovered, `这些令牌在真值里登记了、却没有任何断言，漂移不会报警：${uncovered.join(", ")}`).toEqual([]);
 
     // 账本本身也要有量级下限，否则上游 describe 被重排/清空时会静默通过。
-    // 现值为 declared 46 / asserted 47（tokenMap 里另有 --biu-radius-xl 不在 radius.tokens）。
+    // 门槛取 40 而不是「当前现值」：现值随每次补录都会变（1.3.9 加播放栏时
+    // tokenMap 就从 30 涨到 47），写成数字必然过期。这里要防的是**归零**，
+    // 不是「差一两条」。注：declared 只统计 `token` / `borderToken` / `tokens.*`
+    // 三处，tokenMap 的键名不在此列（它由上面的 test.each 直接断言）。
     expect(declared.length, "真值声明的令牌数异常偏少").toBeGreaterThanOrEqual(40);
     expect(ASSERTED.size, "断言账本为空或严重偏少").toBeGreaterThanOrEqual(40);
   });

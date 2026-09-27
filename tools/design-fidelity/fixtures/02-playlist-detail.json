@@ -10,11 +10,26 @@
     "lead": "收藏夹 / 合集 / 系列 共用一套详情模板，仅数据类型不同。"
   },
   "filterPills": [
-    { "kind": "primary", "label": "全部播放" },
-    { "kind": "secondary", "label": "随机播放" },
-    { "kind": "neutral", "label": "收藏 · 取消收藏" },
-    { "kind": "accent", "label": "批量下载音频 · 已选 12" },
-    { "kind": "neutral", "label": "更多 ▾ · 编辑 / 清理失效 / 删除" }
+    {
+      "kind": "primary",
+      "label": "全部播放"
+    },
+    {
+      "kind": "secondary",
+      "label": "随机播放"
+    },
+    {
+      "kind": "neutral",
+      "label": "收藏 · 取消收藏"
+    },
+    {
+      "kind": "accent",
+      "label": "批量下载音频 · 已选 12"
+    },
+    {
+      "kind": "neutral",
+      "label": "更多 ▾ · 编辑 / 清理失效 / 删除"
+    }
   ],
   "section": {
     "title": "默认收藏夹 · 214 个内容",
@@ -63,5 +78,14 @@
     "range": "范围：全部 214 首 · 仅已选 12 首 · 跳过已下载",
     "action": "加入下载队列"
   },
-  "note": "三种集合类型（CollectionType 11 / 21 / 31）在代码里是三条数据通路，PRD 7.2 要求统一为同一个「播放列表详情」模板：播放全部、收藏、批量下载音频、编辑 / 清理失效 / 删除都挂在这一层。"
+  "note": "三种集合类型（CollectionType 11 / 21 / 31）在代码里是三条数据通路，PRD 7.2 要求统一为同一个「播放列表详情」模板：播放全部、收藏、批量下载音频、编辑 / 清理失效 / 删除都挂在这一层。",
+  "nowPlaying": {
+    "title": "《雨落长街》· 全专上线",
+    "sub": "卧室音乐计划 · 新碟 banner",
+    "lossless": true,
+    "elapsedSeconds": 82,
+    "durationSeconds": 228,
+    "queueCount": 12,
+    "playing": false
+  }
 }

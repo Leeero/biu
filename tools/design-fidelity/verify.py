@@ -9,6 +9,12 @@
 判定模型
   L1 硬锚点     渲染侧实测 vs 设计侧实测，零偏差（顶栏/播放栏厚度、H1 左缘、行距、缩略图宽）
   L2 结构带     H1 / 导语 / 筛选条 / 播放栏：起点偏差 ≤ 2px 且带数一致
+                （夹具提供「正在播放」内容的屏另加播放栏内部三枚：封面 / 播放键 / 队列药丸，
+                  它们的阈值高于播放栏底色，见 PLAYBAR_DETAIL_PROBES；第四枚 playbarGap
+                  判的是**设计空带**，设计侧应为 0 条）
+  L2 横向实心带  进度条等实心矩形按**行**取段，逐段比较起点与终点（±2px）。
+                —— 纵向带对「宽度」不敏感（270.5 与 380 在纵向上同形），这一层补上横向
+                （见 PLAYBAR_H_PROBES）
   L2 内容带     列表 / 右列 / 注解带：设计带起点被渲染带覆盖的比例 ≥ 0.75（±4px 内）
                 —— 内容带随文案与封面变化，逐条严格相等不合理；用覆盖率保证结构不被破坏
   L3 整屏观感   平均亮度差 ≤ 12
@@ -69,6 +75,43 @@ IMMERSIVE_PROBES = {
     "lyrics": (740, 1370, 280, 640, 22),
     "bottom": (64, 1400, 620, 830, 30),
 }
+
+# 播放栏内部探针（1.3.9 补录）。
+#
+# 此前播放栏在探针里只有下面 DEFAULT_PROBES 的 `playbar` 一条 —— 而它的阈值 12
+# **低于播放栏底**（`#0E0E11` ≈ 14.3），于是「带」永远等于整条栏，判的只是
+# 「播放栏存在且高 88」，栏内一律看不见。播放栏的构成因此长期无人看守：
+# 左段整段不渲染、中段播放键是蓝色 40px 圆片、右段 6 枚控件对 1 枚药丸，
+# 一个都没被判过。
+#
+# 这三枚的阈值都**高于栏底**，于是「带」由各自的实心块决定：
+#   playbarCover  封面 —— 设计稿实测纯平色 #282932 ≈ 43.7
+#   playbarPlay   播放键 —— 纯白 ≈ 250；**蓝色播放键 ≈ 149 过不了 200**，正是要抓的缺口
+#   playbarPill   队列药丸 —— 白 10% 叠在栏底 ≈ 38.4
+# 三者在设计稿第 02/03 页测得同一组带（见 spec-lock `screens[].playbarDetail.measured`）。
+PLAYBAR_DETAIL_PROBES = {
+    "playbarCover": (24, 140, 818, 894, 20),
+    "playbarPlay": (640, 710, 818, 894, 200),
+    "playbarPill": (1310, 1400, 818, 894, 20),
+    # 第四枚判的是**设计空带**：窗口取在「进度条右端 1171」与「时间起点 1196」之间。
+    # 设计稿第 02/03 页实测窗口内 max 15.0、零墨迹列 ⇒ 设计侧为空带（0 条），
+    # 渲染侧同样应为 0 条。它一箭双雕：进度条若短于 380，时间会被推进此窗；
+    # 过渡控件若右侵，也会落进此窗（1.3.9 的渲染实测 17 列有墨迹、max 204）。
+    "playbarGap": (1176, 1194, 818, 894, 20),
+}
+
+# 播放栏**横向**实心带（1.3.10 补录）。原有探针只取纵向带，而「进度条宽 270.5 还是 380」
+# 在纵向上完全同形 —— 宽度错了照样全绿，1.3.9 的进度条就是这样短了 110px 还没被拦下。
+# 这一组按**行**取值，逐段比较起点与终点（同样 ±bandOffsetPx），把「宽度类」缺陷纳入闸门。
+#
+#   playbarProgress  y=856 行 / x700–1200 窗口 / 阈值 30，取「横向实心带」。
+#                    设计稿第 02/03/04/05/06/09/13 页**一律**为 (792, 1171)：条的填充与
+#                    槽底都高于 30，合并为单条 380。minlen 60 用来滤掉同行里的传输图标
+#                    （约 12px）与字形墨迹。
+PLAYBAR_H_PROBES = {
+    "playbarProgress": (700, 1200, 856, 30),
+}
+PLAYBAR_H_MIN_LEN = 60
 
 # 顶栏厚度探针：取 x 300–1200 内部区，避开画板 33px 圆角与右侧内容。
 # 阈值 18 高于底板（8.7）与内容区微光（≤16），低于顶栏最低档 #131315（19.0）。
@@ -254,10 +297,44 @@ def measure_anchors(L: np.ndarray, bands_map: dict, immersive: bool, has_row_pit
 def probe(im: Image.Image, screen: dict) -> dict:
     immersive = bool(screen.get("immersive"))
     L = luminance(im)
-    windows = IMMERSIVE_PROBES if immersive else DEFAULT_PROBES
+    windows = dict(IMMERSIVE_PROBES if immersive else DEFAULT_PROBES)
+    for name in detail_probe_names(screen):
+        windows[name] = PLAYBAR_DETAIL_PROBES[name]
     res = {name: bands(L, *window) for name, window in windows.items()}
     res["_anchors"] = measure_anchors(L, res, immersive, bool(screen.get("hasRowPitch")))
     return res
+
+
+def detail_probe_names(screen: dict) -> list[str]:
+    """该屏声明启用的播放栏内部探针（spec-lock `screens[].playbarDetail.probes`）。
+
+    只有夹具提供了「正在播放」内容（`nowPlaying`）的屏才启用 —— 其余屏的播放栏
+    是空态，栏内没有可比的实心块，启用只会得到空带与误报。
+    """
+    declared = screen.get("playbarDetail") or {}
+    return [name for name in declared.get("probes", []) if name in PLAYBAR_DETAIL_PROBES]
+
+
+def hprobe(im: Image.Image, screen: dict) -> dict:
+    """播放栏横向实心带。
+
+    沉浸态没有播放栏，返回空；标准壳层**按屏启用**（spec-lock
+    `screens[].playbarProgress.enabled`）—— 与栏内探针同一纪律：设计侧没有可比对象时
+    不启用，而不是把窗口调宽了事。当前排除两屏，理由写在真值里：
+      · 07 `发现音乐 · 卡片`：设计页第 8 页壳层不同（顶栏 65 / 播放栏 81），栏内无标准进度条；
+      · 12 `/mini-player`：属 P7，壳层尚未重建（渲染顶栏实测 159），播放栏不是标准形态。
+
+    启用面上这条口径比栏内探针更宽：进度槽底是数据无关的满宽实心块，因此不依赖夹具
+    提供的「正在播放」内容 —— 第 03–06/08/09/11 屏在壳层尚未重建时也一并被覆盖。
+    """
+    declared = screen.get("playbarProgress") or {}
+    if screen.get("immersive") or not declared.get("enabled"):
+        return {}
+    L = luminance(im)
+    return {
+        name: xruns(L, y, x0, x1, thr, minlen=PLAYBAR_H_MIN_LEN)
+        for name, (x0, x1, y, thr) in PLAYBAR_H_PROBES.items()
+    }
 
 
 def coverage(design: list, rendered: list, tolerance: int):
@@ -277,7 +354,7 @@ def evaluate(screen: dict, spec: dict, rendered_png: pathlib.Path, verbose: bool
     render_img = Image.open(rendered_png).convert("RGB").resize(CANVAS, Image.LANCZOS)
     pd, pr = probe(design_img, screen), probe(render_img, screen)
 
-    structural = IMMERSIVE_STRUCTURAL if immersive else STRUCTURAL_BANDS
+    structural = list(IMMERSIVE_STRUCTURAL if immersive else STRUCTURAL_BANDS) + detail_probe_names(screen)
     content = IMMERSIVE_CONTENT if immersive else CONTENT_BANDS
 
     tol = spec["tolerances"]
@@ -319,6 +396,20 @@ def evaluate(screen: dict, spec: dict, rendered_png: pathlib.Path, verbose: bool
         if not ok:
             print(f"    {'':4s} {'':10s} 渲染 {r}")
             failures.append(f"L2 {name} 结构带不一致")
+
+    # ---------------- L2 横向实心带 ----------------
+    hd, hr = hprobe(design_img, screen), hprobe(render_img, screen)
+    if hd:
+        print(f"  [L2 横向实心带 · 起点与终点各 ±{band_tol}px 且段数一致]")
+        for name, d in hd.items():
+            r = hr.get(name) or []
+            ok = len(d) == len(r) and all(
+                abs(a[0] - b[0]) <= band_tol and abs(a[1] - b[1]) <= band_tol for a, b in zip(d, r)
+            )
+            print(f"    {'OK  ' if ok else 'FAIL'} {name:12s} 设计 {d}")
+            if not ok:
+                print(f"    {'':4s} {'':12s} 渲染 {r}")
+                failures.append(f"L2 {name} 横向实心带不一致")
 
     # ---------------- L2 内容带 ----------------
     label = "严格逐条" if strict else f"覆盖率 ≥ {CONTENT_COVERAGE_MIN:.0%}（±{CONTENT_MATCH_PX}px）"

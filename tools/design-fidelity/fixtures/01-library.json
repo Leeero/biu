@@ -4,11 +4,28 @@
   "no": "01",
   "name": "我的音乐库",
   "route": "/library",
-  "user": { "mid": 10000, "isLogin": true },
+  "user": {
+    "mid": 10000,
+    "isLogin": true
+  },
   "library": {
     "created": [
-      { "id": 901, "type": 11, "title": "夜航电子", "trackCount": 42, "metaNote": "3 小时 12 分", "artIndex": 1 },
-      { "id": 902, "type": 21, "title": "器乐练习", "trackCount": 28, "metaNote": "2 小时 04 分", "artIndex": 6 },
+      {
+        "id": 901,
+        "type": 11,
+        "title": "夜航电子",
+        "trackCount": 42,
+        "metaNote": "3 小时 12 分",
+        "artIndex": 1
+      },
+      {
+        "id": 902,
+        "type": 21,
+        "title": "器乐练习",
+        "trackCount": 28,
+        "metaNote": "2 小时 04 分",
+        "artIndex": 6
+      },
       {
         "id": 903,
         "type": 31,
@@ -18,11 +35,32 @@
         "artIndex": 2,
         "demoActions": true
       },
-      { "id": 0, "type": "dir", "title": "本地无损库", "trackCount": 56, "metaNote": "4 小时 05 分 · FLAC", "artIndex": 8 }
+      {
+        "id": 0,
+        "type": "dir",
+        "title": "本地无损库",
+        "trackCount": 56,
+        "metaNote": "4 小时 05 分 · FLAC",
+        "artIndex": 8
+      }
     ],
     "collected": [
-      { "id": 951, "type": 11, "title": "深夜循环", "trackCount": 63, "metaNote": "无损", "artIndex": 1 },
-      { "id": 952, "type": 21, "title": "睡前歌单", "trackCount": 31, "metaNote": "无损", "artIndex": 6 }
+      {
+        "id": 951,
+        "type": 11,
+        "title": "深夜循环",
+        "trackCount": 63,
+        "metaNote": "无损",
+        "artIndex": 1
+      },
+      {
+        "id": 952,
+        "type": 21,
+        "title": "睡前歌单",
+        "trackCount": 31,
+        "metaNote": "无损",
+        "artIndex": 6
+      }
     ],
     "overview": {
       "localDirs": 3,
@@ -32,5 +70,14 @@
       "downloadsDone": 18,
       "downloadsActive": 2
     }
+  },
+  "nowPlaying": {
+    "title": "夜航",
+    "sub": "NOISE_LAB",
+    "lossless": true,
+    "elapsedSeconds": 52,
+    "durationSeconds": 250,
+    "queueCount": 12,
+    "playing": false
   }
 }

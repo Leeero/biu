@@ -12,6 +12,8 @@
  */
 import type { IconName } from "@/ui/primitives/icon";
 
+import type { FixtureNowPlaying } from "./now-playing";
+
 export const LIBRARY_FIXTURE_NAME = "01-library";
 
 /** 收藏夹 11 / 合集 21 / 系列 31（与 CollectionType 一致）；"dir" 是本地目录。 */
@@ -46,6 +48,11 @@ export interface LibraryFixture {
     collected: FixtureLibraryTile[];
     overview: FixtureLibraryOverview;
   };
+  /**
+   * 播放栏。设计稿第 2 页的播放栏在**每一页**都是满态，与页面数据无关，
+   * 故按屏落在本夹具里（形状见 `./now-playing`）。
+   */
+  nowPlaying: FixtureNowPlaying;
 }
 
 export const SCREEN_01_LIBRARY_FIXTURE: LibraryFixture = {
@@ -77,6 +84,17 @@ export const SCREEN_01_LIBRARY_FIXTURE: LibraryFixture = {
       downloadsDone: 18,
       downloadsActive: 2,
     },
+  },
+  // 设计稿第 2 页播放栏逐字内容：夜航 / NOISE_LAB / 无损 30251 / 00:52 / 04:10 / 队列 · 12。
+  // 52 / 250 = 20.8% —— 与设计稿进度条的填充比例一致，故两处是同一份数据。
+  nowPlaying: {
+    title: "夜航",
+    sub: "NOISE_LAB",
+    lossless: true,
+    elapsedSeconds: 52,
+    durationSeconds: 250,
+    queueCount: 12,
+    playing: false,
   },
 };
 

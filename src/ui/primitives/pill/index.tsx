@@ -29,7 +29,13 @@ const VARIANTS: Record<PillVariant, string> = {
   primary: "bg-[rgb(var(--biu-inverse-surface))] font-semibold text-[rgb(var(--biu-inverse-ink))]",
   secondary: "bg-[var(--biu-surface-glass-strong)] font-medium text-[rgb(var(--biu-text-primary))]",
   neutral: "border-[var(--biu-veil-14)] bg-[var(--biu-surface-field)] text-[rgb(var(--biu-text-secondary))]",
-  /** 白 14% 底 + 12% 描边。原型 `.local-link` / `.pb-queue`：搜索页的本地入口、播放栏队列入口。 */
+  /**
+   * 白 14% 底 + 12% 描边。原型 `.local-link`：搜索页的本地入口。
+   *
+   * **播放栏的队列入口不在此列**（1.3.9 订正）：设计稿实测该药丸是白 10% 底、
+   * 无可见描边，对应的是下面的 `ghost`；原型 `.pb-queue` 的 14% 底 + 12% 描边
+   * 是原型档。此前这里把 `.pb-queue` 写成 `outline` 的用例，与稿面不符。
+   */
   outline: "border-[var(--biu-veil-12)] bg-[var(--biu-veil-14)] text-[rgb(var(--biu-text-secondary))]",
   accent: "bg-[rgb(var(--biu-accent)/22%)] font-medium text-[rgb(var(--biu-accent-ink))]",
   danger: "border-[var(--biu-danger-line)] bg-[var(--biu-danger-soft)] text-[rgb(var(--biu-danger))]",

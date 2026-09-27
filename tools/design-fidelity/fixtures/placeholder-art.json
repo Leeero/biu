@@ -23,6 +23,7 @@
     "radial-gradient(120% 120% at 30% 25%, #4d4d55, #1e1e23 72%)",
     "linear-gradient(150deg, #2b3550, #14161d)",
     "linear-gradient(150deg, #242b3d, #171c28)",
-    "linear-gradient(150deg, #1b2131, #14161d)"
+    "linear-gradient(150deg, #1b2131, #14161d)",
+    "linear-gradient(150deg, #282932, #282932)"
   ]
 }

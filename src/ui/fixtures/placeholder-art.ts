@@ -56,6 +56,19 @@ export const PLACEHOLDER_RADIALS = {
   heroList: "linear-gradient(150deg, #2b3550, #14161d)",
   /** 沉浸态封面 `.np-art` */
   immersive: "linear-gradient(150deg, #242b3d, #171c28)",
+  /**
+   * 播放栏封面 `.pb-cover`。
+   *
+   * 设计稿第 03/04/09/13 页的播放栏封面实测为**纯平色** `#282932`
+   * （窗口 x35–129 / y831–881，共 4700 像素，标准差 0.00）—— 稿面的封面位
+   * 就是一个平色占位矩形。这里写成 **等值渐变**（起止同色）而不是平色，
+   * 唯一原因是 `Artwork` 用 `background-image` 通道填占位，而平色不是合法的
+   * `background-image` 值（会被浏览器丢弃，封面会退回元件底色）。
+   *
+   * 第 02/05 页的同一位置是渐变（标准差 ≈ 19.8）—— 封面位在稿面上本就是
+   * 「具体作品拿不到」的可变占位，不是一个规格值，故不按页分别登记。
+   */
+  playbarCover: "linear-gradient(150deg, #282932, #282932)",
 } as const;
 
 export type PlaceholderRadial = keyof typeof PLACEHOLDER_RADIALS;

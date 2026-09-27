@@ -27,6 +27,7 @@ describe("屏 01 夹具：TS 模块与 JSON 逐字一致", () => {
     expect(SCREEN_01_LIBRARY_FIXTURE).toEqual({
       user: fixture.user,
       library: fixture.library,
+      nowPlaying: fixture.nowPlaying,
     });
   });
 

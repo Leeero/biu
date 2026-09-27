@@ -35,6 +35,7 @@ describe("屏 02 夹具：TS 模块与 JSON 逐字一致", () => {
       tracks: fixture.tracks,
       modal: fixture.modal,
       note: fixture.note,
+      nowPlaying: fixture.nowPlaying,
     });
   });
 

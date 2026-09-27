@@ -10,6 +10,7 @@
  * `?fixture=02-playlist-detail` 时，详情页才读取这里的数据 —— 真实数据路径
  * （getFavFolderInfo / getFavResourceList 等 service）不经过本文件。
  */
+import type { FixtureNowPlaying } from "./now-playing";
 
 export const PLAYLIST_DETAIL_FIXTURE_NAME = "02-playlist-detail";
 
@@ -65,6 +66,11 @@ export interface PlaylistDetailFixture {
   tracks: FixtureTrack[];
   modal: FixtureModal;
   note: string;
+  /**
+   * 播放栏。设计稿第 3 页的播放栏是满态，内容与页面数据无关（全局组件读
+   * `usePlayList`），故按屏落在本夹具里（形状见 `./now-playing`）。
+   */
+  nowPlaying: FixtureNowPlaying;
 }
 
 export const SCREEN_02_PLAYLIST_DETAIL_FIXTURE: PlaylistDetailFixture = {
@@ -138,4 +144,15 @@ export const SCREEN_02_PLAYLIST_DETAIL_FIXTURE: PlaylistDetailFixture = {
     action: "加入下载队列",
   },
   note: "三种集合类型（CollectionType 11 / 21 / 31）在代码里是三条数据通路，PRD 7.2 要求统一为同一个「播放列表详情」模板：播放全部、收藏、批量下载音频、编辑 / 清理失效 / 删除都挂在这一层。",
+  // 设计稿第 3 页播放栏逐字内容：片名 / 副行 / 无损 30251 / 01:22 / 03:48 / 队列 · 12。
+  // 82 / 228 = 36.0% —— 与设计稿进度条填充比例一致，故两处是同一份数据。
+  nowPlaying: {
+    title: "《雨落长街》· 全专上线",
+    sub: "卧室音乐计划 · 新碟 banner",
+    lossless: true,
+    elapsedSeconds: 82,
+    durationSeconds: 228,
+    queueCount: 12,
+    playing: false,
+  },
 };

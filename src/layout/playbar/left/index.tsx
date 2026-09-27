@@ -1,84 +1,107 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router";
 
-import { Chip } from "@heroui/react";
-import { RiArrowUpSLine, RiMusic2Line } from "@remixicon/react";
+import { RiArrowUpSLine } from "@remixicon/react";
 import clsx from "classnames";
 
-import Image from "@/components/image";
 import MusicFavButton from "@/components/music-fav-button";
 import MusicMoreMenu from "@/components/music-more-menu";
+import { useNowPlaying } from "@/features/player/now-playing";
 import { usePlayerActions } from "@/features/player/use-player-actions";
-import { usePlayList } from "@/store/play-list";
 import { useUser } from "@/store/user";
+import { PLACEHOLDER_RADIALS } from "@/ui/fixtures/placeholder-art";
+import { Artwork } from "@/ui/primitives/artwork";
+import { Tag } from "@/ui/primitives/tag";
 
 import PageListDrawer from "./page-list";
 
+/**
+ * 播放栏左段：封面 + 文案块 + 质量徽标。
+ *
+ * 几何全部取自 spec-lock `geometry.playbar.left`（1.3.9 起进真值）。三处与原型
+ * `assets/app.css` 的 `.pb-*` 分歧**一律取设计稿**：
+ *   · 封面 **100 × 56**（原型 `.pb-cover` 是 56 × 56）—— 与已登记的 L1 硬锚点
+ *     「缩略图 100×56」同比例（16:9），不是正方形；
+ *   · 封面左缘 **32**（原型 36）、封面 → 文案块 **21**（原型 gap 16）；
+ *   · 副行 → 徽标间距取原型成文值 **10**（设计稿两页实测 72 / 24 不等，读不出常量）。
+ *
+ * 标题 17px/600、单行省略；副行 13px `--biu-text-quaternary`；徽标同 `.tag`
+ * （高 22 / 内距 8 / 圆角 6 / 字号 12 / 字重 500 / `quality` 变体）。
+ *
+ * 封面**不用 `Image`** 而用 `Artwork`：后者在无地址或加载失败时回落到占位底图，
+ * 而设计稿的播放栏封面本来就是占位（见 `placeholder-art.ts` 的 `playbarCover`）。
+ *
+ * 右端的分集 / 收藏 / 更多三枚控件**在设计稿里没有**（设计稿该处是空白），
+ * 本轮保留（方案 §5.4「保留能力」），去留与右段控件一并在 P5 处置。
+ */
 const LeftControl = () => {
   const navigate = useNavigate();
-  const user = useUser(s => s.user);
+  const user = useUser(state => state.user);
   const { openNowPlaying } = usePlayerActions();
-  const list = usePlayList(s => s.list);
-  const playId = usePlayList(s => s.playId);
+  const { title, sub, ownerClickable, ownerMid, hasMultiPart, sourceIsLocal, cover, badgeText } = useNowPlaying();
 
-  const playItem = useMemo(() => list.find(item => item.id === playId), [list, playId]);
   return (
-    <div className="flex h-full w-full min-w-0 items-center justify-start gap-3 pr-4">
+    <div className="flex h-full items-center gap-[var(--biu-playbar-meta-gap)]">
       <button
         type="button"
         aria-label="打开全屏播放器"
         data-id="full-screen-player-open"
-        className="group relative flex-none cursor-pointer rounded-[var(--biu-radius-md)]"
+        className="group relative flex-none cursor-pointer overflow-hidden rounded-[var(--biu-playbar-cover-radius)]"
         onClick={openNowPlaying}
       >
-        <Image
-          radius="md"
-          src={playItem?.pageCover || playItem?.cover}
-          width={52}
-          height={52}
-          classNames={{
-            wrapper: "flex-none",
-          }}
-          params="672w_378h_1c.avif"
-          emptyPlaceholder={<RiMusic2Line />}
+        <Artwork
+          src={cover}
+          radius="none"
+          alt=""
+          placeholder={PLACEHOLDER_RADIALS.playbarCover}
+          className="rounded-[var(--biu-playbar-cover-radius)]"
+          style={{ width: "var(--biu-playbar-cover-w)", height: "var(--biu-playbar-cover-h)" }}
         />
-        <div className="absolute top-0 left-0 z-10 flex h-full w-full items-center justify-center overflow-hidden rounded-md bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/55 text-white opacity-0 transition-opacity duration-[var(--biu-duration-fast)] group-hover:opacity-100 group-focus-visible:opacity-100">
           <RiArrowUpSLine size={32} />
-        </div>
-      </button>
-      <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-        <span className="flex w-full items-center">
-          <span title={playItem?.pageTitle || playItem?.title} className="min-w-0 flex-1 truncate text-sm font-medium">
-            {playItem?.pageTitle || playItem?.title}
-          </span>
-          {Boolean(playItem?.isLossless) && (
-            <Chip size="sm" className="h-auto px-0 py-0.5 text-[10px]">
-              无损
-            </Chip>
-          )}
-          {Boolean(playItem?.isDolby) && (
-            <Chip size="sm" className="h-auto px-0 py-0.5 text-[10px]">
-              杜比
-            </Chip>
-          )}
         </span>
+      </button>
+
+      <div className="flex max-w-[var(--biu-playbar-meta-max-w)] min-w-0 flex-col items-start gap-[var(--biu-playbar-title-gap)]">
         <span
-          className={clsx("max-w-full truncate text-xs whitespace-nowrap text-[rgb(var(--biu-color-text-secondary))]", {
-            "cursor-pointer hover:underline": Boolean(playItem?.ownerMid),
-          })}
-          onClick={e => {
-            if (playItem?.source === "local" || !playItem?.ownerMid) return;
-            e.stopPropagation();
-            navigate(`/user/${playItem?.ownerMid}`);
-          }}
+          title={title}
+          className="w-full truncate text-[length:var(--biu-type-list-title-size)] font-semibold text-[rgb(var(--biu-text-primary))]"
         >
-          {playItem?.source === "local" ? "本地音乐" : playItem?.ownerName || "未知"}
+          {title}
+        </span>
+        <span className="flex w-full min-w-0 items-center gap-[var(--biu-playbar-sub-gap)]">
+          <span
+            className={clsx(
+              "min-w-0 truncate text-[length:var(--biu-type-label-size)] whitespace-nowrap text-[rgb(var(--biu-text-quaternary))]",
+              { "cursor-pointer hover:underline": ownerClickable },
+            )}
+            onClick={event => {
+              if (!ownerClickable || ownerMid === undefined) return;
+              event.stopPropagation();
+              navigate(`/user/${ownerMid}`);
+            }}
+          >
+            {sub}
+          </span>
+          {badgeText && <Tag variant="quality">{badgeText}</Tag>}
         </span>
       </div>
+
+      {/*
+        三枚控件（分集 / 收藏 / 更多）在设计稿里没有（设计稿该处是空白），本轮保留
+        （方案 §5.4「保留能力」），去留与过渡控件簇一并在 P5 处置。
+
+        注意：本组三个条件全不成立时，外层 `gap: 21px` 仍会生效 ⇒ 左段实测 394.2
+        （= 100 + 21 + 252.2 + 21 + 0）而内容止于 405.3。试过「空组不渲染」，**无效**：
+        `!sourceIsLocal` 为真时 `<MusicMoreMenu />` 仍被创建，而 React 元素即使最终
+        渲染 `null` 也是真值，父级无从预知。要修得先让 `MusicMoreMenu` 暴露
+        「是否会渲染」的判据，属独立改动；该 21px 无视觉后果（见 spec-lock
+        `geometry.playbar.left.rule`），本轮不改。
+      */}
       <div className="flex flex-none items-center gap-0.5">
-        {Boolean(playItem?.hasMultiPart) && <PageListDrawer />}
-        {Boolean(user?.isLogin) && Boolean(playItem) && playItem?.source !== "local" && <MusicFavButton />}
-        {Boolean(playItem) && playItem?.source !== "local" && <MusicMoreMenu />}
+        {hasMultiPart && <PageListDrawer />}
+        {Boolean(user?.isLogin) && !sourceIsLocal && <MusicFavButton />}
+        {!sourceIsLocal && <MusicMoreMenu />}
       </div>
     </div>
   );

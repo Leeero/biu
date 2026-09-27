@@ -49,3 +49,19 @@ export const getPlayModeList = (iconSize?: number) => [
 
 /** 从低到高音质排，最高为无损 */
 export const audioQualitySort = [30257, 30216, 30259, 30260, 30232, 30280, 30250, 30251];
+
+/**
+ * 音质徽标的展示文案。
+ *
+ * **是「名称 + 音质码」，不是单独的「无损」两字** —— 设计稿播放栏的徽标
+ * （第 02/03 页）与原型 `02-playlist-detail.html` 的
+ * `<span class="tag tag--quality">无损 30251</span>` 逐字一致，两侧都带码。
+ * 码值即 `audioQualitySort` 里的既有取值，不是这里新发明的。
+ *
+ * 此前播放栏只渲染「无损」/「杜比」，徽标因此比设计稿窄约 32px
+ * （实测设计稿徽标宽 72）。详见 spec-lock `geometry.playbar.left.badgeLabel`。
+ */
+export const AUDIO_QUALITY_LABEL = {
+  lossless: "无损 30251",
+  dolby: "杜比 30250",
+} as const;

@@ -2,13 +2,43 @@
   "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
   "meta": {
     "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
-    "version": "1.3.8",
+    "version": "1.3.10",
     "frozenAt": "2026-09-27",
     "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
+      {
+        "version": "1.3.10",
+        "at": "2026-09-27",
+        "phase": "P3",
+        "changes": [
+          "本轮动因：1.3.9 新增的三枚播放栏探针把**栏内第一次**纳入判定后，渲染图上立刻暴露出两处既有缺陷 —— ① 进度条的**实宽是 270.5 而不是 380**；② 中段尾随时间与右段控件**横向重叠**（DOM 实测过渡控件占 x1080.8–1388，压住时间 x1088.5–1172）。两处都不是本轮引入，而是「播放栏内部此前无闸门」的延续，且**都不被 1.3.9 的三枚探针覆盖** —— `playbarPlay` 是 x640–710、`playbarPill` 是 x1310–1400，x1060–1194 这段一个都不含。",
+          "**订正 `geometry.playbar.mid.progressWidth` 的作用域**：380 是**进度条（槽）自身**的宽，时间标签在它**之外**。设计稿实测：条带 x792–1171（宽 380）、时间 x1196–1265（宽 70），两者之间 25px 空隙。1.3.9 的实现把 `w-[min(380px,26.5vw)]` 落在「条 + 时间」的外层 flex 容器上，于是 `flex-1` 的条被时间标签挤成 `380 − 26 − 83.5 = 270.5`（DOM 实测）。本轮把宽度下移到 Slider 本体，外层只留左边距。",
+          "**进度条右端是「页不变」锚点，补一条横向判定**：设计稿第 02/03/04/05/06/09/13 页在 y=856 行、x700–1200 窗口、阈值 30 下**一律**测得单条实心横带 `(792, 1172)`（xruns 记的是「起 + 末 + 1」，即像素 792–1171、宽 380）—— 这是本真值里第一条**横向**硬量。渲染侧因上述缺陷测得 `(792, 1062)`，短 110px。故 verify.py 新增 `PLAYBAR_H_PROBES`（横向实心带，起点与终点各 ±2px），把「宽度类」缺陷纳入闸门：**原有探针只测纵向带，宽度错了照样全绿** —— 这正是它能存活至今的原因。**按屏启用**（`screens[].playbarProgress.enabled`，与栏内探针同一纪律，不把窗口调宽了事）：第 07 屏设计页（第 8 页）的壳层本就不同（顶栏 65 / 播放栏 81），栏内**没有**标准进度条，设计侧实测为空、无可比对象；第 12 屏 `/mini-player` 属 P7、壳层尚未重建（顶栏实测 159）。两屏均登记 `enabled: false` 并写明理由，其余 9 个标准屏启用。实测覆盖面比栏内探针更宽：探针不依赖夹具提供的「正在播放」内容（进度槽底是数据无关的满宽实心块），故第 03–06/08/09/11 屏在壳层尚未重建的情况下也一并被这条口径覆盖。",
+          "**新增 `geometry.playbar.deferred`（过渡控件簇）**：1.3.9 登记的 `right.segmentDeferral`（右段 6 枚对设计 1 枚药丸）在稿面上的实际后果就是上述重叠，本轮给出可判定的排布。推导：右段可用宽只剩 `1440 − 52（药丸右内距）− 89（药丸）− 中段右缘`，**设计只留得下药丸本身**，把 5 枚留在右段必然压住中段；唯一未被设计占用、且不属于中段与药丸的横向区带是**左段与中段之间** —— 左段最右可达 `32 + 100 + 21 + 300 = 453`（`metaMaxWidth` 的成文用途即「防长标题撞进中段」），中段原点 603 ⇒ 设计预留的缓冲是 150。排布取该缓冲：簇右缘贴中段原点左侧、两侧各留 12 ⇒ 可用 126，取 **5 × 22 + 4 × 4 = 126**（22 复用 `--biu-playbar-transport-icon`，与中段传输按钮同尺寸）。恒等式 `453 + 12 + 126 + 12 = 603 ≡ 中段原点`，**不含字体宽度、不含业务数据**，故可作为纯令牌断言（见 `tests/design-tokens.test.ts`）。",
+          "**新增探针 `playbarGap`（x1176–1194）**：设计在这一段是空白 —— 第 02/03 页实测窗口内 **max 15.0、零墨迹列**；1.3.9 的渲染实测 **17 列有墨迹、max 204**（第三枚过渡控件的图标落在 x1177.3–1193.8）。这一枚同时守两件事：条若短了就**把时间推进此窗**，控件若右侵了**也会落进此窗**。阈值 20 高于播放栏底（≈14.3）、低于任何文字/图标，设计侧 zero-band、渲染侧应为 zero-band。",
+          "**一处工具修复**（`tools/design-fidelity/dom-probe.mjs`）：此前既未加 `--no-sandbox`，也未固定视口。前者在本机是必需的（受限环境下 Chrome 起不来沙箱，标签页建不起调试 WebSocket，脚本只打印一行 `Detected unsettled top-level await`，看起来像脚本 bug）；后者使 `innerHeight` 只有 813，**所有 y 坐标整体上移 87**，DOM 读数无法与 verify.py 的 1440×900 画布直接对照。本轮补 `--no-sandbox` 与 `Emulation.setDeviceMetricsOverride(1440×900)` 并 reload。",
+          "**一处观察，不改**：左段第三组（分集 / 收藏 / 更多）在本屏夹具下渲染为空，但外层 `gap: 21px` 仍然生效 ⇒ 左段实测 394.2 而内容止于 405.3（`100 + 21 + 252.2 + 21 + 0`）。无视觉后果（该 21px 里没有任何墨迹），但会让「左段宽度」这一读数不自洽，故在 `geometry.playbar.left.rule` 标注。**试过改为条件渲染，无效**：三个条件里 `!sourceIsLocal` 为真，`<MusicMoreMenu />` 因此仍被创建 —— 而 React 元素即使最终渲染 `null` 也是真值，父级无从预知。要让空组不挂 gap，得先让 `MusicMoreMenu` 对外暴露「是否会渲染」的判据（如 `useCanShowMoreMenu()`），属独立改动，本轮不做。"
+        ]
+      },
+      {
+        "version": "1.3.9",
+        "at": "2026-09-27",
+        "phase": "P3",
+        "changes": [
+          "P3 屏 02 播放栏轮：**播放栏此前只有一条登记（`geometry.playbar.height = 88px`）**，内部构成全部不在真值里 —— 于是这些值既无处可断言、也就从未被闸门看过。本轮补齐 `geometry.playbar` 的左/中/右三段与 `material.playbar`，并把播放栏的 16 个几何常量进 `tokenMap`。补齐的动因是比对暴露出的三类落差（左段整段不渲染、中段播放键是蓝色而非白色圆片、右段 6 枚控件对 1 枚药丸），它们**一个都不在既有探针覆盖范围内**：`playbar` 探针是 `(64, 200, 795, 900, 12)`，只在 x64–200 这条窄带里读播放栏的**上缘 y**，判的是「播放栏存在且高 88」；栏内一律看不见。",
+          "播放栏三个设计常量与原型 `assets/app.css` 的 `.pb-*` 存在分歧，一律**以设计稿为准**、原型值留档：① **封面 100 × 56**（原型 `.pb-cover` 为 56 × 56）。实测：设计稿第 3 页封面为 x32–131 / y828–883，100 × 56；且 100 × 56 正是本项目已登记的 L1 硬锚点「缩略图 100×56」—— 播放栏封面与列表缩略图同比例（16:9），是设计稿的有意选择（B 站内容主体是视频）。② **左内距 32**（原型 `.pb-left { left: 36px }`）。实测封面左缘 x=32。③ **右内距 52**（原型 `.pb-right { right: 22px }`）。实测药丸右缘 x=1388 ⇒ 1440 − 1389 = 51 ≈ 52；跨第 02/03/05/09/13 五页复核，药丸上下缘恒为 y838–874（高 36）、右缘恒为 1388，无页例外、且药丸右侧到画布边缘之间**没有任何暗墨迹**（阈值扫到 15.5 仍为空）。注意这条**推翻了原实现的一处理由**：`playbar/index.tsx` 曾写「右段贴右 22px —— 这个值刻意与顶栏右内边距相同，两栏右缘对齐」，而设计稿里顶栏右内距实测 ≈ 24（头像右缘 x1415）、播放栏 ≈ 51 —— 两者本就不对齐。",
+          "播放栏材质登记为 `material.playbar`：底板 **`rgb(var(--biu-surface-player) / 86%)`**、背景模糊 20（复用 `--biu-blur-glass`）、上缘描边 1px 白 6%（`--biu-border-weak`）。底板的写法经过一轮订正：先曾打算新开整值令牌 `--c-playbar-glass: rgb(14 14 17 / 86%)`，随后查得 `src/app.css` 的 `@utility playbar-bg` 早已写成 `rgb(var(--biu-surface-player) / 86%)` —— **取值本就正确**，86% 只是 `--biu-surface-player`（即 `--c-playbar-rgb`）叠加在自身色相上的透明度，不是新颜色。故不新开令牌，`surfaceToken` 记 `--biu-surface-player`，由单测直接钉住 `@utility playbar-bg` 的声明逐字一致。底板取值与设计稿吻合：设计稿播放栏底亮度 14.22，而 `#0E0E11` 的亮度恰为 14.22（`--c-playbar-rgb`）。**进度槽取白 18% 而非原型 `.pb-progress` 的 22%**：设计稿实测槽底 RGB(57,57,59) over 14.2 ⇒ 17.8%，且 18% 档在色板上**已有语义槽** `--c-veil-18`（登记的用途就是「进度槽（行内 / 迷你）」）。**队列药丸取白 10%、无描边**：设计稿实测药丸底 RGB(38,38,41) ⇒ 9.9%，且上下缘两行（0.086 / 0.091）与底（0.099）无差别 ⇒ 无可见描边；原型 `.pb-queue` 的白 14% 底 + 12% 描边为原型档。药丸底因此落在 `--biu-surface-hover`（白 10%）上，与搜索位同档但角色不同（一为可点药丸、一为输入框）。",
+          "记一条**度量告诫**（与 1.3.2 的「拉丁/数字墨迹宽度不可信」同源，此处是它在布局上的表现）：播放栏副行的「文案 → 质量徽标」间距在第 3 页实测 72px、第 2 页实测 24px，**同一套模板的两页互不相等**，说明该间距在稿面上是手工摆放、不是可读出的常量。故此处取原型 `.pb-sub { gap: 10px }` 这一**成文**值（原型是唯一给出数字的地方），不按任一页的墨迹反推。同理，队列药丸的**宽度**（88）依赖文字宽度，受 PDF 字体替换影响（同高但稳定窄 0.85–0.93），不作为规格；药丸的 `padding: 0 16 / gap: 8` 取原型成文值，只有**右缘位置**（与文字无关）用于反解右内距。",
+          "中段恢复设计稿的原点 `left: calc(50% - 117px)`。原实现改为「真正的水平居中」，理由是「该偏移未登记进 spec-lock」——本轮登记后该理由不再成立。实测原型式精确复现设计稿：中段起点 603 ⇒ 上一首 603–625、播放键 648–695（48 × 48）、下一首 720–742、进度条 792–1171、时间文本 1197–1264，与设计稿逐项吻合。**进度条宽度取 380**（原型 `.pb-progress { width: 392px }`）：设计稿实测条带 x792–1171 = 380，左缘 792 与「中段起点 603 + transport 136 + margin-left 53」恰好一致 —— 左缘相同而右缘差 12px，说明偏差在宽度而非起点，故按设计稿取 380。**时间取单枚尾随标签**（原型 `.pb-time`：`margin-left: 14`、13px、`--c-text-2`、tabular-nums），而实现原为进度条两侧各一枚 11px 三级文字 —— 设计稿第 3 页的时间墨迹 x1197–1264 是**一段**，不是两段。",
+          "**右段控件的处置是登记为待收窄，不是本轮收窄**：设计稿 12 页的播放栏右段**恒为一枚「队列 · N」药丸**（第 11 页为沉浸态、无播放栏），而实现侧有 6 枚（播放模式 / 下载 / 抽屉入口 / 队列 / 音量 / 倍速）。不能直接删 —— 重构方案 §5.4 对该组组件的规定是「**保留能力**，外观按播放栏 / 沉浸态令牌重绘」，且 §6 P3 出口标准要求能力不得退化。被收窄的控件已有明确目的地：施工矩阵 §10 第 6 条「控制带左为 `np-source`，中为 transport，右为 `np-mode` + 音量等」—— 即 `/now-playing` 沉浸态控制带，属 **P5** 交付物。故本轮只对齐药丸自身（材质 + 几何），其余 5 枚的去留登记在 `geometry.playbar.right.segmentDeferral`，承接到 P5。",
+          "**令牌名勘误**：本修订初稿在 `geometry.playbar` 的散文里把文字色阶写成 `--biu-text-2` / `--biu-text-4` —— 这两个名字在代码侧**不存在**（实为 `--biu-text-secondary` = `--c-text-2-rgb`、`--biu-text-quaternary` = `--c-text-4-rgb`）。真值里的令牌名必须与实际定义的令牌逐一可核对，否则读者按真值去查令牌会查无此物。已订正 `left.sub` / `mid.time` / `right.pillLabel` 三处。",
+          "播放栏左段补三点登记：① **副行 → 质量徽标间距 10px**（`--biu-playbar-sub-gap`）。这是本轮唯一一处「取原型成文值而非设计稿实测」的取值，理由已在修订里记为度量告诫（两页 72 / 24 不等，不可读作常量）—— 但没有令牌就没法定值，故补一枚。② **徽标文案「无损 30251」/「杜比 30250」（名称 + 音质码）**：这不是设计 vs 原型的分歧，而是**实现缺口** —— 原型与设计稿第 2/3 页逐字一致，而原实现只渲染「无损」两字，徽标因此比设计稿窄约 32px。③ 封面位是**占位素材**（设计稿第 03/04/09/13 页实测为纯平色 `#282932`，4700 像素零方差），取值归夹具的 `playbarCover`，不进色板。",
+          "播放栏右段药丸**不带图标**（第 4 处设计 vs 原型分歧，登记为 `right.pillIcon`）。实测药丸宽 89 全是文字与内距：若沿用原型 `.pb-queue` 的 `svg.i` 列表图标（15px）加 8px 间隔，宽度需 ≈ 105。这与「无描边」是同一次测量的两面（同一行扫描里，药丸底自 x1303 起、上下缘与底同亮度）。"
+        ]
+      },
       {
         "version": "1.3.8",
         "at": "2026-09-27",
@@ -34,8 +64,8 @@
         "at": "2026-09-27",
         "phase": "P3",
         "changes": [
-          "P3 屏 02 收口轮。顶栏搜索位的 `Ctrl K` 键帽**在 DOM 里存在、在画面上完全不可见** —— 这是一处实现缺陷，不是设计差异：`TopBarSearch` 把键帽经 HeroUI `Input` 的 `endContent` 口传入，而 `Input` 在 `isClearable` 下会把 `endContent` **嵌进清除按钮**（`<button class=\"… opacity-0 … absolute end-3 z-10\">`）。输入框为空时清除按钮 `opacity: 0`，键帽随之整块消失。CDP 实测：键帽盒 x1267.5 y24.7 54.5×21.6 存在于 DOM，但其父节点是 opacity 0 的清除按钮；像素实测渲染侧 x1255–1335 逐列恒为 61（输入框底色），设计稿同区间为键帽底 70 + 文字峰值 153。修法：键帽改为 `TopBarSearch` 自己绝对定位在根容器上（不再经 `endContent`），并在输入框右侧恒定预留 62px 让位 —— 有值时那处归 HeroUI 的清除按钮，无值时归键帽。" ,
-          "补录 material.searchKeycap：顶栏快捷键键帽底 = **白 12%**（`--biu-veil-12`）。原实现用 `--biu-veil-28`（取自原型 `.search kbd { background: rgba(255,255,255,0.28) }`）—— 这是原型—设计稿的第 9 处分歧。取证：以「键帽底 → 键帽内底」的递进不透明度实测，设计稿第 02/03/04/05/06/09/10/12/13 页**一致为 11.9%**（第 08 页 13.1% 为圆角处的读数失真），无一页出现 28%。改后用 12% 时键帽对输入框的局部反差为 +23（设计稿 +25），而 28% 会给到 +54。`veil-28` 本档自身保留（取值不动，供原型色板对照），但已无应用侧消费者；`palette.overlay.veil28.use` 随之改写。" ,
+          "P3 屏 02 收口轮。顶栏搜索位的 `Ctrl K` 键帽**在 DOM 里存在、在画面上完全不可见** —— 这是一处实现缺陷，不是设计差异：`TopBarSearch` 把键帽经 HeroUI `Input` 的 `endContent` 口传入，而 `Input` 在 `isClearable` 下会把 `endContent` **嵌进清除按钮**（`<button class=\"… opacity-0 … absolute end-3 z-10\">`）。输入框为空时清除按钮 `opacity: 0`，键帽随之整块消失。CDP 实测：键帽盒 x1267.5 y24.7 54.5×21.6 存在于 DOM，但其父节点是 opacity 0 的清除按钮；像素实测渲染侧 x1255–1335 逐列恒为 61（输入框底色），设计稿同区间为键帽底 70 + 文字峰值 153。修法：键帽改为 `TopBarSearch` 自己绝对定位在根容器上（不再经 `endContent`），并在输入框右侧恒定预留 62px 让位 —— 有值时那处归 HeroUI 的清除按钮，无值时归键帽。",
+          "补录 material.searchKeycap：顶栏快捷键键帽底 = **白 12%**（`--biu-veil-12`）。原实现用 `--biu-veil-28`（取自原型 `.search kbd { background: rgba(255,255,255,0.28) }`）—— 这是原型—设计稿的第 9 处分歧。取证：以「键帽底 → 键帽内底」的递进不透明度实测，设计稿第 02/03/04/05/06/09/10/12/13 页**一致为 11.9%**（第 08 页 13.1% 为圆角处的读数失真），无一页出现 28%。改后用 12% 时键帽对输入框的局部反差为 +23（设计稿 +25），而 28% 会给到 +54。`veil-28` 本档自身保留（取值不动，供原型色板对照），但已无应用侧消费者；`palette.overlay.veil28.use` 随之改写。",
           "勘察记录（本轮**只登记不落地**，属顶栏轮的取证）：① 搜索占位**逐页不同** —— 第 03 页「搜索收藏夹与合集」、第 04 页「搜索标题 / UP 主名称」、其余含搜索位的页均为「搜索音乐视频或创作者」；`globalChrome.search` 现只有单值占位，需补 `placeholderByRoute`。② 搜索位底色设计稿一致为**白 9.9%**（顶栏底 22.1 → 框底 45.1，全页一致），而 `--biu-surface-field` 是 17%。**不能直接改该令牌**：它还喂 `.pill--neutral`，而同一页 neutral 药丸的设计实测为**白 17.8%**（画布底 8.1 → 药丸底 51.9）—— 两个消费者需要不同的值，正确做法是把搜索位拆出独立令牌（如 `--biu-surface-field-search` = 白 10%）。③ 播放栏右段设计稿**只有一枚「队列 · N」芯片**（第 03 页 x≈1322–1420，无图标前缀），没有歌词 / 列表 / 音量 / 倍速控件，也没有「1x」；应用侧多出四个控件。",
           "本轮判定：屏 02 的 `--target app` 比对在改前改后均 PASS，L3 由 11.22 保持（键帽面积约 1.3k px²，量级不足以撼动整屏均值）。键帽修复的价值不在闸门分数，而在「设计稿画了、代码也声明了『提示可见就必须可用』，实际却不可见」——这类缺陷 jsdom 与像素闸门都抓不到，只能靠 DOM 探针。",
           "补录 geometry.dialog.staticPlacement / contentBands / actionButton：下载弹层的静态位与内部四行墨迹带。前三行（标题 / 说明 / 音质行）带起点差 +1 / +2 / 0，已在 L2 内；右下操作按钮**未落地** —— 设计稿 136 × 32、下内距 14、右内距 21，实现 118 × 36 / 20 / 24。本轮不改：`DialogAction` 为弹出态与静态态共用，改动会连带改掉所有尚未比对的弹层。`geometry.dialog.contentBands` 同时是本轮弹层内容偏移（`pt` 22 → 17、行距 2 → 5）的登记依据。",
@@ -138,14 +168,8 @@
     }
   },
   "canvas": {
-    "reference": [
-      1440,
-      900
-    ],
-    "sourcePixels": [
-      2200,
-      1375
-    ],
+    "reference": [1440, 900],
+    "sourcePixels": [2200, 1375],
     "sourceToReferenceScale": 0.654545,
     "stage": "浏览器窗口 ≥ 1440 × 900 时按 1:1 渲染；小于时不得缩放界面（与原型 .stage 等比缩放方案不同，见方案 §2.3）",
     "artboardNote": "设计稿页为白底文档页内嵌圆角画板，四角约 16 CSS px 圆角。以 H1 左缘实测 66 与画板内留白 64 对齐，残差 ≤ 2 px，落在 band 容差内。"
@@ -393,30 +417,17 @@
     "composite": {
       "appBackground": {
         "token": "--biu-app-bg",
-        "parts": [
-          "#08080A",
-          "rgba(255,255,255,0.022)",
-          "rgba(90,140,255,0.03)"
-        ],
+        "parts": ["#08080A", "rgba(255,255,255,0.022)", "rgba(90,140,255,0.03)"],
         "rule": "两层极弱径向环境光叠在底板色上；不得替换为纯色 #08080A。"
       },
       "topbarBackground": {
         "token": "--biu-topbar-bg",
-        "parts": [
-          "#1A1A1C",
-          "#161618",
-          "#131315"
-        ],
+        "parts": ["#1A1A1C", "#161618", "#131315"],
         "rule": "顶栏底是纵向合成渐变，不是纯色 #161618。停止点 0% / 46% / 100%。"
       },
       "immersiveBackground": {
         "token": "--biu-immersive-bg",
-        "parts": [
-          "#06060B",
-          "rgba(30,114,166,0.49)",
-          "rgba(108,78,158,0.47)",
-          "rgba(55,49,90,0.6)"
-        ],
+        "parts": ["#06060B", "rgba(30,114,166,0.49)", "rgba(108,78,158,0.47)", "rgba(55,49,90,0.6)"],
         "rule": "左缘竖向紫雾（峰值 y≈43%）+ 顶部横向冷蓝雾；右上与右下是纯暗底，**不存在右下蓝光**。参数为 14 个采样点的数值拟合结果（平均色差 1.65）。若视觉上有疑虑，以 run.sh --screen 10-now-playing 的采样色差为准。"
       }
     }
@@ -437,12 +448,7 @@
     },
     "scrimVeil": {
       "token": "--biu-scrim-veil",
-      "stops": [
-        "rgba(0,0,0,0.92)",
-        "rgba(0,0,0,0.62)",
-        "rgba(0,0,0,0.26)",
-        "rgba(0,0,0,0)"
-      ],
+      "stops": ["rgba(0,0,0,0.92)", "rgba(0,0,0,0.62)", "rgba(0,0,0,0.26)", "rgba(0,0,0,0)"],
       "rule": "底部渐隐：0.92 → 0.62(38%) → 0.26(72%) → 0(100%)"
     },
     "badge": {
@@ -488,6 +494,18 @@
       "rule": "行内（曲目行）操作带（P3 屏 02 补录）。设计稿第 3 页第 04 行实测：带子 bbox x604–812 × y591–632（210 × 42，两端全圆角），圆片填充 >=55 的横向区间为 612–643 / 652–683 / 692–723 / 732–763 / 772–803 —— 五枚**等大 34px**、间距 6、水平内边距 8（210 = 5×34 + 4×6 + 2×8）；纵向 42 = 34 + 2×4，故内边距 4。**与原型的差异（原型—设计稿第 5 处分歧）**：原型 `.track-actions` 是「38px 反色主操作 + `.sep` 分隔线 + 5 枚 30px」，设计稿是「五枚等大 34px、无分隔线、无主操作反色档」，且动作集合少一枚 —— 设计稿只有 播放 / 下一首 / 入队 / 收藏 / 下载，没有「上一首」。带子与圆片的亮度也定死了材质：带子底 43（= veil-14 叠在行底 8.33 上）、描边峰 81（≈ veil-18 叠在带底上）、圆片填充 69–71 —— **圆片自带填充，不是透明的**，否则会读成「图标浮在带子上」而不是「五枚圆片」。圆片这一层的不透明度用同一叠加模型**从像素反解**：13% 叠在带底 42–43 上得 69.7–70.5、14% 得 71.8–72.6，实测 69–71 更贴 13%，故 `circleFill` 取 0.13、`circleFillToken` 记 `--biu-surface-sunken`（13% 档在叠加梯度里由语义槽承接，见 `palette.overlay.rule`；`veil-14` 仍是**带子底**的令牌）。1.3.4 起曾把圆片一并记作 veil-14（1.3.6 沿用）—— 那是由「带子取 14%」外推得到的推断值，而非像素反解值；1.3.7 按反解改正。",
       "horizontalAnchor": "带子右缘落在画布 x812；行右缘 x1376，故右偏移 = 1376 − 812 = 564 = col4(220) + col5(152) + listPadRight(40) + 152px。这个 152px 是画布实测的剩余量，原型 `.track-actions { right: 24px }`（贴行右缘）与设计稿不符。",
       "visibility": "设计稿第 3 页只在第 04 行露出（该行没有当前态高亮，见 geometry.list.currentStateNote）"
+    },
+    "playbar": {
+      "surface": "rgb(var(--biu-surface-player) / 86%)",
+      "surfaceToken": "--biu-surface-player",
+      "surfaceRule": "底板不是新色 —— 是 `--biu-surface-player`（即 `--c-playbar-rgb` = 14 14 17）加 86% 不透明度，好让内容从下方滚过时透出（配合背景模糊）。设计稿播放栏底亮度实测 14.22，而 `#0E0E11` 的亮度恰为 14.22，故色相与取值都吻合。实现落在 `src/app.css` 的 `@utility playbar-bg`，单测直接钉住该条声明。",
+      "blur": "20px（复用 `--biu-blur-glass`）",
+      "topBorder": "1px rgba(255,255,255,0.06)（`--biu-border-weak`）",
+      "progressTrack": "rgba(255,255,255,0.18)",
+      "progressTrackToken": "--biu-veil-18",
+      "queuePillSurface": "rgba(255,255,255,0.10)",
+      "queuePillSurfaceToken": "--biu-surface-hover",
+      "rule": "播放栏材质（1.3.9 补录）。**进度槽 18%**：设计稿实测槽底 RGB(57,57,59) over 14.2 ⇒ 17.8%，且 18% 档在色板上已有语义槽 `--c-veil-18`（登记用途即「进度槽（行内 / 迷你）」），原型 `.pb-progress` 的 22% 是原型档。**队列药丸底 10% 且无描边**：设计稿实测药丸底 RGB(38,38,41) ⇒ 9.9%；上下缘两行（0.086 / 0.091）与底（0.099）无差别，说明**没有可见描边** —— 原型 `.pb-queue` 的白 14% 底 + 白 12% 描边是原型档，而原实现用了 18% 的 `--biu-glass-border`，与设计稿不符。"
     },
     "modal": {
       "surface": "rgba(28,28,32,0.86)",
@@ -601,7 +619,75 @@
       "height": "71px"
     },
     "playbar": {
-      "height": "88px"
+      "height": "88px",
+      "rule": "播放栏三段均为**绝对定位**：左段贴左、中段按设计稿原点、右段贴右。三段互不参与流式排布，各自的宽度由内容决定。",
+      "left": {
+        "offset": "32px",
+        "cover": "100 × 56",
+        "coverRadius": "8px",
+        "metaGap": "21px",
+        "metaMaxWidth": "300px",
+        "titleGap": "5px",
+        "rule": "封面 100 × 56 —— 与列表缩略图同比例（16:9，见 geometry.list.artWidth / artHeight），不是正方形。原型 `.pb-cover` 的 56 × 56 是原型档。封面左缘设计稿实测 x=32（原型 `.pb-left` 为 36）。封面 → 文案块间距 21（原型 `.pb-left { gap: 16px }`，设计稿实测封面右缘 131 → 文案墨迹左缘 153 ⇒ 21）。文案块 `max-width: 300px`（原型成文值，防长标题撞进中段）。标题 → 副行 5px（原型 `.pb-sub { margin-top: 5px }`）。 另：左段第三组（分集 / 收藏 / 更多）三个条件不成立时渲染为空，但外层 `gap` 仍生效 ⇒ 左段实测宽 394.2（= 100 + 21 + 252.2 + 21 + 0）而内容止于 405.3。本轮**不改**（条件渲染无效：`!sourceIsLocal` 为真时 `<MusicMoreMenu />` 仍被创建，而 React 元素即使渲染 `null` 也是真值，父级无从预知）；该 21px 内无墨迹、无视觉后果，仅影响「左段宽度」这一读数的自洽性。",
+        "title": "「《雨落长街》· 全专上线」——单行，17px / 600（`typography.scale` 的 `--biu-type-list-title` 同阶），溢出省略",
+        "sub": "「卧室音乐计划 · 新碟 Banner」——13px，`--biu-text-quaternary`；质量徽标紧随其后（间距见 `subGap`），徽标几何同 `.tag`（高 22 / 左右内边距 8 / 圆角 6 / 字号 12 / 字重 500 / `quality` 变体）",
+        "subGap": "10px",
+        "subGapRule": "副行 → 质量徽标的间距。**取原型的成文值 10px，不按任一页的墨迹反推** —— 设计稿第 3 页实测 72、第 2 页实测 24，同一套模板的两页互不相等，说明该间距在稿面上是手工摆放、不是可读出的常量（与 1.3.2 的「拉丁/数字墨迹宽度不可信」同源，此处是它在布局上的表现）。原型 `.pb-sub { gap: 10px }` 是唯一给出数字的地方。",
+        "badgeLabel": "「无损 30251」（无损）/「杜比 30250」（杜比）—— **名称 + 音质码**，不是单独的「无损」两字。设计稿第 2/3 页与原型 `02-playlist-detail.html` 的 `<span class=\"tag tag--quality\">无损 30251</span>` 逐字一致；30250/30251 也是 `src/common/constants/audio.tsx` 里 `audioQualitySort` 的既有取值。实测徽标高 22（y858–879）、宽 72（第 02/03 页同值），底色 RGB(18,38,59) over 栏底 14.2。",
+        "coverArt": "封面位是**占位素材**，不是设计令牌。设计稿第 03/04/09/13 页的封面实测为**纯平色 #282932**（窗口 x35–129 / y831–881 共 4700 像素，标准差 0.00），第 02/05 页为渐变（标准差 ≈ 19.8）—— 与列表缩略图（标准差 15–20）同属「具体作品拿不到」的可变项，故取值落在夹具 `placeholder-art.*` 的 `playbarCover`，不进色板。",
+        "badgeGapRule": "徽标与副行同一行、垂直居中于副行（徽标中心 y868.5，播放栏中心 856），不是整段居中 —— 故徽标在 `pb-meta` 的副行 flex 行内，不单独定位。"
+      },
+      "mid": {
+        "origin": "left: calc(50% - 117px)",
+        "originOffset": "117px",
+        "transportGap": "22px",
+        "transportIcon": "22px",
+        "playButton": "48 × 48",
+        "playButtonFill": "纯白（`--c-text-rgb`，色板登记的用途即「主文字与播放键」），墨色 `--c-inverse-ink`",
+        "progressMarginLeft": "53px",
+        "progressWidth": "380px",
+        "progressHeight": "4px",
+        "progressRadius": "2px",
+        "progressTrack": "白 18%（`--biu-veil-18`，色板登记的用途即「进度槽」）",
+        "progressFill": "`--biu-accent`",
+        "timeMarginLeft": "26px",
+        "time": "单枚尾随标签「01:22 / 03:48」，13px、`--biu-text-secondary`、tabular-nums",
+        "rule": "原点取设计稿实测（原型同式）。`calc(50% - 117px)` 在 1440 下 = 603，此时上一首 603–625、播放键 648–695、下一首 720–742、进度条 792–1171、时间 1197–1264，与设计稿逐项吻合。进度条宽 380（原型 `.pb-progress { width: 392px }`）；实测左缘 792 与原型一致、右缘 1171 差 12px，故偏差在宽度，取设计稿值。窗口收窄时进度条按 `min(380px, 26.5vw)` 弹性收缩，按钮不被压缩。",
+        "progressWidthScope": "**条自身**的宽，**不含**尾随时间标签。设计稿实测「条」x792–1171（宽 380），时间在它之外 x1196–1265，两者相隔 25px。1.3.9 的实现把该宽度落在「条 + 时间」的外层 flex 上（DOM 实测外层 w=380、条被挤到 270.5），已订正 —— 宽度只允许落在 Slider 本体。",
+        "horizontalProbe": "y=856 行 / x700–1200 窗口 / 阈值 30，取「横向实心带」。设计稿第 02/03/04/05/06/09/13 页**一律**为 `(792, 1171)`（验证器 `PLAYBAR_H_PROBES.playbarProgress`）。这是真值里第一条**横向**硬量：原有探针只取纵向带，进度条宽 270.5 与 380 在纵向上完全同形，因此宽度错了也全绿。",
+        "timeScope": "单枚尾随标签，位于条之外。其**起点**由条宽与 `timeMarginLeft` 唯一决定（792 + 380 + 26 = 1198），故可作 `playbarGap` 的隐含锚点；其**终点**受字体墨迹宽度影响（真值已登记第 1.3.2 条：设计稿的数字墨迹系统性偏窄），不设终点约束。"
+      },
+      "right": {
+        "offset": "52px",
+        "gap": "12px",
+        "pillHeight": "36px（复用 `--biu-layout-pill-h`）",
+        "pillPaddingInline": "16px",
+        "pillGap": "8px",
+        "pillLabel": "「队列 · {n}」（**无图标**），13px、`--biu-text-secondary`、tabular-nums；`{n}` 是**当前播放队列长度**，不是收藏或歌单数量",
+        "rule": "药丸贴右 52px。实测药丸右缘 x=1388 ⇒ 1440 − 1389 = 51 ≈ 52；第 02/03/05/09/13 页一致，且药丸右侧无任何暗墨迹。**注意这与顶栏右内距（实测 ≈ 24）不相等** —— 两者在稿面上本就不对齐。 另有一处**与原型不同**：原型 `.pb-queue` 的图标被设计稿舍弃（见 `pillIcon`），故药丸宽度只有文字（原型 88 是「图标 15 + 间隔 8 + 文字」的合计，设计稿的 89 全是文字与内距）。",
+        "segmentDeferral": {
+          "design": "右段 12 页恒为**一枚**药丸（第 11 页沉浸态无播放栏）",
+          "current": "实现侧 6 枚：播放模式 / 下载 / 播放列表抽屉入口 / 队列 / 音量 / 倍速",
+          "phase": "P5",
+          "destination": "沉浸态 `/now-playing` 控制带右段（施工矩阵 §10 第 6 条：控制带左为 `np-source`、中为 transport、右为 `np-mode` + 音量等）",
+          "reason": "不能直接删除 —— 重构方案 §5.4 规定该组组件「保留能力、只改外观」，§6 P3 出口标准要求能力不得退化；而这 5 枚控件的目的地（`/now-playing` 控制带）是 P5 交付物，此刻尚无落点。故本轮只对齐药丸自身，去留在 P5 一并完成。",
+          "placement": "**不停在右段**：改挂到 `geometry.playbar.deferred` —— 即左段与中段之间的设计预留缓冲。右段只留设计钉住的那一枚药丸。"
+        },
+        "pillIcon": "无。设计稿的药丸**只有文字**，不含图标；原型 `.pb-queue` 里的 `<svg class=\"i\"><use href=\"#i-list\"></use></svg>` 未被设计稿采用。实测：药丸 x1299–1388（宽 89）、文字墨迹 x1314–1375；y=845 行扫描显示药丸底自 x1303 起、底色 RGB(38,38,41) ⇒ 白 9.9%，且左/右内距各约 16 与文字之间**没有任何独立墨迹**（若带 15px 图标 + 8px 间隔，药丸需宽 ≈ 105 而非实测的 89）。",
+        "gapDormant": "右段现只剩一枚药丸，本间距**当前无实现消费**（保留登记：药丸与将来右段新增内容的间隔档位）。过渡控件簇用的是自己的 `geometry.playbar.deferred.gap`（4px，比 12 窄 —— 簇要在 126 里放 5 枚）。"
+      },
+      "deferred": {
+        "members": "5 枚：播放模式 / 下载 / 播放列表抽屉入口（过渡期的第二队列入口，`/queue` 路由上线后删）/ 音量 / 倍速",
+        "gutter": "12px",
+        "gap": "4px",
+        "anchor": "簇**右缘** = 中段原点 − 12px。CSS 即 `right: calc(50% + var(--biu-playbar-mid-offset) + var(--biu-playbar-deferred-gutter))`。",
+        "button": "22px（复用 `--biu-playbar-transport-icon`，与中段传输按钮同尺寸，不新造档位）",
+        "width": "126px（5 × 22 + 4 × 4）",
+        "budgetRule": "左段最右可达 `inset-l 32 + cover 100 + metaGap 21 + metaMaxWidth 300 = 453`；簇左缘 `603 − 12 − 126 = 465`，与 453 相隔 12；簇右缘 `603 − 12 = 591`，与中段原点相隔 12。即 `453 + 12 + 126 + 12 = 603 ≡ 中段原点`，设计预留的整段缓冲被**恰好**占满、两侧各余 12。该恒等式只由令牌构成（不含字体宽度、不含业务数据），故可直接断言。",
+        "phase": "P5",
+        "destination": "沉浸态 `/now-playing` 控制带右段（施工矩阵 §10 第 6 条：控制带左为 `np-source`、中为 transport、右为 `np-mode` + 音量等）",
+        "reason": "为什么不停在右段：右段的可用宽只剩 `1440 − 52 − 89 − 中段右缘`，**设计只留得下药丸本身**；1.3.9 把 5 枚留在右段的实测后果是占 x1080.8–1388、压住中段时间 x1088.5–1172。为什么不去右段的右边：药丸右缘由设计钉在 x1388（右内距 52，5 页同值），右侧无余量。为什么是 22px 而非 32px（`IconButton` 的 `size=\"sm\"`）：32 档下 5 枚需 `5×32 + 4×g`，即使 g=0 也 160 > 126，必然越界；22 恰是中段传输按钮的既有尺寸，不是新造值。去留与整体收窄在 P5 一并完成（方案 §5.4「保留能力、只改外观」；§6 要求能力不退化）。"
+      }
     },
     "gutter": "64px",
     "list": {
@@ -644,10 +730,7 @@
       "gridGap": "47px",
       "progressY": 700,
       "timesY": 720,
-      "controlsBand": [
-        752,
-        808
-      ],
+      "controlsBand": [752, 808],
       "playButton": "56px",
       "playButtonShape": "56 × 56 圆片"
     },
@@ -668,13 +751,31 @@
       "rule": "浮动弹层固定几何。原型 .modal--download 的 left 752 / top 225 是 1440×900 基准画布下的定位，属静态展示位置，不进入组件几何。",
       "staticPlacement": "画布 left 816 / top 296（= 原型内容区坐标 752/225 加上 gutter 64 与顶栏 71）。像素取证：设计稿第 3 页弹层面板 bbox x816–1375 × y296–447（h152），与 560×153 的登记值在 1px 内吻合。",
       "contentBands": {
-        "design": [[317, 334], [344, 354], [372, 382], [396, 406]],
-        "render": [[318, 333], [346, 358], [372, 384], [398, 410]],
+        "design": [
+          [317, 334],
+          [344, 354],
+          [372, 382],
+          [396, 406]
+        ],
+        "render": [
+          [318, 333],
+          [346, 358],
+          [372, 384],
+          [398, 410]
+        ],
         "note": "弹层内四行墨迹带（标题 / 说明 / 音质行 / 范围行），窗 x832–1360、阈值 75。前三行的带起点差为 +1 / +2 / 0，均在 L2 的 ±2px 内。第四行的渲染侧墨迹高 13 而设计 11，属拉丁/数字墨迹（阈值 75 对「范围：全部 214 首 · 仅已选 12 首 · 跳过已下载」这类含数字的串更敏感），不计入取值。"
       },
       "actionButton": {
-        "design": { "box": "136 × 32", "rightInset": "21px", "bottomInset": "14px" },
-        "render": { "box": "118 × 36", "rightInset": "24px", "bottomInset": "20px" },
+        "design": {
+          "box": "136 × 32",
+          "rightInset": "21px",
+          "bottomInset": "14px"
+        },
+        "render": {
+          "box": "118 × 36",
+          "rightInset": "24px",
+          "bottomInset": "20px"
+        },
         "gap": "**未落地**：设计稿右下操作按钮比实现小 4px 高、宽 18px、且整体更贴右下角（下内距 14 而非 `bottom-5` 的 20、右内距 21 而非 `right-6` 的 24）。取证：设计稿按钮 bbox x1220–1355 × y402–433（阈值 45）；渲染侧 x1233–1350 × y392–427。本轮**不改** —— `DialogAction` 是弹出态与静态态共用的组件，改它会连带改掉所有尚未比对的弹层，属未举证的连带变更。消费方清单已知：批量下载（屏 02）、清理失效、删除确认。"
       }
     },
@@ -712,21 +813,35 @@
       "route": "/library",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 121,
         "leadTop": 197,
         "filterTop": 222,
         "noteTop": 693
       },
-      "variants": [
-        "page-lead--low",
-        "filterbar--tight",
-        "note--low"
-      ],
-      "hasRowPitch": false
+      "variants": ["page-lead--low", "filterbar--tight", "note--low"],
+      "hasRowPitch": false,
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "该屏夹具提供「正在播放」内容（nowPlaying），播放栏渲染为**满态**、与设计稿一致，因此栏内可判。其余屏的播放栏是空态（无正在播放曲目），纳入会误报 —— 这是探针按屏启用的原因，而不是把窗口调宽了事。三枚探针的阈值都高于播放栏底（≈14.3）：封面 20（平色 #282932 ≈ 43.7）、播放键 200（纯白 ≈ 250，而蓝色播放键 ≈ 149 会被判失败 —— 正是要抓的那个缺口）、药丸 20（白 10% 叠在栏底 ≈ 38.4）。三者在设计稿第 02/03 页测得同一组带，见 measured。 第四枚 `playbarGap` 判的是**设计空带**：窗口取在「进度条右端 1171」与「时间起点 1196」之间，设计稿第 02/03 页实测窗口内 max 15.0、零墨迹列，故设计侧为**空带（0 条）**，渲染侧同样应为 0 条。它一箭双雕：进度条若短于 380，时间会被推入此窗；过渡控件若右侵，也会落进此窗（1.3.9 的渲染实测 17 列有墨迹、max 204）。"
+      },
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "02",
@@ -736,20 +851,35 @@
       "route": "/collection/:id",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": [
-        "note",
-        "modal"
-      ],
-      "hasRowPitch": true
+      "variants": ["note", "modal"],
+      "hasRowPitch": true,
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "该屏夹具提供「正在播放」内容（nowPlaying），播放栏渲染为**满态**、与设计稿一致，因此栏内可判。其余屏的播放栏是空态（无正在播放曲目），纳入会误报 —— 这是探针按屏启用的原因，而不是把窗口调宽了事。三枚探针的阈值都高于播放栏底（≈14.3）：封面 20（平色 #282932 ≈ 43.7）、播放键 200（纯白 ≈ 250，而蓝色播放键 ≈ 149 会被判失败 —— 正是要抓的那个缺口）、药丸 20（白 10% 叠在栏底 ≈ 38.4）。三者在设计稿第 02/03 页测得同一组带，见 measured。 第四枚 `playbarGap` 判的是**设计空带**：窗口取在「进度条右端 1171」与「时间起点 1196」之间，设计稿第 02/03 页实测窗口内 max 15.0、零墨迹列，故设计侧为**空带（0 条）**，渲染侧同样应为 0 条。它一箭双雕：进度条若短于 380，时间会被推入此窗；过渡控件若右侵，也会落进此窗（1.3.9 的渲染实测 17 列有墨迹、max 204）。"
+      },
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "03",
@@ -759,20 +889,19 @@
       "route": "/later",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": [
-        "page-head--narrow",
-        "note"
-      ],
-      "hasRowPitch": true
+      "variants": ["page-head--narrow", "note"],
+      "hasRowPitch": true,
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "04",
@@ -782,21 +911,19 @@
       "route": "/local-music",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 121,
         "leadTop": 198,
         "filterTop": 244,
         "noteTop": 694
       },
-      "variants": [
-        "page-lead--low",
-        "filterbar--loose",
-        "note--lower"
-      ],
-      "hasRowPitch": false
+      "variants": ["page-lead--low", "filterbar--loose", "note--lower"],
+      "hasRowPitch": false,
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "05",
@@ -806,20 +933,19 @@
       "route": "/download-list",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": [
-        "note",
-        "tracklist--download"
-      ],
-      "hasRowPitch": true
+      "variants": ["note", "tracklist--download"],
+      "hasRowPitch": true,
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "06",
@@ -829,21 +955,19 @@
       "route": "/search",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 131,
         "leadTop": 197,
         "filterTop": 240,
         "noteTop": 598
       },
-      "variants": [
-        "note--high",
-        "tracklist--search",
-        "section--tight"
-      ],
-      "hasRowPitch": true
+      "variants": ["note--high", "tracklist--search", "section--tight"],
+      "hasRowPitch": true,
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "07",
@@ -853,22 +977,19 @@
       "route": "/",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 111,
         "leadTop": 186,
         "filterTop": 226,
         "noteTop": 698
       },
-      "variants": [
-        "head-main--flat",
-        "section--push",
-        "note--lowest",
-        "topbar-note"
-      ],
-      "hasRowPitch": false
+      "variants": ["head-main--flat", "section--push", "note--lowest", "topbar-note"],
+      "hasRowPitch": false,
+      "playbarProgress": {
+        "enabled": false,
+        "measured": "[]",
+        "reason": "**不启用**：该屏的设计页是第 8 页（发现音乐 · 卡片），其壳层与其余页不同 —— 顶栏实测 65（标准 71）、播放栏 81（标准 88），播放栏内**没有**标准进度条：同一窗口实测为空（`[]`）。设计侧没有可比对象，启用只会得到「0 vs 1」的误报。该屏的壳层差异是既有登记问题（见 `prototypeBaseline`），待该屏复刻时一并处理。"
+      }
     },
     {
       "no": "08",
@@ -878,20 +999,19 @@
       "route": "/",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": [
-        "note",
-        "topbar-note"
-      ],
-      "hasRowPitch": true
+      "variants": ["note", "topbar-note"],
+      "hasRowPitch": true,
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "09",
@@ -901,20 +1021,20 @@
       "route": "/queue",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": [
-        "note"
-      ],
+      "variants": ["note"],
       "shellChange": "由 components/music-playlist-drawer 提升为独立路由页，播放栏保留",
-      "hasRowPitch": true
+      "hasRowPitch": true,
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "10",
@@ -927,22 +1047,11 @@
       "anchors": {
         "topbar": null,
         "playbar": null,
-        "art": [
-          0,
-          0,
-          649,
-          365
-        ],
+        "art": [0, 0, 649, 365],
         "progressY": 700,
-        "controlsBand": [
-          752,
-          808
-        ]
+        "controlsBand": [752, 808]
       },
-      "variants": [
-        "note--inline",
-        "np-mode-seg"
-      ],
+      "variants": ["note--inline", "np-mode-seg"],
       "shellChange": "由 components/full-screen-player 提升为沉浸态路由，隐藏顶栏与播放栏",
       "hasRowPitch": false
     },
@@ -954,20 +1063,19 @@
       "route": "/settings",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 653
       },
-      "variants": [
-        "note",
-        "tracklist--settings"
-      ],
-      "hasRowPitch": true
+      "variants": ["note", "tracklist--settings"],
+      "hasRowPitch": true,
+      "playbarProgress": {
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      }
     },
     {
       "no": "12",
@@ -977,20 +1085,19 @@
       "route": "/mini-player",
       "scroll": true,
       "anchors": {
-        "topbar": [
-          0,
-          71
-        ],
+        "topbar": [0, 71],
         "h1Top": 122,
         "leadTop": 192,
         "filterTop": 236,
         "noteTop": 704
       },
-      "variants": [
-        "note--footer",
-        "tracklist--mini"
-      ],
-      "hasRowPitch": false
+      "variants": ["note--footer", "tracklist--mini"],
+      "hasRowPitch": false,
+      "playbarProgress": {
+        "enabled": false,
+        "measured": "[]",
+        "reason": "**不启用**：`/mini-player` 属 P7，壳层尚未重建 —— 渲染实测顶栏 159（标准 71）、播放栏 105（标准 88）、内容左留白 0（标准 64），播放栏不是标准形态，同一窗口内取不到实心横带（`[]`）。此时判它既非「实现的错」也非「设计的错」，只是该屏还没轮到。"
+      }
     }
   ],
   "extensionSurfaces": [
@@ -1028,59 +1135,17 @@
   "topbarSegments": {
     "rule": "顶栏中部分段组由当前路由决定，不是全局导航。品牌点击回 /，头像承载次级入口。",
     "byRoute": {
-      "/library": [
-        "我的歌单",
-        "我收藏的",
-        "发现音乐"
-      ],
-      "/collection/:id": [
-        "收藏夹 · 11",
-        "合集 · 21",
-        "系列 · 31"
-      ],
-      "/later": [
-        "全部",
-        "近 7 天",
-        "近 30 天"
-      ],
-      "/local-music": [
-        "全部目录",
-        "D 盘 · Lossless",
-        "E 盘 · Live 录音"
-      ],
-      "/download-list": [
-        "全部",
-        "音频",
-        "视频"
-      ],
-      "/search": [
-        "音乐视频 · 9",
-        "创作者 · 2"
-      ],
-      "/": [
-        "音乐分区",
-        "单一模块"
-      ],
-      "/queue": [
-        "全部",
-        "音乐视频",
-        "本地文件"
-      ],
-      "/settings": [
-        "常规",
-        "播放",
-        "高级"
-      ],
-      "/mini-player": [
-        "迷你播放器",
-        "托盘",
-        "全局快捷键"
-      ],
-      "/now-playing": [
-        "封面",
-        "歌词",
-        "视频"
-      ]
+      "/library": ["我的歌单", "我收藏的", "发现音乐"],
+      "/collection/:id": ["收藏夹 · 11", "合集 · 21", "系列 · 31"],
+      "/later": ["全部", "近 7 天", "近 30 天"],
+      "/local-music": ["全部目录", "D 盘 · Lossless", "E 盘 · Live 录音"],
+      "/download-list": ["全部", "音频", "视频"],
+      "/search": ["音乐视频 · 9", "创作者 · 2"],
+      "/": ["音乐分区", "单一模块"],
+      "/queue": ["全部", "音乐视频", "本地文件"],
+      "/settings": ["常规", "播放", "高级"],
+      "/mini-player": ["迷你播放器", "托盘", "全局快捷键"],
+      "/now-playing": ["封面", "歌词", "视频"]
     },
     "labelSources": {
       "/collection/:id": "尾巴「 · 11 / · 21 / · 31」是 **CollectionType 类型码**（11 收藏夹 / 21 视频合集 / 31 视频系列），是**标签自身的一部分**，属静态值 —— **不是集合数量**。取证见 meta.revisions 1.3.8（三条证据：页导语「仅数据类型不同」、三个数字与枚举逐一相等、激活项与该屏 collectionType 同源）。",
@@ -1117,16 +1182,7 @@
       "constraint": "search_type 仅 video / bili_user，不得承诺搜索歌曲、专辑、歌手"
     },
     "avatar": {
-      "menu": [
-        "我的音乐库",
-        "发现音乐",
-        "B站历史",
-        "我的关注",
-        "设置",
-        "检查更新",
-        "关于",
-        "退出登录"
-      ]
+      "menu": ["我的音乐库", "发现音乐", "B站历史", "我的关注", "设置", "检查更新", "关于", "退出登录"]
     }
   },
   "copyConstraints": [
@@ -1153,19 +1209,25 @@
     "total": 12,
     "note": "原型是本轮之前达成过的参考实现，不是验收线。verifier 的比对对象是设计稿 PNG；原型基线用于给每屏一个「必须超过」的起点。",
     "screens": {
+      "10": {
+        "meanLuminanceDiff": 11.46,
+        "failedGates": ["infoTitle", "lyrics"]
+      },
+      "11": {
+        "meanLuminanceDiff": 7.06,
+        "failedGates": []
+      },
+      "12": {
+        "meanLuminanceDiff": 9.73,
+        "failedGates": ["list", "note", "right"]
+      },
       "01": {
         "meanLuminanceDiff": 12.2,
-        "failedGates": [
-          "L3",
-          "list",
-          "right"
-        ]
+        "failedGates": ["L3", "list", "right"]
       },
       "02": {
         "meanLuminanceDiff": 12.17,
-        "failedGates": [
-          "L3"
-        ]
+        "failedGates": ["L3"]
       },
       "03": {
         "meanLuminanceDiff": 9.45,
@@ -1173,41 +1235,19 @@
       },
       "04": {
         "meanLuminanceDiff": 7.94,
-        "failedGates": [
-          "list",
-          "right"
-        ]
+        "failedGates": ["list", "right"]
       },
       "05": {
         "meanLuminanceDiff": 8.73,
-        "failedGates": [
-          "note",
-          "rowPitch"
-        ]
+        "failedGates": ["note", "rowPitch"]
       },
       "06": {
         "meanLuminanceDiff": 9.18,
-        "failedGates": [
-          "filter",
-          "list",
-          "note",
-          "right",
-          "rowPitch"
-        ]
+        "failedGates": ["filter", "list", "note", "right", "rowPitch"]
       },
       "07": {
         "meanLuminanceDiff": 14.55,
-        "failedGates": [
-          "L3",
-          "filter",
-          "lead",
-          "list",
-          "note",
-          "playbar",
-          "playbarHeight",
-          "right",
-          "topbarHeight"
-        ]
+        "failedGates": ["L3", "filter", "lead", "list", "note", "playbar", "playbarHeight", "right", "topbarHeight"]
       },
       "08": {
         "meanLuminanceDiff": 9.66,
@@ -1216,25 +1256,6 @@
       "09": {
         "meanLuminanceDiff": 7.87,
         "failedGates": []
-      },
-      "10": {
-        "meanLuminanceDiff": 11.46,
-        "failedGates": [
-          "infoTitle",
-          "lyrics"
-        ]
-      },
-      "11": {
-        "meanLuminanceDiff": 7.06,
-        "failedGates": []
-      },
-      "12": {
-        "meanLuminanceDiff": 9.73,
-        "failedGates": [
-          "list",
-          "note",
-          "right"
-        ]
       }
     }
   },
@@ -1268,7 +1289,26 @@
     "geometry.immersive.timesY": "--biu-layout-immersive-times-y",
     "geometry.immersive.playButton": "--biu-layout-play-button",
     "material.glass.blur": "--biu-blur-glass",
-    "geometry.sectionHead.marginBottom": "--biu-layout-section-head-mb"
+    "geometry.sectionHead.marginBottom": "--biu-layout-section-head-mb",
+    "geometry.playbar.left.offset": "--biu-playbar-inset-l",
+    "geometry.playbar.left.coverRadius": "--biu-playbar-cover-radius",
+    "geometry.playbar.left.metaGap": "--biu-playbar-meta-gap",
+    "geometry.playbar.left.metaMaxWidth": "--biu-playbar-meta-max-w",
+    "geometry.playbar.left.titleGap": "--biu-playbar-title-gap",
+    "geometry.playbar.mid.originOffset": "--biu-playbar-mid-offset",
+    "geometry.playbar.mid.transportGap": "--biu-playbar-transport-gap",
+    "geometry.playbar.mid.transportIcon": "--biu-playbar-transport-icon",
+    "geometry.playbar.mid.progressMarginLeft": "--biu-playbar-progress-ml",
+    "geometry.playbar.mid.progressWidth": "--biu-playbar-progress-w",
+    "geometry.playbar.mid.progressHeight": "--biu-playbar-progress-h",
+    "geometry.playbar.mid.timeMarginLeft": "--biu-playbar-time-gap",
+    "geometry.playbar.right.offset": "--biu-playbar-inset-r",
+    "geometry.playbar.right.gap": "--biu-playbar-right-gap",
+    "geometry.playbar.right.pillPaddingInline": "--biu-playbar-pill-pad",
+    "geometry.playbar.right.pillGap": "--biu-playbar-pill-gap",
+    "geometry.playbar.left.subGap": "--biu-playbar-sub-gap",
+    "geometry.playbar.deferred.gutter": "--biu-playbar-deferred-gutter",
+    "geometry.playbar.deferred.gap": "--biu-playbar-deferred-gap"
   },
   "excludedFromPalette": {
     "placeholderArt": {
