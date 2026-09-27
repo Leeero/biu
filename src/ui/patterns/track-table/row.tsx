@@ -98,7 +98,17 @@ export const TrackTableRow = ({ trackId, current, position, className, children 
   );
 };
 
-/** 行内所有 cell 都要抬到高亮层之上（原型 `.track-row > * { z-index: 1 }`）。 */
+/**
+ * 行内所有 cell 都要抬到高亮层之上（原型 `.track-row > * { z-index: 1 }`）。
+ *
+ * ⚠️ 本文件里 `leading-*` 必须写在**字号类之后**。
+ *
+ * tailwind-merge 把 `font-size` 与 `leading` 登记为冲突组（因为 Tailwind 的
+ * `text-lg` 同时给出字号与行高），于是 `twMerge("leading-none text-[length:…]")`
+ * 会把 `leading-none` **静默丢掉** —— 类名不在 DOM 上、样式照样生效不了，肉眼与
+ * 快照都看不出来。本文件此前四处 `leading-none` 全是这个写法，一个都没生效
+ * （行内单元格实测 line-height = 19.5px = 13 × 继承来的 1.5）。字面顺序即语义。
+ */
 const CELL_LAYER = "relative z-[1]";
 
 interface TrackIndexProps {
@@ -113,7 +123,7 @@ export const TrackIndex = ({ value, children, className }: TrackIndexProps) => (
   <div
     className={twMerge(
       CELL_LAYER,
-      "text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-quaternary))]",
+      "text-[length:var(--biu-type-label-size)] leading-none text-[rgb(var(--biu-text-quaternary))]",
       "tabular-nums",
       className,
     )}
@@ -138,6 +148,8 @@ interface TrackArtProps {
   src?: string;
   /** 稳定占位键（通常是领域 ID），保证同一内容每次拿到同一占位色。 */
   artKey?: string;
+  /** 显式占位渐变（完整 background-image 值），给定即逐字采用（夹具/演示位）。 */
+  placeholder?: string;
   alt?: string;
   /** 原型 `.track-art--disc`：圆形缩略图，用于本地音乐/专辑行。 */
   shape?: "rect" | "disc";
@@ -145,10 +157,11 @@ interface TrackArtProps {
 }
 
 /** 行内缩略图。原型 `.track-art`：固定 100 × 56、圆角 6。 */
-export const TrackArt = ({ src, artKey, alt = "", shape = "rect", className }: TrackArtProps) => (
+export const TrackArt = ({ src, artKey, placeholder, alt = "", shape = "rect", className }: TrackArtProps) => (
   <Artwork
     src={src}
     artKey={artKey}
+    placeholder={placeholder}
     alt={alt}
     radius={shape === "disc" ? "round" : "art"}
     gradient={shape === "disc" ? "disc" : "linear"}
@@ -162,12 +175,26 @@ interface TrackTextProps {
   className?: string;
 }
 
-/** 标题 + 副标题。原型 `.track-text` / `.track-name` / `.track-sub`。 */
+/**
+ * 标题 + 副标题。原型 `.track-text` / `.track-name` / `.track-sub`。
+ *
+ * 两处**不照原型**（真值优先，详见 spec-lock `geometry.list.trackText`）：
+ *
+ * 1. **标题 17px，不是原型的 15px**（`.track-name { font-size: var(--fs-body) }`）。
+ *    设计稿第 3 页第 03 行末尾三枚全宽「！」的字形质心间距实测 16.96 / 17.00px；
+ *    同串在渲染侧实测 15.00px。字形包围盒比 141:125 = 1.128 与 17/15 = 1.133 吻合。
+ * 2. **两侧行高都是 1**（`leading-none`，且必须写在字号类之后，见 `CELL_LAYER` 的说明）。
+ *    Tailwind v4 不为任意长度字号写 line-height，会继承祖先的 1.5（17px → 25.5px），
+ *    把副标题推低约 6px。设计稿解出的行内文本块高 = 17 + 6 + 13 = 36px，
+ *    跨第 03 / 06 / 09 / 10 / 13 页一致。
+ *
+ * `mt-[6px]` 与原型的 `.track-sub { margin-top: 6px }` 一致，未改。
+ */
 export const TrackText = ({ title, subtitle, className }: TrackTextProps) => (
   <div className={twMerge(CELL_LAYER, "min-w-0", className)}>
     <div
       className={twMerge(
-        "truncate text-[length:var(--biu-type-body-size)] font-semibold",
+        "truncate text-[length:var(--biu-type-list-title-size)] leading-none font-semibold",
         "text-[rgb(var(--biu-text-primary))]",
       )}
     >
@@ -176,7 +203,7 @@ export const TrackText = ({ title, subtitle, className }: TrackTextProps) => (
     {subtitle !== undefined && subtitle !== null && (
       <div
         className={twMerge(
-          "mt-[6px] truncate text-[length:var(--biu-type-label-size)]",
+          "mt-[6px] truncate text-[length:var(--biu-type-label-size)] leading-none",
           "text-[rgb(var(--biu-text-quaternary))]",
         )}
       >
@@ -199,7 +226,7 @@ export const TrackCell = ({ children, align = "start", tone = "normal", classNam
   <div
     className={twMerge(
       CELL_LAYER,
-      "truncate text-[length:var(--biu-type-label-size)] tabular-nums",
+      "truncate text-[length:var(--biu-type-label-size)] leading-none tabular-nums",
       tone === "danger" ? "text-[rgb(var(--biu-danger))]" : "text-[rgb(var(--biu-text-quaternary))]",
       align === "end" && "text-right",
       className,
@@ -219,9 +246,10 @@ export interface TrackActionSpec {
 }
 
 interface TrackTableActionsProps {
-  /** 主操作（38px 反色圆片）。原型固定是播放。 */
-  primary?: TrackActionSpec;
-  /** 其余图标操作。原型 `.track-actions` 固定为上一首 / 下一首 / 加入队列 / 收藏 / 下载。 */
+  /**
+   * **全部**动作。设计稿第 3 页的带子是五枚等大圆片、**没有**主操作档，
+   * 播放只是第一枚，因此这里不再有 `primary` 槽位。
+   */
   actions?: readonly TrackActionSpec[];
   className?: string;
 }
@@ -236,38 +264,35 @@ interface TrackTableActionsProps {
  *
  * 带子用 `position: absolute` 定位，因此**不占 grid 列**：原型里它是
  * `.track-row` 的第 5 个子元素，而 grid 只有 4 列。
+ *
+ * 几何全部来自设计稿第 3 页第 04 行实测（spec-lock `material.rowActionBand`），
+ * **不是原型的值**。原型 `.track-actions` 是「38px 反色主操作 + `.sep` 分隔线 +
+ * 五枚 30px、gap 4、padding 5×6、`right: 24px`」；设计稿是「五枚等大 34px、
+ * gap 6、padding 4×8、无分隔线、无主操作档」，且动作集合少一枚「上一首」。
+ * 逐项实测：带子 bbox 210 × 42（= 5×34 + 4×6 + 2×8 与 34 + 2×4）、
+ * 圆片横向 612–643 / 652–683 / 692–723 / 732–763 / 772–803。
+ * 横向锚点也不是原型的 `right: 24px`（贴行右缘）—— 设计稿带子右缘在画布
+ * x812，行右缘 x1376，故右偏移 = 564 = col4 + col5 + listPadRight + 152px。
  */
-export const TrackTableActions = ({ primary, actions, className }: TrackTableActionsProps) => (
+export const TrackTableActions = ({ actions, className }: TrackTableActionsProps) => (
   <div
     className={twMerge(
       // z-index 3：压过行高亮（1）与行内容（1）。原型同此。
-      "absolute top-1/2 right-[24px] z-[3] inline-flex -translate-y-1/2 items-center gap-[4px]",
+      "absolute top-1/2 z-[3] inline-flex -translate-y-1/2 items-center gap-[6px]",
+      "right-[calc(var(--biu-layout-col-4)+var(--biu-layout-col-5)+var(--biu-layout-list-pad-r)+152px)]",
       // 玻璃材质写在**带子**上，不是写在按钮上（见 GlassButton 的 tone 说明）。
       "rounded-[var(--biu-radius-pill)] border border-[var(--biu-veil-18)] bg-[var(--biu-veil-14)]",
-      "p-[5px_6px] backdrop-blur-[var(--biu-blur-glass)]",
+      "p-[4px_8px] backdrop-blur-[var(--biu-blur-glass)]",
       className,
     )}
   >
-    {primary && (
-      <GlassButton
-        tone="inverse"
-        size={38}
-        iconSize={17}
-        label={primary.label}
-        icon={primary.icon}
-        disabled={primary.disabled}
-        onClick={primary.onPress}
-      />
-    )}
-    {primary && actions && actions.length > 0 && <TrackActionSeparator />}
     {actions?.map(action => (
       <GlassButton
         key={action.key}
+        // 行内带**没有**悬停反馈（原型 `.track-actions .round` 无 `:hover` 规则）。
         tone="bare"
-        size={30}
-        // 原型 `.track-actions .round { font-size: 15px }` —— 30px 圆片配 15px 图标，
-        // 比例 0.5，与其它档位的 0.45 不同，所以显式给值而不是走默认推算。
-        iconSize={15}
+        size={34}
+        iconSize={17}
         label={action.label}
         icon={action.icon}
         disabled={action.disabled}
@@ -275,9 +300,4 @@ export const TrackTableActions = ({ primary, actions, className }: TrackTableAct
       />
     ))}
   </div>
-);
-
-/** 操作带内的分隔线。原型 `.track-actions .sep`：1 × 18、白色 20%。 */
-export const TrackActionSeparator = () => (
-  <span aria-hidden className="mx-[2px] h-[18px] w-px bg-[var(--biu-veil-20)]" />
 );

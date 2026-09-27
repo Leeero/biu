@@ -37,7 +37,7 @@ const noop = () => undefined;
  * （播放 / 上一首 / 下一首 / 入队 / 收藏 / 下载），故这里也照固定组合演示。
  */
 const ROW_ACTIONS: TrackActionSpec[] = [
-  { key: "prev", label: "上一首", icon: "prev", onPress: noop },
+  { key: "play", label: "播放", icon: "play", onPress: noop },
   { key: "next", label: "下一首", icon: "next", onPress: noop },
   { key: "queue", label: "加入队列", icon: "queue-add", onPress: noop },
   { key: "heart", label: "收藏", icon: "heart", onPress: noop },
@@ -280,10 +280,7 @@ export const PatternsExhibit = () => {
                 </TrackMain>
                 <TrackCell>{SAMPLE_ROWS[3]!.cell}</TrackCell>
                 <TrackCell align="end">{SAMPLE_ROWS[3]!.tail}</TrackCell>
-                <TrackTableActions
-                  primary={{ key: "play", label: "播放", icon: "play", onPress: noop }}
-                  actions={ROW_ACTIONS}
-                />
+                <TrackTableActions actions={ROW_ACTIONS} />
               </TrackTableRow>
             </TrackTable>
           </div>

@@ -87,12 +87,13 @@ const VEILS: Swatch[] = [
   { token: "--biu-veil-5-5", use: "迷你窗底", kind: "solid" },
   { token: "--biu-veil-8", use: "分段项悬停", kind: "solid" },
   { token: "--biu-veil-9", use: "分段容器底", kind: "solid" },
-  { token: "--biu-veil-12", use: "已关注底 / 标签描边", kind: "solid" },
+  { token: "--biu-veil-12", use: "已关注底 / 标签描边 / 顶栏键帽底", kind: "solid" },
   { token: "--biu-veil-14", use: "徽标底 / 行内操作带 / 弹层描边", kind: "solid" },
   { token: "--biu-veil-18", use: "进度槽", kind: "solid" },
   { token: "--biu-veil-20", use: "瓦片操作带描边", kind: "solid" },
   { token: "--biu-veil-22", use: "动作分隔线 / 关注描边", kind: "solid" },
-  { token: "--biu-veil-28", use: "顶栏键帽底", kind: "solid" },
+  // 原型色板登记档：顶栏键帽原用本档，1.3.6 按设计稿实测改指 veil-12，取值保留对照。
+  { token: "--biu-veil-28", use: "原型档（当前无消费者）", kind: "solid" },
 ];
 
 const RADII: { token: string; role: string }[] = [

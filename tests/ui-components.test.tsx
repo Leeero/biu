@@ -174,6 +174,28 @@ describe("基础件的可访问名称", () => {
     // 设计稿画了 Ctrl K 提示，提示可见就必须可用，所以默认渲染它。
     expect(container.textContent).toContain("Ctrl K");
   });
+
+  test("快捷键键帽不能挂在 button 里：HeroUI 的清除按钮空值时 opacity 0，会把键帽一起藏掉", async () => {
+    const container = await render(<TopBarSearch value="" onValueChange={() => undefined} />);
+    const kbd = container.querySelector("kbd");
+
+    expect(kbd).not.toBeNull();
+    // 这一条是本用例存在的全部理由。键帽若经 `Input` 的 `endContent` 传入，
+    // HeroUI 会把它嵌进清除按钮（`<button class="… opacity-0 …">`）——
+    // 输入框为空时整块不可见，而 textContent 里仍然有字，光看文本断言发现不了。
+    expect(kbd?.closest("button"), "键帽被嵌进了 HeroUI 的清除按钮，空值时会被 opacity:0 藏掉").toBeNull();
+    // 它必须落在组件根容器上，且与输入框平级。
+    expect(container.querySelector("div > kbd")).not.toBeNull();
+  });
+
+  test("输入框有值时键帽隐去，把位置让给清除按钮", async () => {
+    const withValue = await render(<TopBarSearch value="雨落长街" onValueChange={() => undefined} />);
+    expect(withValue.querySelector("kbd")).toBeNull();
+
+    // `shortcutHint={null}` 是明确关掉；默认（undefined）才是渲染键帽。
+    const off = await render(<TopBarSearch value="" onValueChange={() => undefined} shortcutHint={null} />);
+    expect(off.querySelector("kbd")).toBeNull();
+  });
 });
 
 /* ---------------------------------------------------------------- 键盘路径 */
@@ -331,12 +353,15 @@ describe("轨道表", () => {
   });
 
   test("行内操作带的每个圆片都有名称，且不占 grid 列（绝对定位）", async () => {
-    const actions: TrackActionSpec[] = [{ key: "heart", label: "收藏", icon: "heart" }];
+    const actions: TrackActionSpec[] = [
+      { key: "play", label: "播放", icon: "play" },
+      { key: "heart", label: "收藏", icon: "heart" },
+    ];
     const container = await render(
       <TrackTable>
         <TrackTableRow trackId="t1">
           <TrackIndex value={1} />
-          <TrackTableActions primary={{ key: "play", label: "播放", icon: "play" }} actions={actions} />
+          <TrackTableActions actions={actions} />
         </TrackTableRow>
       </TrackTable>,
     );

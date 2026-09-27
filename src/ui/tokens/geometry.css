@@ -45,6 +45,18 @@
   --biu-type-small-tracking: normal;
   --biu-type-small:
     var(--biu-type-small-weight) var(--biu-type-small-size) / var(--biu-type-small-leading);
+
+  /* 曲目表标题。**不是 --biu-type-body-size 的 15px**：设计稿第 3 页第 03 行末尾三枚
+     全宽「！」的字形质心间距实测 16.96 / 17.00px，即 17px。行高为 1 —— 设计稿解出的
+     行内文本块高度是 17 + 6 + 13 = 36px，跨第 03/06/09/10/13 页一致。详见 spec-lock
+     typography.scale.listTitle。 */
+  --biu-type-list-title-size: 17px;
+  --biu-type-list-title-weight: 600;
+  --biu-type-list-title-leading: 1;
+  --biu-type-list-title-tracking: normal;
+  --biu-type-list-title:
+    var(--biu-type-list-title-weight) var(--biu-type-list-title-size) /
+    var(--biu-type-list-title-leading);
   --biu-type-body-size: 15px; /* 列表正文与元信息 */
   --biu-type-body-weight: 400;
   --biu-type-body-leading: 1.33;
@@ -82,11 +94,22 @@
   --biu-layout-art-w: 100px;
   --biu-layout-art-h: 56px;
   --biu-layout-art-radius: 6px;
-  --biu-layout-track-gap: 31px;
+
+  /* 图 → 文间隙。**不是原型的 31px**（原型 `--track-gap: 31px`）：设计稿第 3 页封面
+     右缘 x220、文本墨迹左缘 x241；副标题两侧同为 13px，字形左承载相减即抵消，故
+     盒位差 = 墨迹差 = 10px，设计稿间隙 = 31 − 10 = 21。第 03/04/06/09/10 页一致为
+     20–21px。详见 spec-lock geometry.list.trackGapDivergence。 */
+  --biu-layout-track-gap: 21px;
   --biu-layout-col-4: 220px;
   --biu-layout-col-5: 152px;
   --biu-layout-list-pad-r: 40px;
   --biu-layout-current-inset: 2px; /* 当前行高亮上下内缩 */
+
+  /* 曲目表表头盒高。**不是原型的 44**：设计稿第 3 页由「首行封面顶缘 380 − 居中偏移 6
+     − 分组标题盒下沿 328 − 分组 marginBottom 8」解出 38。表头文字上对齐 + 上内边距 7
+     都不变，故墨迹仍在 346；动的只是盒底，即下方各行的起点。详见 spec-lock
+     geometry.listHead。 */
+  --biu-layout-head-h: 38px;
 
   /* 筛选条：条高 48，药丸 36，药丸间隔 4，组内留白 6 */
   --biu-layout-filterbar-h: 48px;

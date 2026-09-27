@@ -14,7 +14,15 @@ import unusedImports from "eslint-plugin-unused-imports";
 import eslintReact from "@eslint-react/eslint-plugin";
 
 export default defineConfig([
-  globalIgnores(["dist", ".electron"]),
+  // 忽略项分三类，理由各不相同：
+  //  · dist / .electron —— 构建产物，非源码。
+  //  · prototypes —— C+ 视觉稿 12 屏原型的冻结资产（真值来源）。它是对比基准，
+  //    不是待维护代码：用 prettier 重排它会改动已入库的设计基线，从而污染
+  //    `verify.py` 的参照物。其中的 assets/icons.js 因此长期挂着 33 条 prettier
+  //    报错，修不得，只能不扫。
+  //  · tools/design-fidelity/.venv —— 本地保真度工具链的 Python 虚拟环境（在
+  //    .gitignore 里），装着 pip vendor 的 JS。CI 从仓库检出、永远看不到它。
+  globalIgnores(["dist", ".electron", "prototypes", "tools/design-fidelity/.venv"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

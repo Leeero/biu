@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFile, stat } from "node:fs/promises";
 /**
  * 静态服务：把 `dist/web` 的构建产物以 SPA 方式伺服给 verify.py。
  *
@@ -14,7 +15,6 @@
  */
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
-import { readFile, stat } from "node:fs/promises";
 
 const args = process.argv.slice(2);
 const argOf = (name, fallback) => {
