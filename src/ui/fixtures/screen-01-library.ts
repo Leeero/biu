@@ -90,7 +90,7 @@ export const SCREEN_01_LIBRARY_FIXTURE: LibraryFixture = {
   nowPlaying: {
     title: "夜航",
     sub: "NOISE_LAB",
-    lossless: true,
+    quality: "lossless",
     elapsedSeconds: 52,
     durationSeconds: 250,
     queueCount: 12,

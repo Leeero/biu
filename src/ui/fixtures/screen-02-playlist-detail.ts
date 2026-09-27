@@ -149,7 +149,7 @@ export const SCREEN_02_PLAYLIST_DETAIL_FIXTURE: PlaylistDetailFixture = {
   nowPlaying: {
     title: "《雨落长街》· 全专上线",
     sub: "卧室音乐计划 · 新碟 banner",
-    lossless: true,
+    quality: "lossless",
     elapsedSeconds: 82,
     durationSeconds: 228,
     queueCount: 12,

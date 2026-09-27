@@ -25,34 +25,31 @@ interface TileActionBandProps {
 /**
  * 瓦片玻璃操作带。原型 `.actionband`。
  *
- * 构成来自设计稿实测（spec-lock material.tileActionBand）：**五枚等大** 34px
- * 玻璃圆片，没有主操作反色档、没有分隔线。原型 app.css 里的 `.round--lead`
- * （反色主操作）与 `.sep` 是原型的发挥 —— 设计稿第 2 页横向实测 210px =
- * 5×34 + 4×6 + 2×8，与「五枚等大 + 无分隔线」精确吻合，且设计稿注解原文
- * 是「露出 5 个主操作」，五个并列、没有层级。
+ * 构成来自设计稿实测（spec-lock `material.tileActionBand`，1.3.13 订正）：
+ * **五枚等大** 32px 玻璃圆片（带子 208 × 40 = 5×32 + 4×8 + 2×8），没有
+ * 主操作反色档、没有分隔线。原型 app.css 里的 `.round--lead`（反色主操作）
+ * 与 `.sep` 是原型的发挥 —— 设计稿注解原文是「露出 5 个主操作」，五个并列、
+ * 没有层级。
  *
- * **为什么不与 `TrackTableActions` 合并**：两者在原型的取值几乎每一项都不同，
- * 合并必然要选一套值去覆盖另一套，那就是静默改设计。逐项对比：
+ * **为什么不与 `TrackTableActions` 合并**：两带的**几何**在 1.3.13 订正后
+ * 完全一致（32 / 8 / 4×8 / 208×40），但**材质与行为**仍各不相同 ——
  *
  *              行内带 (.track-actions)   瓦片带 (.actionband)
- *   位置        right 24 / 垂直居中      left 50% / top 50% 居中
- *   间距        4                        6
- *   内边距      5 × 6                    7 × 8
- *   描边        白 18%                   白 20%
- *   圆片        30 / 主操作 38           五枚等大 34
- *   图标字号    15 / 17                  17
- *   分隔线      1 × 18，白 20%           无
- *   圆片悬停    无                       有（白 18%）
+ *   位置        右缘按屏（564 / 224）     left 50% / top 50% 居中
+ *   带底        白 14%（veil-14）         白 16%（surface-glass）
+ *   描边        白 18%（veil-18）         白 20%（veil-20）
+ *   圆片悬停    无                        有
  *
- * 八项里六项不同 —— 它们不是同一个组件的两个变体，而是两个组件。
+ * 三项材质/行为差异都登记在 spec-lock 的两个 material 条目里，合并成一套
+ * props 只会把「哪个屏该用哪套值」变成约定俗成 —— 那正是真值文件要防的事。
  */
 export const TileActionBand = ({ actions, className }: TileActionBandProps) => (
   <div
     className={twMerge(
       // z-index 3：压过瓦片遮罩（after 的默认层）与文案（z-2）。原型同此。
-      "absolute top-1/2 left-1/2 z-[3] inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-[6px]",
+      "absolute top-1/2 left-1/2 z-[3] inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-[var(--biu-layout-action-gap)]",
       "rounded-[var(--biu-radius-pill)] border border-[var(--biu-veil-20)] bg-[var(--biu-surface-glass)]",
-      "p-[7px_8px] backdrop-blur-[var(--biu-blur-glass)]",
+      "p-[var(--biu-layout-action-pad)] backdrop-blur-[var(--biu-blur-glass)]",
       className,
     )}
   >
@@ -62,7 +59,7 @@ export const TileActionBand = ({ actions, className }: TileActionBandProps) => (
         // 瓦片带**有**悬停反馈（原型 `.actionband .round:hover`），
         // 与行内带（`.track-actions .round` 无悬停规则）不同，故用 plain 而非 bare。
         tone="plain"
-        size={34}
+        size={32}
         iconSize={17}
         label={action.label}
         icon={action.icon}

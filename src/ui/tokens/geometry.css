@@ -127,6 +127,33 @@
      取证过程见 spec-lock 的 geometry.sectionHead.rule。 */
   --biu-layout-section-head-mb: 8px;
 
+  /* 搜结果页（屏 06）的大搜索框与创作者行。设计稿第 7 页实测；三处与原型分歧：
+     高 72（原型 70）、图标墨迹 16（原型 23）、药丸高 32（原型 36）、药丸无描边。
+     与顶栏搜索位是**两个组件**（那个圆角 999，这个 18）。
+     1.3.13 订正 link-gap：15 → 8（1.3.12 曾把「墨迹缝 9」误登记成「元素间距 15」），
+     并补 link-right-inset 158（药丸**不贴**盒右缘，右侧留 158px 空白，见
+     spec-lock geometry.searchField.localLink.measurement）。 */
+  --biu-layout-searchfield-h: 72px;
+  --biu-layout-searchfield-icon: 18px;
+  --biu-layout-searchfield-link-h: 32px;
+  --biu-layout-searchfield-link-pad: 15px;
+  --biu-layout-searchfield-link-gap: 8px;
+  --biu-layout-searchfield-link-right-inset: 158px;
+  --biu-layout-creator-row-h: 56px;
+  --biu-layout-creator-avatar: 40px;
+  --biu-layout-creator-actions-w: 112px;
+
+  /* 行内操作带（1.3.12 订正尺寸，1.3.13 订正内边距）。1.3.4 记录过圆片的横向区间
+     （612–643 / 652–683 / …，每个 32px 宽、起点间距 40），但同段的散文把它读成
+     「34px / 间距 6」并据此反解出总量 210 —— 34 是假定出来的，32 才是量到的。
+     两页重测（第 3 页与第 7 页）一致：圆片 32.0、带子 208 × 40。
+     内边距由恒等式闭合：(208 − 5×32 − 4×8)/2 = 8、(40 − 32)/2 = 4。
+     见 spec-lock 的「序数度量告诫」。 */
+  --biu-layout-action-circle: 32px;
+  --biu-layout-action-gap: 8px;
+  --biu-layout-action-pad: 4px 8px;
+  --biu-layout-follow-h: 32px;
+
   /* 瓦片文案块（.tile-copy）。设计稿第 2 页实测：bottom 24（原型 16）、
      元信息与标题间距 0（原型 6）—— 设计稿的标题与元信息是贴紧的一组。
      取证过程见 spec-lock 的 geometry.tileCopy.rule。 */

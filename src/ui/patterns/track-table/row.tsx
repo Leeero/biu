@@ -265,24 +265,26 @@ interface TrackTableActionsProps {
  * 带子用 `position: absolute` 定位，因此**不占 grid 列**：原型里它是
  * `.track-row` 的第 5 个子元素，而 grid 只有 4 列。
  *
- * 几何全部来自设计稿第 3 页第 04 行实测（spec-lock `material.rowActionBand`），
- * **不是原型的值**。原型 `.track-actions` 是「38px 反色主操作 + `.sep` 分隔线 +
- * 五枚 30px、gap 4、padding 5×6、`right: 24px`」；设计稿是「五枚等大 34px、
- * gap 6、padding 4×8、无分隔线、无主操作档」，且动作集合少一枚「上一首」。
- * 逐项实测：带子 bbox 210 × 42（= 5×34 + 4×6 + 2×8 与 34 + 2×4）、
- * 圆片横向 612–643 / 652–683 / 692–723 / 732–763 / 772–803。
- * 横向锚点也不是原型的 `right: 24px`（贴行右缘）—— 设计稿带子右缘在画布
- * x812，行右缘 x1376，故右偏移 = 564 = col4 + col5 + listPadRight + 152px。
+ * 几何全部来自设计稿第 3 / 7 页实测（spec-lock `material.rowActionBand`，
+ * 1.3.12 订正圆片、1.3.13 订正内边距），**不是原型的值**。原型 `.track-actions`
+ * 是「38px 反色主操作 + `.sep` 分隔线 + 五枚 30px、gap 4、padding 5×6、
+ * `right: 24px`」；设计稿是「五枚等大 32px、间距 8、内边距 4×8、无分隔线、
+ * 无主操作档」，且动作集合少一枚「上一首」。恒等式：208 = 5×32 + 4×8 + 2×8、
+ * 40 = 32 + 2×4。
+ *
+ * 横向锚点**按屏不同**（`rightOffsetByRoute`）：屏 02 带子右缘画布 x812 ⇒
+ * 右偏移 564（下面的缺省公式）；屏 06 右缘 x1152 ⇒ 右偏移 224 —— 由页面用
+ * `className="right-[224px]"` 覆盖（twMerge 同组去重），不再复用同一条公式。
  */
 export const TrackTableActions = ({ actions, className }: TrackTableActionsProps) => (
   <div
     className={twMerge(
       // z-index 3：压过行高亮（1）与行内容（1）。原型同此。
-      "absolute top-1/2 z-[3] inline-flex -translate-y-1/2 items-center gap-[6px]",
+      "absolute top-1/2 z-[3] inline-flex -translate-y-1/2 items-center gap-[var(--biu-layout-action-gap)]",
       "right-[calc(var(--biu-layout-col-4)+var(--biu-layout-col-5)+var(--biu-layout-list-pad-r)+152px)]",
       // 玻璃材质写在**带子**上，不是写在按钮上（见 GlassButton 的 tone 说明）。
       "rounded-[var(--biu-radius-pill)] border border-[var(--biu-veil-18)] bg-[var(--biu-veil-14)]",
-      "p-[4px_8px] backdrop-blur-[var(--biu-blur-glass)]",
+      "p-[var(--biu-layout-action-pad)] backdrop-blur-[var(--biu-blur-glass)]",
       className,
     )}
   >
@@ -291,7 +293,7 @@ export const TrackTableActions = ({ actions, className }: TrackTableActionsProps
         key={action.key}
         // 行内带**没有**悬停反馈（原型 `.track-actions .round` 无 `:hover` 规则）。
         tone="bare"
-        size={34}
+        size={32}
         iconSize={17}
         label={action.label}
         icon={action.icon}

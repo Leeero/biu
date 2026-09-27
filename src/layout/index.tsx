@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet, useLocation } from "react-router";
 
@@ -13,8 +13,9 @@ import PlayListDrawer from "@/components/music-playlist-drawer";
 import ReleaseNoteModal from "@/components/release-note-modal";
 import VideoPagesDownloadSelectModal from "@/components/video-pages-download-select-modal";
 import PlayBar from "@/layout/playbar";
-import { resolveRouteShell } from "@/layout/route-shell";
+import { composeSegmentCount, resolveRouteShell } from "@/layout/route-shell";
 import TopBar from "@/layout/topbar";
+import { useSearchSegments } from "@/store/search-segments";
 import { useUser } from "@/store/user";
 
 /**
@@ -34,7 +35,21 @@ import { useUser } from "@/store/user";
 const Layout = () => {
   const updateUser = useUser(state => state.updateUser);
   const location = useLocation();
-  const { chrome, segments, activeSegmentKey } = resolveRouteShell(location.pathname, location.search);
+  const {
+    chrome,
+    segments: declaredSegments,
+    activeSegmentKey,
+  } = resolveRouteShell(location.pathname, location.search);
+  const { videoCount, creatorCount } = useSearchSegments();
+
+  /**
+   * 模板分段与运行时计数的组合点（spec-lock `topbarSegments.labelSources`）。
+   * 纯函数 `composeSegmentCount` 在 route-shell.ts，可被单测直接断言。
+   */
+  const segments = useMemo(
+    () => declaredSegments.map(segment => composeSegmentCount(segment, { videoCount, creatorCount })),
+    [declaredSegments, videoCount, creatorCount],
+  );
 
   useEffect(() => {
     updateUser();

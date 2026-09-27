@@ -2,13 +2,57 @@
   "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
   "meta": {
     "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
-    "version": "1.3.11",
+    "version": "1.3.14",
     "frozenAt": "2026-09-27",
     "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
+      {
+        "version": "1.3.13",
+        "at": "2026-09-27",
+        "phase": "P3",
+        "changes": [
+          "**本轮动因 —— 屏 06 实现轮的两处操作带尺寸自检**。落地 `TrackTableActions` / `TileActionBand` 前，把 1.3.12 订正出的几何代回恒等式验算，发现 **`rowActionBand.padding` 的「3px 7px」不满足自己记录的总数**：带 208 × 40、圆片 32、间距 8 ⇒ 水平内边距 = (208 − 5×32 − 4×8) / 2 = **8**、垂直 = (40 − 32) / 2 = **4**。1.3.4 的「4px 8px」在这一点上原本是对的（错的是圆片 34 与间距 6）；1.3.12 改圆片时把内边距一并改错。本轮订回 `4px 8px` —— 教训与「序数度量告诫」同源：**订正一个由恒等式反解的值时，必须把恒等式重新验算一遍**，否则只是把一个自洽假值换成另一个自洽假值。",
+          "**`material.tileActionBand` 是同一个算术陷阱的第二处，1.3.2 起存活至今**。1.3.2 记录「横向实测 210px = 5×34 + 4×6 + 2×8」—— 210 与 34 都不是量出来的，而是「先假定间距 6、再由总量反解」的产物。本轮用 50% 交叉重测设计稿第 2 页瓦片 3 的操作带：带子 x781.5–989.5 × y399.5–439.5（**208 × 40**，与行内带逐值相同）、圆片填充区间给出**起点间距 40** ⇒ 间隔 8、圆片 **32**（五枚图标中心 805/845/885/925/965 等距 40 交叉印证）。故订正为 `circle` 32 / `gap` 8 / `padding` `4px 8px` / 新增 `size` 208 × 40。两带（行内 / 瓦片）的**几何自此完全一致**，差异只在材质（带底 16% 对 14%、描边 20% 对 18%）与行为（瓦片带圆片有悬停）—— `media-tile` 注释里「八项里六项不同」的旧对比表随之订正。这是**跨屏订正**（屏 01 的瓦片带、屏 02/06 的行内带），落地后须复跑屏 01 / 02。",
+          "**顺带的实测定性（不改值）**：屏 06 创作者行之间**没有分隔线** —— 第 7 页两行之间 y582–597 逐行均值 8.0（与画布底相同），原型的 `border-top: 1px solid`（app.css:746，未被第二处定义覆盖）是原型发挥。`geometry.creatorRow` 的 `rowPitch` 56 由「头像 542–581 / 598–637 + 头像在行内居中（上内缩 8）」反推行盒 534–590 / 590–646 复核成立；第二段标题墨迹下缘 523 + 盒缘 4 + `sectionHead` margin 8 = 535 ≈ 行盒顶 534，链路闭合。",
+          "**`geometry.searchField.localLink` 的两处订正**：① `gap` 15px → **8px** —— 1.3.12 把「文字与箭头的墨迹缝 9」误登记成元素间距 15；元素间距取原型的成文值 8（墨迹缝 9 = 8 + 抗锯齿，自洽）。② 新增 `rightInset` **158px** —— 药丸右缘到盒右缘内边的距离，实测药丸右缘 x1216.5、盒内边 1374.5，右侧 158px 是纯盒底空白（与原型「贴右 16px」分歧）。配套令牌 `--biu-layout-searchfield-link-right-inset`。另据第 7 页解出本屏的页面节奏（登记在 `screens[5].verticalRhythm`，实现消费）：内容顶 24 + 搜索框 margin-top 15 ⇒ 盒 109.5–181.5；盒 → 导语 margin 20（导语盒 201.5–229.5，字阶 22/28）；导语 → 首段 margin **23**（`gap=push`，非矩阵 §06 写的 tight 12）；行距 68；段间（行 3 盒底 482 → 第二段标题盒顶 503.5）同为 **23** —— 两段之间不用原型的 27，`Section` 的 `[&+&]:mt-[27px]` 对本屏需要按屏覆盖。"
+        ]
+      },
+      {
+        "version": "1.3.14",
+        "at": "2026-09-28",
+        "phase": "P3",
+        "changes": [
+          "**本轮动因 —— 屏 06 首次 `--target app` 比对 FAIL 的四项归因与订正**。构建产物问题解决后（`CODEBUDDY_BROKERED_FS_HOOK_ENABLED` 会静默丢弃 rspack 的产物写入，须以 `env -u NODE_OPTIONS -u CODEBUDDY_BROKERED_FS_HOOK_ENABLED` 构建），首次比对拿到实测 delta：搜索框内文字高 7px、视频行 / 创作者行整体低 7px、注解带排成一行（设计稿两行）、段间间距偏差。逐项归因如下。",
+          "**verify.py 开始消费屏级探针**（1.3.12 已登记、消费端滞后的收口）：`probe()` 在标准壳层读 `screens[].probes.windows` 覆写默认窗口，`evaluate()` 的结构带 / 内容带名单改读 `screens[].probes.structural` / `.content`（沉浸态不受影响，`playbarDetail` 机制不变）。屏 06 的闸门自此为：结构带 = 顶栏 / 搜索框 / 导语 / 播放栏，内容带 note 窗收窄到 640–800。默认 `H1`（阈值 190，本屏读到的是查询词墨迹而非 h1）与 `filter`（窗 226–300，本屏读到的是分组标题）对本屏语义不符，不再参与判定。",
+          "**`geometry.sectionHead` 增补无表头变体 `marginBottom: 4px`**：屏 06 的分组标题下直接是无表头曲目表 / 创作者行，与带表头屏（38px 表头隔在中间）链路不同。设计稿第 7 页「标题墨迹下缘 → 缩略图顶缘 13px、→ 头像顶缘 19px」按 Chrome 渲染度量落在原型 `.section-head` 的 **margin-bottom 4px** 上；令牌的 8px 继续适用于带表头 / 瓦片头的屏。实现按屏覆盖 `[&>header]:mb-[4px]`。",
+          "**段间 23 的落地订正**：1.3.13 的 `[&+&]:mt-[23px]` 首次实现时只传给了第二个 `Section` —— 该任意变体编译为 `.x + .x`，要求**两个兄弟都带类**才匹配，只传一个等于没传，实际生效的是 `gap` 缺省的 `mt-5`（20）。本轮两个 `Section` 都带该类，段间自此真为 23。教训：**任意变体的兄弟选择器是成对约束，按屏覆写时必须写在所有参与兄弟上**。",
+          "**`searchField.queryBaseline` 补录**：查询词墨迹在设计稿第 7 页为 y139–165（重心 152），比盒 110–182 的几何中心低 5.5px —— 同行的放大镜图标墨迹（137–154）是居中的，查询词不是。这是设计稿的文字基线摆放，与原型「flex 居中」分歧。实现：输入框 `pt-[11px]`（flex 居中下重心下移 pt/2）。",
+          "**屏 06 注解带两行结构的复现**：设计稿注解为两行（674–688 / 694–706，行 2 仅「主操作。」）；Chrome 对同一份 13px 文案的排版宽度比设计稿 PDF 窄（同前缀 1210 对 1319），在 1312px 内容宽内排成一行。实现按渲染度量在文字跨度上收 `max-width: 1216px`（前缀「……的 5 个」≈ 1210、再加「主」= 1223），断行点与设计稿一致。这是字体度量差的补偿，不是文案或字阶的改动。"
+        ]
+      },
+      {
+        "version": "1.3.12",
+        "at": "2026-09-27",
+        "phase": "P3",
+        "changes": [
+          "**本轮动因 —— 开屏 06（搜索结果 `/search`，设计页第 7 页）**。它是 P3 里唯一无阻塞的屏：屏 07 的设计页（第 8 页）纵向被压缩 0.9204，须先落地纠正（见 1.3.11）。第 7 页实测为标准壳层（顶栏下缘 71.9、播放栏上缘 811.9、缩略图 100 × 56、行距 68），可与 1440 × 900 的渲染直接比对，不需要任何系数还原。",
+          "**订正一 · 矩阵 §06「searchfield 圆角 999」是错的，真值一侧本就正确**。设计稿第 7 页实测圆弧：左上角在 y110 的首列墨迹 x78、到 y124 收到 x64，与 18px 半径的圆弧一致；原型 `assets/app.css:1683` 亦为 `border-radius: 18px`。真值里 `material.radius.fieldLarge = 18px`，其 rule 已明写「fieldLarge 为 18px 的是搜索结果页的大搜索框（.searchfield）—— 两者都叫『搜索』但圆角不同，取名时按尺寸区分以免再次混用」。`999` 只出现在原型的 `--r-field` 上，屏 06 的 `.searchfield` **不使用该档**。错只在施工矩阵那一行，已改。",
+          "**订正二 · `material.rowActionBand` 的算术与它自己记录的数字互相矛盾，像素站在「32」这一边**。1.3.4 记录的圆片横向区间是 `612–643 / 652–683 / 692–723 / 732–763 / 772–803` —— 每个区间 **32px 宽**、起点间距 **40**，即「32px 圆片 + 8px 间隔」；但同一段的散文与字段写的是「五枚等大 34px、间距 6」，并据此推出 `210 = 5×34 + 4×6 + 2×8`。两套数不可能同时成立。本轮用 50% 交叉（带底 42、圆片填充 70 ⇒ 阈值 56）重测两页：第 3 页圆片 611.5→643.5、第 7 页 951.7→983.5，**都是 32.0**；带子自身第 3 页 x604–811（208）、y592–631（40），第 7 页 x944–1151（208）、y292–331（40）。故订正为 `circle` 32 / `gap` 8 / `padding` `3px 7px` / 新增 `size` 208 × 40，并把实现（`TrackTableActions` 的 `size={34}`、`gap-[6px]`、`p-[4px_8px]`）一并对齐。**这是一处跨屏订正**（所有用行内操作带的屏），须连同屏 01 / 02 复跑。",
+          "**序数度量告诫（本轮新得，与 1.3.6 的「拉丁墨迹宽度不可信」同源）**：`34` 这个数不是从像素读出来的，而是「先假定间距 6、再由 `(210 − 16 − 4×6) / 5` 反解」得到的；一旦假定错，反解会给出一个自洽的假值，而记录的原始区间仍然写着真值 —— 这就是它能同时存活在真值里与实现里、却与像素矛盾三个阶段的原因。**凡「由总量与假定反推单件」得到的数，都必须在真值里同时留下直接量得的区间**，否则事后无法判伪。",
+          "**新增 `material.rowActionBand.rightOffsetByRoute`：带子的右缘不是全局常量**。第 3 页（屏 02）带子右缘 x812 ⇒ 距行右缘 1376 − 812 = **564** = col4 220 + col5 152 + listPadRight 40 + 152；第 7 页（屏 06）带子右缘 x1152 ⇒ 距行右缘 **224**。两页相差 340px —— 这与 1.3.9 的播放栏副行间距（72 / 24）同类：该 152px 在稿面上是**手工摆放**，不是可推导的常量。故按屏登记实测值，实现侧由屏给出偏移而不是复用同一条公式。",
+          "**新增 `geometry.searchField`：内容区顶部大搜索框（仅屏 06）**。实测盒 x64–1375 × y110–181（宽 1312 = 两侧 gutter 各 64，高 **72**）、圆角 18、填充 **白 8%**（盒内亮度 27，画布底 8 ⇒ (27−8)/247 = 7.7%）、描边 1px（上缘峰 59、下缘 54 ⇒ 13–14%）。**三处与原型分歧**：原型 `.searchfield` 是 `height: 70px` / `background: rgba(255,255,255,0.1)` / `border: 1px solid rgba(255,255,255,0.1)`，设计稿是 72 / 白 8% / 白 14%。放大镜图标设计稿墨迹仅 **16 × 16**（阈值 60–120 稳定；原型同位置 23 × 23），故 `iconSize` 由实现的 30 收到 18（墨迹 16）。查询词「反乌托邦」墨迹 x129–238 × y139–165（高 27 ⇒ 字号 30），与原型一致。",
+          "**新增 `geometry.searchField.localLink`：右端的「在本地音乐中搜索」药丸**。实测 x993.5–1216.5（宽 **223**）× y130–161（高 **32**，全圆角），填充 **白 10%**（药丸底 50 over 盒底 27），**无描边**（上下缘与底同为 50，未出现比填充更亮的一行）；文字墨迹 x1009–1181、右箭头 x1190–1201，故左右内距 ≈ 15 / 14。**与原型分歧**：原型 `.local-link` 是 `height: 36px` / `padding: 0 18px` / `gap: 8px` / 白 14% 底 + 白 12% 描边 —— 设计稿更矮（32）、更宽的内距（15）、无描边、底色低一档（10%）。文字取色是**强调蓝**（峰值 RGB(97,203,255)），不是原型的 `--c-text-2` 灰。",
+          "**新增 `geometry.creatorRow`：创作者行**。实测（第 7 页两行，y542–581 / y598–637）：头像 **40 × 40 圆形**、行距 **56**、姓名墨迹左缘 **x120**（= 头像右缘 104 + 16）、操作列左缘 **x1264**（= 画布右缘 1376 − 112）。行内文字：姓名 17 / 600（墨迹高 17，与 `--biu-type-list-title` 同阶）、副行 13（墨迹高 12）。**与原型分歧**：原型 `.creator-row` 是 `grid-template-columns: 107px minmax(0,1fr) 112px`、`.creator-face` 56 × 56；设计稿的第一列实际只有 **56**（头像 40 + 16 间隙），若按 107 + `gap:16` 摆，姓名会落在 x187 而实测在 x120 —— 两列方案（40 + 16 间隙，或 56 列 + 0 间隙）都能复现实测，故真值只登记**可量得的位置**，由实现选一种网格。",
+          "**新增 `material.followButton`：创作者行的关注 / 已关注按钮**。两态都是高 **32**、左对齐于操作列（左缘同为 x1264），宽度随文字（已关注 71、关注 58）—— 与原型 `.follow { height: 34px; padding: 0 20px }` 分歧。**两态的材质是相反的**：未关注「关注」是**反色亮底 + 深字**（填充实测 RGB(240,240,240)，即 `--biu-inverse-surface` #F2F2F2；文字峰值为 0，即 `--biu-inverse-ink`），已关注「已关注」是**白 10% 弱底 + 亮字**（填充 RGB(33,33,34) over 底 8 ⇒ 10%；文字峰值 RGB(221,221,229)）。实现现状两态都不对：`CreatorRow` 的未关注态是**描边**按钮（`border-[var(--biu-veil-22)] text-primary`），已关注态用 `--biu-veil-12` 底。**注意**：已关注态文字实测 221 高于 `--biu-text-secondary`（#CCCCCC = 204），但 13px 小字的墨迹峰值受 PDF 光栅—重采样链影响，不能据此定色；故真值只登记**底色是反色面、已关注态是小字亮面**这一结构，文字色阶留待放大取证。",
+          "**新增 `geometry.sectionTitle` 的屏 06 用法与 `copyConstraints` 的落地**：两段结果**同页共存**（不是切换视图），顶栏分段是**结果类型筛选**而非全局导航 —— 分段标签「音乐视频 · 9 / 创作者 · 2」的尾巴是**运行时结果数**（见 `topbarSegments.labelSources`），与两个 Section 标题「音乐视频 · 9 条」「创作者 · 2 个」同源。故壳层不得写死标签，须由结果集给出；数量未知（查询未提交）时不得渲染悬空分隔符。",
+          "**屏 06 注解带的定位基（**一处此前容易被误读的机制**）**：`.note` 的 `top` 不是画布绝对 y，而是**相对内容容器**（容器顶 = 顶栏下缘 71）。第 7 页 `note--high` 实测首行墨迹 y674 ⇒ 71 + 598 + 5 = 674，第 3 页基准 `top: 653` 实测 728 ⇒ 71 + 653 + 4 = 728。两页同时成立，故 `screens[].anchors.noteTop` 一栏记的是**容器相对值**，不是画布 y。",
+          "**`screens[5].anchors` 的四个纵向值（h1Top 131 / leadTop 197 / filterTop 240 / noteTop 598）对本屏是空槽**：屏 06 没有 h1、也没有筛选条（`filterTop` 落在第 1 段的标题带上，语义不符）。这些字段仅供人读、verify.py 不消费（它全部在运行时实测），故本轮改为**本屏真实存在的带**，并新增专门的探针窗口，见 `screens[5].probes`。",
+          "**一处相邻的、本轮只登记不改的 1px 不一致**：`geometry.topbar.height` 写 71，而 `referenceIntegrity.standard.topbarBottomEdge` 量得 72 —— 两者说的是同一条边。第 7 页逐行剖面（x300：y70 = 22.0、y71 = 21.0、y72 = 9.0）说明这条边落在 71.9，即顶栏实际占 0–71 共 **72** 行。本轮**不动** `geometry.topbar.height`：它是 L1 硬锚点，改成 72 会把 `--biu-layout-topbar-h` 一并推 1px，牵动所有已比对的屏，而现状 71 与设计 72 恰在 L1 的 ±1px 容差内（渲染侧 71、设计侧 72，判 PASS）。但它解释了一件事：本文件的「height」一栏**不是行数**，而是「距起点的边界值」—— 故搜索框实测占 110–181 共 72 行、边界 109.5 与 181.5 ⇒ 记 `height: 72px`，与顶栏的记法口径一致（都是边界差，不是行数）。"
+        ]
+      },
       {
         "version": "1.3.11",
         "at": "2026-09-27",
@@ -479,24 +523,29 @@
       "geometry": "高 24、左右内边距 9、圆角 8（chip 档）、字号 12 —— 与原型一致，不变"
     },
     "tileActionBand": {
-      "circle": "34px",
+      "circle": "32px",
       "circleCount": 5,
-      "gap": "6px",
-      "padding": "7px 8px",
+      "gap": "8px",
+      "padding": "4px 8px",
+      "size": "208 × 40",
       "border": "rgba(255,255,255,0.2)",
       "borderToken": "--biu-veil-20",
       "blur": "20px",
       "background": "rgba(255,255,255,0.16)",
       "backgroundToken": "--biu-surface-glass",
       "iconSize": "17px",
-      "rule": "玻璃操作带 = **五枚等大** 34px 玻璃圆片，无主操作反色档、无分隔线。证据：设计稿第 2 页瓦片 3 实测操作带横向 210px = 5×34 + 4×6 + 2×8（与原型 .actionband 的几何一致）；且设计稿注解原文「玻璃操作带直接露出 5 个主操作」——五个并列，没有层级。**原型的 .round--lead（反色主操作）与 .sep（分隔线）是原型的发挥，实现不随行**。veil-22 令牌保留（.follow 描边仍在用），只是不再用于操作带分隔线。图标用描边形（收藏是线形心形，与设计稿一致），主操作播放为实心三角 —— 与现有 Icon 词汇表一致。",
+      "rule": "玻璃操作带 = **五枚等大** 32px 玻璃圆片，无主操作反色档、无分隔线（1.3.13 订正尺寸）。证据：设计稿第 2 页瓦片 3 实测带子 50% 交叉 x781.5–989.5 × y399.5–439.5（**208 × 40**，与行内操作带逐值相同）；五枚图标中心 805 / 845 / 885 / 925 / 965 **等距 40** ⇒ 间隔 8、圆片 32；恒等式 208 = 5×32 + 4×8 + 2×8。1.3.2 曾记「210 = 5×34 + 4×6 + 2×8」—— 34 与间距 6 是先假定后反解的自洽假值（见 meta.revisions 1.3.12 的「序数度量告诫」），本轮按直接量得的区间订正。且设计稿注解原文「玻璃操作带直接露出 5 个主操作」——五个并列，没有层级。**原型的 .round--lead（反色主操作）与 .sep（分隔线）是原型的发挥，实现不随行**。两带的几何自此与 `material.rowActionBand` 完全一致，差异只在材质（带底 16% 对 14%、描边 20% 对 18%）与行为（本带圆片有悬停）。veil-22 令牌保留（历史登记），只是不再用于操作带分隔线。图标用描边形（收藏是线形心形，与设计稿一致），主操作播放为实心三角 —— 与现有 Icon 词汇表一致。",
       "visibility": "悬停或当前项时露出（设计稿注解原文）"
     },
     "rowActionBand": {
-      "circle": "34px",
+      "circle": "32px",
+      "circleToken": "--biu-layout-action-circle",
       "circleCount": 5,
-      "gap": "6px",
+      "gap": "8px",
+      "gapToken": "--biu-layout-action-gap",
       "padding": "4px 8px",
+      "paddingToken": "--biu-layout-action-pad",
+      "size": "208 × 40",
       "border": "rgba(255,255,255,0.18)",
       "borderToken": "--biu-veil-18",
       "blur": "20px",
@@ -506,9 +555,46 @@
       "circleFillToken": "--biu-surface-sunken",
       "iconSize": "17px",
       "rightEdge": 812,
-      "rule": "行内（曲目行）操作带（P3 屏 02 补录）。设计稿第 3 页第 04 行实测：带子 bbox x604–812 × y591–632（210 × 42，两端全圆角），圆片填充 >=55 的横向区间为 612–643 / 652–683 / 692–723 / 732–763 / 772–803 —— 五枚**等大 34px**、间距 6、水平内边距 8（210 = 5×34 + 4×6 + 2×8）；纵向 42 = 34 + 2×4，故内边距 4。**与原型的差异（原型—设计稿第 5 处分歧）**：原型 `.track-actions` 是「38px 反色主操作 + `.sep` 分隔线 + 5 枚 30px」，设计稿是「五枚等大 34px、无分隔线、无主操作反色档」，且动作集合少一枚 —— 设计稿只有 播放 / 下一首 / 入队 / 收藏 / 下载，没有「上一首」。带子与圆片的亮度也定死了材质：带子底 43（= veil-14 叠在行底 8.33 上）、描边峰 81（≈ veil-18 叠在带底上）、圆片填充 69–71 —— **圆片自带填充，不是透明的**，否则会读成「图标浮在带子上」而不是「五枚圆片」。圆片这一层的不透明度用同一叠加模型**从像素反解**：13% 叠在带底 42–43 上得 69.7–70.5、14% 得 71.8–72.6，实测 69–71 更贴 13%，故 `circleFill` 取 0.13、`circleFillToken` 记 `--biu-surface-sunken`（13% 档在叠加梯度里由语义槽承接，见 `palette.overlay.rule`；`veil-14` 仍是**带子底**的令牌）。1.3.4 起曾把圆片一并记作 veil-14（1.3.6 沿用）—— 那是由「带子取 14%」外推得到的推断值，而非像素反解值；1.3.7 按反解改正。",
-      "horizontalAnchor": "带子右缘落在画布 x812；行右缘 x1376，故右偏移 = 1376 − 812 = 564 = col4(220) + col5(152) + listPadRight(40) + 152px。这个 152px 是画布实测的剩余量，原型 `.track-actions { right: 24px }`（贴行右缘）与设计稿不符。",
-      "visibility": "设计稿第 3 页只在第 04 行露出（该行没有当前态高亮，见 geometry.list.currentStateNote）"
+      "rule": "行内（曲目行）操作带（P3 屏 02 补录，1.3.12 订正尺寸）。设计稿第 3 页第 04 行与第 7 页第 01 行是同一个带子，两页重测一致：带子 50% 交叉第 3 页 x604–811 × y592–631、第 7 页 x944–1151 × y292–331（**208 × 40**）；圆片 50% 交叉第 3 页 611.5→643.5、第 7 页 951.7→983.5（**32.0** / 每枚），起点间距 40 ⇒ **间隔 8**。1.3.4 记录的横向区间（612–643 / 652–683 / …）本身就是 32px 宽的区间、间距 40，与本轮的实测**逐值相同**；错的只是同段散文里那个「34px / 间距 6」与由它推出的 `210 = 5×34 + 4×6 + 2×8`。**根因见 meta.revisions 1.3.12 的「序数度量告诫」**：34 是先假定间距 6、再反解得到的一个自洽假值，而原始区间一直写着真值，两者矛盾了三轮无人发现。**与原型的差异（原型—设计稿第 5 处分歧）**：原型 `.track-actions` 是「38px 反色主操作 + `.sep` 分隔线 + 5 枚 30px」，设计稿是「五枚等大 32px、无分隔线、无主操作反色档」，且动作集合少一枚 —— 设计稿只有 播放 / 下一首 / 入队 / 收藏 / 下载，没有「上一首」。带子与圆片的亮度定死了材质：带子底 42–43（= veil-14 叠在行底 8.33 上）、描边峰 81–91（≈ veil-18 叠在带底上）、圆片填充 70 —— **圆片自带填充，不是透明的**，否则会读成「图标浮在带子上」而不是「五枚圆片」。圆片这一层的不透明度用同一叠加模型**从像素反解**：13% 叠在带底 42–43 上得 69.7–70.5、14% 得 71.8–72.6，实测 70 更贴 13%，故 `circleFill` 取 0.13、`circleFillToken` 记 `--biu-surface-sunken`（13% 档在叠加梯度里由语义槽承接，见 `palette.overlay.rule`；`veil-14` 仍是**带子底**的令牌）。1.3.4 起曾把圆片一并记作 veil-14（1.3.6 沿用）—— 那是由「带子取 14%」外推得到的推断值，而非像素反解值；1.3.7 按反解改正。",
+      "horizontalAnchor": "带子右缘**按屏不同**，见 `rightOffsetByRoute`。",
+      "rightOffsetByRoute": {
+        "/collection/:id": {
+          "rightEdge": 812,
+          "offset": "564px",
+          "reason": "第 3 页第 04 行实测带子右缘 x812；行右缘 x1376。564 = col4(220) + col5(152) + listPadRight(40) + 152px。这个 152px 是画布实测的剩余量，原型 `.track-actions { right: 24px }`（贴行右缘）与设计稿不符。"
+        },
+        "/search": {
+          "rightEdge": 1152,
+          "offset": "224px",
+          "reason": "第 7 页第 01 行实测带子右缘 x1152（50% 交叉 944–1151）；行右缘同为 x1376 ⇒ 偏移 224。与屏 02 的 564 相差 340px，说明这一栏的横向位置在稿面上是**逐页手工摆放**，不是可推导的常量（与 1.3.9 的播放栏副行间距 72 / 24 同类）。实现侧因此由屏给出偏移，不再复用同一条 right-[calc(...)] 公式。"
+        }
+      },
+      "visibility": "设计稿第 3 页只在第 04 行露出、第 7 页只在第 01 行露出（两页都没有当前态高亮，见 geometry.list.currentStateNote）"
+    },
+    "followButton": {
+      "rule": "创作者行的「关注 / 已关注」按钮（仅屏 06）。两态的**材质相反**：未关注是主操作（亮底深字），已关注是弱底亮字 —— 与「激活药丸用反色底」同一条设计语言（`palette.inverseSurface` 的用途即「激活药丸与主操作底」）。",
+      "height": "32px",
+      "heightToken": "--biu-layout-follow-h",
+      "radiusToken": "--biu-radius-pill",
+      "align": "start",
+      "states": {
+        "follow": {
+          "fill": "#F2F2F2",
+          "fillToken": "--biu-inverse-surface",
+          "inkToken": "--biu-inverse-ink",
+          "width": "58px",
+          "measurement": "实测盒 x1264–1321 × y602–633。纵向在离左缘 9px 处读得弦长 28，与 32 高全圆角药丸的弦长一致：32 − 2×(16 − √(16² − 7²)) = 28.8。填充实测 RGB(240,240,240)，与 `--biu-inverse-surface`（#F2F2F2 = 242）差 2；文字墨迹谷值为 0（深字）。"
+        },
+        "followed": {
+          "fill": "rgba(255,255,255,0.10)",
+          "fillToken": "--biu-surface-hover",
+          "border": "none",
+          "inkToken": "--biu-text-secondary",
+          "width": "71px",
+          "measurement": "实测盒 x1264–1334 × y546–577。填充 RGB(33,33,34) over 画布底 8 ⇒ 白 9.9%，**无可见描边**（上下缘逐行 29 / 33…33 / 29，未出现比填充更亮的一行）。文字墨迹峰值 RGB(221,221,229)；该值高于 `--biu-text-secondary`（#CCCCCC = 204），但 13px 小字的墨迹峰值受 PDF 光栅—重采样链影响，**不足以据此定色**，故 `inkToken` 暂按既有语义槽（次文字）登记，留待放大取证。"
+        }
+      },
+      "divergence": "原型 `.follow` 是「高 34 / 左右内距 20 / 1px 白 22% 描边 / `is-on` 时白 12% 底 + `--c-text-4` 字」。设计稿更矮（32）、无描边，且未关注态不是描边而是**反色亮底**。实现现状（`CreatorRow`：未关注描边、已关注 veil-12 底）两态都不符。"
     },
     "playbar": {
       "surface": "rgb(var(--biu-surface-player) / 86%)",
@@ -796,7 +882,74 @@
     },
     "sectionHead": {
       "marginBottom": "8px",
+      "noHeaderVariant": {
+        "marginBottom": "4px",
+        "screens": ["06"],
+        "rule": "无表头变体（1.3.14 补录）：分组标题下直接是无表头曲目表 / 创作者行的屏（当前仅屏 06），margin 取原型 .section-head 的 4px —— 设计稿第 7 页「标题墨迹下缘 → 缩略图顶缘 13px / → 头像顶缘 19px」按渲染度量落在 4px 上。8px 档继续适用于标题与内容之间隔着表头 / 瓦片头的屏（01/02/…）。"
+      },
       "rule": "分组标题（.section-head / Section header）与下方瓦片栅格的间距。P3 屏 01 补录：设计稿第 2 页两处分组的「标题墨迹下缘 → 瓦片顶缘」距离一致为 12px（我创建的 320→332、我收藏的 552→564）；应用同字体同行高下墨迹—盒缘偏移 4px，故 margin = 8px。原型 .section-head 的 margin-bottom 4px 与设计稿不符（原型—设计稿第 4 处分歧），实现按设计稿。"
+    },
+    "searchField": {
+      "rule": "内容区顶部的大搜索框（`.searchfield`），**仅屏 06（搜索结果）使用**。它是「跨页入口」的载体：本地库不假装成统一索引，改由这个框把查询词带进本地音乐（见右端 `localLink`）。顶栏的搜索位是另一个组件（`globalChrome.search.field`，圆角 999），两者只是名字里都有「搜索」。",
+      "box": "1312 × 72",
+      "height": "72px",
+      "radius": "18px",
+      "radiusToken": "--biu-radius-field-lg",
+      "fill": "rgba(255,255,255,0.08)",
+      "fillToken": "--biu-veil-8",
+      "border": "1px solid rgba(255,255,255,0.14)",
+      "borderToken": "--biu-veil-14",
+      "iconSize": "18px",
+      "iconSizeToken": "--biu-layout-searchfield-icon",
+      "iconInk": "16 × 16",
+      "iconInkLeft": 94,
+      "queryInkLeft": 129,
+      "querySize": "30px",
+      "queryWeight": 600,
+      "queryTracking": "-0.4px",
+      "queryBaseline": {
+        "ink": "y139–165（重心 152）",
+        "boxCenter": 146,
+        "offset": "重心低于盒中心 5.5px",
+        "rule": "设计稿第 7 页的查询词**不是**在盒内垂直居中的（1.3.14 补录）—— 同行的放大镜图标墨迹 137–154 居中，查询词整体低 5.5px，属设计稿的文字基线摆放，与原型 flex 居中分歧。实现：输入框 pt-[11px]，flex 居中下重心下移 pt/2。"
+      },
+      "measurement": "设计稿第 7 页：盒 50% 交叉 x64–1375 × y110–181（上缘 109.5、下缘 181.5）；左缘 x64 与内容 gutter 相等，右缘到画布边 64 —— 与列表缩进（listPadRight 40）**不同**，搜索框是整列通宽。填充取自盒内均匀区（y120 与 y170 的 x500–600 都是 27.0），画布底 8 ⇒ 白 7.7%。描边是 1px 特征，在「2200 px 光栅 → 1440 重采样」链路上会被摊到相邻像素，**峰值读数不能直接当不透明度**：上缘峰 59、下缘 54，反解落在 13–18%，取 14%。放大镜墨迹在阈值 60/80/100/120 下稳定为 16 × 16（原型同位置 23 × 23），故 `iconSize` 记 18（墨迹 16）。查询词墨迹 x129–238、高 27 ⇒ 字号 30，与原型一致。",
+      "localLink": {
+        "box": "223 × 32",
+        "height": "32px",
+        "heightToken": "--biu-layout-searchfield-link-h",
+        "paddingInline": "15px",
+        "paddingInlineToken": "--biu-layout-searchfield-link-pad",
+      "gap": "8px",
+      "gapToken": "--biu-layout-searchfield-link-gap",
+      "rightInset": "158px",
+      "rightInsetToken": "--biu-layout-searchfield-link-right-inset",
+      "radiusToken": "--biu-radius-pill",
+        "fill": "rgba(255,255,255,0.10)",
+        "fillToken": "--biu-surface-hover",
+        "border": "none",
+        "measurement": "药丸 50% 交叉 x993.5–1216.5 × y130–161（高 32、全圆角）；填充 50 over 盒底 27 ⇒ 白 10.1%。上下缘逐行为 29 / 47 / 50…50 / 46 / 28，**没有一行比填充更亮** ⇒ 无可见描边（原型有 1px 白 12% 描边）。文字墨迹 x1009–1181、右箭头 x1190–1201 ⇒ 左右内距 ≈ 15、文字与箭头的墨迹缝 9 ⇒ 元素间距取原型的成文值 8（1.3.12 曾误登记为 15 —— 把「墨迹缝」当成了「元素间距」，见 1.3.13）。**rightInset = 盒右缘内边 − 药丸右缘 = 1374.5 − 1216.5 = 158**：药丸**不贴**盒右缘，右侧留 158px 空白（逐行剖面确认该区带为盒底 27，无任何元素）—— 与原型分歧（原型 padding-right 16 贴边）。158 与 152（rightOffsetByRoute 的余量）同为稿面手工摆放值，不是可推导常量。",
+        "ink": "强调蓝 —— 文字墨迹峰值实测 RGB(97,203,255)，**不是**原型的 --c-text-2 灰。屏 06 的这段文案是「在本地音乐中搜索「<查询词>」」，右缀一个 arrow-right 图标。"
+      },
+      "divergence": "原型 `assets/app.css:1683` 的 `.searchfield` 是「高 70 / 圆角 18 / 白 10% 底 / 白 10% 描边 / 内距 0 16 0 22 / 间距 18 / 图标 font-size 30」，且 `.searchfield + .page-lead { margin-top: 13px }`；设计稿第 7 页是「高 72 / **白 8% 底** / **白 14% 描边** / 图标墨迹 16」。条目的 72 与 70 都在 L1 的 ±1px 之外（差 2），故按设计稿取 72。"
+    },
+    "creatorRow": {
+      "rule": "创作者行（`.creator-row`），**仅屏 06 使用**。设计稿第 7 页的两行是同一套模板的第二段结果。",
+      "rowPitch": "56px",
+      "rowPitchToken": "--biu-layout-creator-row-h",
+      "avatar": "40px",
+      "avatarToken": "--biu-layout-creator-avatar",
+      "avatarShape": "circle",
+      "avatarLeft": 64,
+      "textInkLeft": 120,
+      "actionsLeft": 1264,
+      "actionsWidth": "112px",
+      "actionsToken": "--biu-layout-creator-actions-w",
+      "nameSize": "17px",
+      "nameWeight": 600,
+      "subSize": "13px",
+      "measurement": "设计稿第 7 页：头像 50% 交叉 x64–104（40）× y542–581 / y598–637（40），行距 598 − 542 = **56**；姓名墨迹 x120–203 × y547–563（高 17）、副行 x120–388 × y570–581（高 12）；操作列内的按钮左缘同为 **x1264** = 1376（内容右缘） − 112。行宽与列表同行（x64–1376），最后一列 112 与 `geometry.list.col5` 同值。",
+      "gridRule": "**不登记 `107px | 1fr | 112px` 这一组**（原型如此）。若按 107 + `gap: 16px` 摆，姓名会落在 x64 + 107 + 16 = 187，而实测是 120 —— 差 67px。能同时复现「头像 40 在 x64 / 姓名 x120 / 操作列 x1264」的两组网格是：`40px minmax(0,1fr) 112px` + `gap: 16px`，或 `56px minmax(0,1fr) 112px` + `gap: 0`（头像在 56 列内左对齐、右余 16）。两者像素等价，真值不替实现做选择，只钉住上面四个可量得的位置。"
     }
   },
   "tolerances": {
@@ -971,10 +1124,41 @@
       "scroll": true,
       "anchors": {
         "topbar": [0, 71],
-        "h1Top": 131,
-        "leadTop": 197,
-        "filterTop": 240,
-        "noteTop": 598
+        "searchField": [110, 182],
+        "leadTop": 206,
+        "sectionTop": 256,
+        "creatorSectionTop": 508,
+        "noteTop": 674
+      },
+      "anchorsRule": "**仅供人读，verify.py 不消费**（它的锚点全部在运行时实测）。本屏没有 h1、也没有筛选条，故 1.3.12 起把此前从模板抄来的 h1Top / filterTop 两个空槽换成本屏真实存在的带。数值读自设计稿第 7 页 1440 × 900 参考图（searchField 是 50% 交叉的盒边界 109.5–181.5，取整 110–182；其余是墨迹带起点）。注意 `noteTop` 记的是**容器相对值**（`top: 598` + 内容容器顶 71 + 行内墨迹偏移 5 = 674），不是画布 y —— 见 meta.revisions 1.3.12 末条。",
+      "verticalRhythm": [
+        "顶栏 0–71",
+        "搜索框盒 110–181（高 72）",
+        "导语墨迹 206–224",
+        "第一段标题墨迹 256–271",
+        "视频行缩略图 284–339 / 352–407 / 420–475（100 × 56，行距 68）",
+        "第二段标题墨迹 508–523",
+        "创作者行 542–581 / 598–637（行距 56）",
+        "注解带两行墨迹 674–689 / 694–706",
+        "播放栏 812–899"
+      ],
+      "segments": {
+        "byRoute": "音乐视频 · 9 | 创作者 · 2（尾巴是**运行时结果数**，见 topbarSegments.labelSources）",
+        "role": "结果类型筛选，不是全局导航 —— 两段结果同页共存（不是切换视图），分段只决定视口落在哪一段。数量未知（查询未提交）时不得渲染悬空分隔符。"
+      },
+      "probes": {
+        "structural": ["topbar", "searchField", "lead", "playbar"],
+        "content": ["list", "right", "note"],
+        "windows": {
+          "topbar": "(0, 1400, 0, 78, 12)",
+          "searchField": "(64, 1400, 95, 192, 20)",
+          "lead": "(64, 1000, 195, 240, 80)",
+          "list": "(64, 900, 300, 740, 60)",
+          "right": "(960, 1380, 300, 740, 60)",
+          "note": "(64, 1400, 640, 800, 60)",
+          "playbar": "(64, 200, 795, 900, 12)"
+        },
+        "reason": "**屏 06 的探针集与其余屏不同**，必须按屏切换，不能沿用默认集合：`H1` 的窗 (64,900,100,190,190) 正是搜索框所在（填充只有 27，阈值 190 永远读不到带）；`filter` 的窗 (64,1000,226,300,26) 落在第一段的标题带上，语义不符；`note` 的默认窗 (64,1400,580,812,60) 会把创作者行（542–637）一并吞进来。故本屏的纵向带取「顶栏 / 搜索框 / 导语 / 播放栏」四条结构带，并把 note 窗收到 640–800。默认集合对屏 01–05 / 07–12 不变。"
       },
       "variants": ["note--high", "tracklist--search", "section--tight"],
       "hasRowPitch": true,
@@ -1165,8 +1349,9 @@
     },
     "labelSources": {
       "/collection/:id": "尾巴「 · 11 / · 21 / · 31」是 **CollectionType 类型码**（11 收藏夹 / 21 视频合集 / 31 视频系列），是**标签自身的一部分**，属静态值 —— **不是集合数量**。取证见 meta.revisions 1.3.8（三条证据：页导语「仅数据类型不同」、三个数字与枚举逐一相等、激活项与该屏 collectionType 同源）。",
-      "/search": "尾巴「 · 9 / · 2」是**搜索结果数**，属运行时数据，随查询变化 —— 壳层不得写死，须由结果集给出。",
-      "/local-music": "「D 盘 · Lossless」「E 盘 · Live 录音」是**本地目录名**，属运行时数据 —— 需真实目录列表后才能在壳层声明。"
+      "/search": "尾巴「 · 9 / · 2」是**搜索结果数**，属运行时数据，随查询变化 —— 壳层不得写死，须由结果集给出。落地机制（1.3.12 登记）：分段在壳层里是**模板**（前缀「音乐视频」/「创作者」+ 可选尾巴），计数由一个**非持久化 store** 承载、由结果页在拿到结果集后写入；`resolveRouteShell` 保持纯函数，模板与计数在 `Layout` 里组合成最终标签。**计数未知时（查询未提交）不渲染分隔符与数字**，只留前缀 —— 壳层里不得出现「音乐视频 · 」这种悬空尾巴。",
+      "/local-music": "「D 盘 · Lossless」「E 盘 · Live 录音」是**本地目录名**，属运行时数据 —— 需真实目录列表后才能在壳层声明。",
+      "rule": "带尾缀的分段项在壳层是**模板**，不是字面标签 —— 这一条适用于 `/search`（结果数）与 `/local-music`（目录名）；`/collection/:id` 的数字是 CollectionType 类型码（静态、属标签自身，见 1.3.8），不受此规则约束。`tests/app-shell-interactions.test.ts` 对 `/search` 的断言因此不比对字面标签，而是比对模板前缀与「计数未知时无悬空分隔符」。"
     }
   },
   "globalChrome": {
@@ -1207,6 +1392,7 @@
     "发现音乐必须标注来源为 B 站音乐分区（1003），且注明非个性化推荐",
     "已下线分区（流行 / 鬼畜）需以 topbar-note 显式标注"
   ],
+  "copyConstraintRule": "第一条约束的是**把这三类当作可检索对象提供给用户**（搜索框占位符、结果类型分段、筛选条），因为 `web-interface-search-type` 的 `search_type` 只有 `video` / `bili_user` 两类。它**不禁止**在一句**否定句**里提到这些词 —— 屏 06 的注解带正文正是「因此这里不再出现「歌曲 / 歌单 / 本地文件」筛选 —— 本地库改为跨页入口，不假装成统一索引」（设计稿第 7 页逐字），它解释的恰恰是「为什么不提供」。改文案时不要把这条否定句一并删掉，也不要让它变成肯定句。**本组约束目前无自动闸门**（全仓库只有 spec-lock 引用 `copyConstraints`），屏 06 落地时应至少补一条针对 `/search` 页面的字面断言。",
   "immersiveGeometry": {
     "artLeft": 64,
     "artTop": 60,
@@ -1259,7 +1445,8 @@
       },
       "06": {
         "meanLuminanceDiff": 9.18,
-        "failedGates": ["filter", "list", "note", "right", "rowPitch"]
+        "failedGates": ["filter", "list", "note", "right", "rowPitch"],
+        "stale": "**本行已过期**（1.3.12）：它是用**默认探针集**量的，而屏 06 的默认集本身就不适配 —— 屏上没有 h1、没有筛选条，`H1` 窗正落在搜索框上（填充 27，阈值 190 读不到）、`filter` 窗落在第一段标题带上、`note` 默认窗（580–812）把创作者行一并吞入。故这里的 `filter` 失败是**探针错位**、不是原型缺陷。改用 `screens[5].probes` 后须重跑原型基线再回填。"
       },
       "07": {
         "meanLuminanceDiff": 14.55,
@@ -1324,7 +1511,19 @@
     "geometry.playbar.right.pillGap": "--biu-playbar-pill-gap",
     "geometry.playbar.left.subGap": "--biu-playbar-sub-gap",
     "geometry.playbar.deferred.gutter": "--biu-playbar-deferred-gutter",
-    "geometry.playbar.deferred.gap": "--biu-playbar-deferred-gap"
+    "geometry.playbar.deferred.gap": "--biu-playbar-deferred-gap",
+    "geometry.searchField.height": "--biu-layout-searchfield-h",
+    "geometry.searchField.iconSize": "--biu-layout-searchfield-icon",
+    "geometry.searchField.localLink.height": "--biu-layout-searchfield-link-h",
+    "geometry.searchField.localLink.paddingInline": "--biu-layout-searchfield-link-pad",
+    "geometry.searchField.localLink.gap": "--biu-layout-searchfield-link-gap",
+    "geometry.creatorRow.rowPitch": "--biu-layout-creator-row-h",
+    "geometry.creatorRow.avatar": "--biu-layout-creator-avatar",
+    "geometry.creatorRow.actionsWidth": "--biu-layout-creator-actions-w",
+    "material.rowActionBand.circle": "--biu-layout-action-circle",
+    "material.rowActionBand.gap": "--biu-layout-action-gap",
+    "material.rowActionBand.padding": "--biu-layout-action-pad",
+    "material.followButton.height": "--biu-layout-follow-h"
   },
   "excludedFromPalette": {
     "placeholderArt": {

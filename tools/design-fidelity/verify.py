@@ -363,10 +363,34 @@ def measure_anchors(L: np.ndarray, bands_map: dict, immersive: bool, has_row_pit
     return anchors
 
 
+def screen_probe_overrides(screen: dict) -> dict:
+    """屏级探针覆写（spec-lock `screens[].probes`，1.3.12 登记 / 1.3.14 消费）。
+
+    个别屏的默认探针语义不成立：屏 06 没有 h1 与筛选条 —— 默认 `H1`（阈值 190）
+    在该屏读到的是大搜索框里的查询词墨迹，`filter`（窗 226–300）读到的是分组
+    标题，都会把「本屏没有的东西」当成本屏的闸门。真值侧为这类屏声明整套
+    替代窗口与结构带 / 内容带名单（`windows` / `structural` / `content`），
+    这里负责把声明接进探针与判定。沉浸态不参与（沉浸屏有自己的探针组）。
+    """
+    if screen.get("immersive"):
+        return {}
+    return screen.get("probes") or {}
+
+
+def _parse_window(window) -> tuple:
+    """屏级窗口在真值里以 "(x0, x1, y0, y1, thr)" 字符串登记（人读友好），解析成元组。"""
+    if isinstance(window, (list, tuple)):
+        return tuple(window)
+    return tuple(int(v) for v in str(window).strip().strip("()").split(","))
+
+
 def probe(im: Image.Image, screen: dict) -> dict:
     immersive = bool(screen.get("immersive"))
     L = luminance(im)
     windows = dict(IMMERSIVE_PROBES if immersive else DEFAULT_PROBES)
+    overrides = screen_probe_overrides(screen).get("windows") or {}
+    for name, window in overrides.items():
+        windows[name] = _parse_window(window)
     for name in detail_probe_names(screen):
         windows[name] = PLAYBAR_DETAIL_PROBES[name]
     res = {name: bands(L, *window) for name, window in windows.items()}
@@ -423,8 +447,16 @@ def evaluate(screen: dict, spec: dict, rendered_png: pathlib.Path, verbose: bool
     render_img = Image.open(rendered_png).convert("RGB").resize(CANVAS, Image.LANCZOS)
     pd, pr = probe(design_img, screen), probe(render_img, screen)
 
-    structural = list(IMMERSIVE_STRUCTURAL if immersive else STRUCTURAL_BANDS) + detail_probe_names(screen)
-    content = IMMERSIVE_CONTENT if immersive else CONTENT_BANDS
+    # 结构带 / 内容带名单：屏级声明优先（屏 06 等），其余屏用默认集合
+    overrides = screen_probe_overrides(screen)
+    if overrides.get("structural"):
+        structural = list(overrides["structural"]) + detail_probe_names(screen)
+    else:
+        structural = list(IMMERSIVE_STRUCTURAL if immersive else STRUCTURAL_BANDS) + detail_probe_names(screen)
+    if overrides.get("content"):
+        content = list(overrides["content"])
+    else:
+        content = IMMERSIVE_CONTENT if immersive else CONTENT_BANDS
 
     tol = spec["tolerances"]
     band_tol = tol["bandOffsetPx"]

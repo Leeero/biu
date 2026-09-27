@@ -7,7 +7,13 @@ export interface SegmentItem {
   /** 稳定键。`href` 存在时通常是路由路径，否则是模式值。 */
   key: string;
   label: ReactNode;
-  /** 可选计数（原型 `.tab .count`）。数字一律用等宽数字，避免切换时宽度跳动。 */
+  /**
+   * 可选计数尾巴（原型 `.tab .count`）。
+   *
+   * 渲染为「· N」—— 分隔符属于尾巴的一部分，随数字**一起**出现或消失：
+   * 调用方对未知的计数传 `undefined`（而不是空串或 0 占位），悬空的
+   * 「标签 ·」因此不可能被渲染出来。数字一律用等宽数字，避免切换时宽度跳动。
+   */
   count?: number | string;
   /** 有 `href` 时渲染为链接（导航形态）。 */
   href?: string;
@@ -113,6 +119,10 @@ export const SegmentedControl = ({
       isActive ? "text-[rgb(var(--biu-text-disabled))]" : "text-[rgb(var(--biu-text-quaternary))]",
     );
 
+  /** 计数尾巴：「· N」。分隔符与数字是一个整体，一起出现、一起消失。 */
+  const renderCount = (item: SegmentItem, isActive: boolean) =>
+    item.count !== undefined ? <span className={countClass(isActive)}>· {item.count}</span> : null;
+
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (isNavigation || !onSelect) return;
     const enabled = items.filter(item => !item.disabled);
@@ -149,7 +159,7 @@ export const SegmentedControl = ({
           className={itemClass(isActive, false)}
         >
           {item.label}
-          {item.count !== undefined && <span className={countClass(isActive)}>{item.count}</span>}
+          {renderCount(item, isActive)}
         </Link>
       );
     }
@@ -162,7 +172,7 @@ export const SegmentedControl = ({
       return (
         <span key={item.key} aria-disabled="true" className={itemClass(useTabs ? false : isActive, false)}>
           {item.label}
-          {item.count !== undefined && <span className={countClass(isActive)}>{item.count}</span>}
+          {renderCount(item, isActive)}
         </span>
       );
     }
@@ -180,7 +190,7 @@ export const SegmentedControl = ({
         {...tabProps}
       >
         {item.label}
-        {item.count !== undefined && <span className={countClass(isActive)}>{item.count}</span>}
+        {renderCount(item, isActive)}
       </button>
     );
   });

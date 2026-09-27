@@ -21,6 +21,7 @@ import {
   DEFERRED_SEGMENTS,
   ROUTE_SEGMENTS,
   SEARCH_PLACEHOLDER_BY_ROUTE,
+  composeSegmentCount,
   resolveRouteShell,
   resolveSearchPlaceholder,
 } from "@/layout/route-shell";
@@ -125,8 +126,12 @@ describe("顶栏分段与真值对齐", () => {
     expect(declared.filter(route => deferred.includes(route))).toEqual([]);
   });
 
-  test("已声明的分段标签必须与真值逐字一致", () => {
+  test("已声明的分段标签必须与真值逐字一致（模板分段除外，见 /search 一节）", () => {
     for (const [pattern, entry] of Object.entries(ROUTE_SEGMENTS)) {
+      // /search 的标签是「前缀 + 运行时计数」模板，字面标签里那个数字不是
+      // 壳层能写死的 —— 见 spec-lock topbarSegments.labelSources 与下面的
+      // 专属 describe。其余路由仍逐字比对。
+      if (pattern === "/search") continue;
       expect(
         entry.segments.map(segment => segment.label),
         `${pattern} 与真值不一致`,
@@ -185,6 +190,45 @@ describe("/collection/:id 顶栏分段组", () => {
     const shell = resolveRouteShell("/library");
     expect(shell.segments).toEqual(DEFAULT_NAV_SEGMENTS);
     expect(shell.activeSegmentKey).toBe("/library");
+  });
+});
+
+describe("/search 顶栏分段组（模板 + 运行时计数）", () => {
+  /**
+   * 真值 byRoute 的「音乐视频 · 9」= 模板前缀「音乐视频」+ 计数槽 video 的
+   * 「· 9」。计数是运行时结果数（spec-lock topbarSegments.labelSources），
+   * 壳层只声明前缀与槽位，数字由结果页写入 useSearchSegments、Layout 组合。
+   * 若哪天真值的前缀变了，这条会红 —— 那时必须同时改真值并给出新取证。
+   */
+  test("分段前缀与计数槽对齐真值的字面标签", () => {
+    const truth = spec.topbarSegments.byRoute["/search"];
+    expect(truth).toEqual(["音乐视频 · 9", "创作者 · 2"]);
+
+    const segments = resolveRouteShell("/search").segments;
+    expect(segments.map(segment => segment.label)).toEqual(["音乐视频", "创作者"]);
+    expect(segments.map(segment => segment.countKey)).toEqual(["video", "creator"]);
+  });
+
+  test("两段都是可点的：分段决定视口落在哪一段（两段结果同页共存）", () => {
+    const segments = resolveRouteShell("/search").segments;
+    expect(segments.map(segment => segment.href)).toEqual(["?view=video", "?view=creator"]);
+  });
+
+  test("激活段由 ?view 决定，缺省 video（设计稿里「音乐视频」是激活段）", () => {
+    expect(resolveRouteShell("/search").activeSegmentKey).toBe("video");
+    expect(resolveRouteShell("/search", "?view=creator").activeSegmentKey).toBe("creator");
+    // 夹具地址不带 view —— 与缺省一致，两段全灭就是退化。
+    expect(resolveRouteShell("/search", "?fixture=06-search").activeSegmentKey).toBe("video");
+  });
+
+  test("计数未知 → count 缺省（无悬空分隔符）；0 是合法计数必须保留", () => {
+    const segment = resolveRouteShell("/search").segments[0]!;
+    expect(composeSegmentCount(segment, { videoCount: null, creatorCount: null }).count).toBeUndefined();
+    expect(composeSegmentCount(segment, { videoCount: 0, creatorCount: 0 }).count).toBe(0);
+    expect(composeSegmentCount(segment, { videoCount: 9, creatorCount: 2 }).count).toBe(9);
+    // 静态分段原样返回 —— 不引入多余的字段。
+    const nav = DEFAULT_NAV_SEGMENTS[0]!;
+    expect(composeSegmentCount(nav, { videoCount: null, creatorCount: null })).toBe(nav);
   });
 });
 

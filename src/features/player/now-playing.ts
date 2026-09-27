@@ -11,6 +11,7 @@ import {
   PLAYLIST_DETAIL_FIXTURE_NAME,
   SCREEN_02_PLAYLIST_DETAIL_FIXTURE,
 } from "@/ui/fixtures/screen-02-playlist-detail";
+import { SEARCH_FIXTURE_NAME, SCREEN_06_SEARCH_FIXTURE } from "@/ui/fixtures/screen-06-search";
 
 /**
  * 「正在播放」视图模型。
@@ -27,6 +28,7 @@ import {
 const NOW_PLAYING_FIXTURES: Record<string, FixtureNowPlaying> = {
   [LIBRARY_FIXTURE_NAME]: SCREEN_01_LIBRARY_FIXTURE.nowPlaying,
   [PLAYLIST_DETAIL_FIXTURE_NAME]: SCREEN_02_PLAYLIST_DETAIL_FIXTURE.nowPlaying,
+  [SEARCH_FIXTURE_NAME]: SCREEN_06_SEARCH_FIXTURE.nowPlaying,
 };
 
 export const useNowPlayingFixture = (): FixtureNowPlaying | null => {
@@ -86,7 +88,7 @@ export const useNowPlaying = (): NowPlaying => {
       // 封面:**不给地址**, 由 Artwork 回落到 playbarCover 占位 —— 见 placeholder-art.ts。
       cover: undefined,
       controlsDisabled: false,
-      badgeText: fixture.lossless ? AUDIO_QUALITY_LABEL.lossless : AUDIO_QUALITY_LABEL.dolby,
+      badgeText: AUDIO_QUALITY_LABEL[fixture.quality],
       queueCount: fixture.queueCount,
       currentTime: fixture.elapsedSeconds,
       duration: fixture.durationSeconds,

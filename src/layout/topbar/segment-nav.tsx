@@ -61,6 +61,9 @@ const SegmentNav = ({ segments, activeKey }: SegmentNavProps) => {
     // 有 `key` 时它是身份（query 型分段）；没有则用目标路径，再没有则用标签。
     key: segment.key ?? segment.href ?? segment.label,
     label: segment.label,
+    // 模板分段（countKey）的计数由 Layout 组合进 `count`；计数未知时是
+    // undefined —— 分隔符与数字一起消失，不渲染悬空尾巴。
+    count: segment.count,
     href: resolveHref(segment.href),
     // 没有 href 表示「标签已声明、子视图切换还没接线」，如实渲染为不可交互，
     // 而不是渲染一个点了没反应的按钮。详见 SegmentItem.pending 的说明。

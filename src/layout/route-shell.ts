@@ -13,6 +13,14 @@ import { CollectionType } from "@/common/constants/collection";
 export interface TopbarSegment {
   label: string;
   /**
+   * 运行时计数（模板分段的尾巴数字）。
+   *
+   * **不是声明**：声明侧只有 `countKey`（指向哪个槽）；这个字段由 `Layout`
+   * 在渲染前从 `useSearchSegments` 组合进来，未知时是 `undefined` ——
+   * `SegmentedControl` 对 `undefined` 不渲染分隔符与数字，悬空尾巴因此不可能出现。
+   */
+  count?: number | string;
+  /**
    * 导航型分段的目标地址；缺省表示「页面子视图切换」，由声明它的页面自行消费。
    *
    * 以 `?` 开头表示「**只改这些 query**」：路径与其余参数沿用当前地址，
@@ -28,6 +36,16 @@ export interface TopbarSegment {
    * 此时显式给 `key`，激活判定才有一致的比较基准。
    */
   key?: string;
+  /**
+   * 标签尾巴的**运行时计数槽**（`useSearchSegments` 的槽位名）。
+   *
+   * 声明了它的分段是**模板**：`label` 只是前缀，最终渲染由 `Layout` 把前缀与
+   * 计数 store 组合 —— 计数已知时是「前缀 + · N」，未知时**只有前缀**（分隔符
+   * 与数字一起消失，不得出现「音乐视频 · 」这种悬空尾巴）。见 spec-lock
+   * `topbarSegments.labelSources`：`/collection/:id` 的数字是类型码（静态、
+   * 属标签自身），不使用这个槽；`/search` 的数字是结果数（运行时），必须用。
+   */
+  countKey?: "video" | "creator";
 }
 
 /**
@@ -90,19 +108,24 @@ const collectionTypeSegment = (type: CollectionType, label: string): TopbarSegme
 /**
  * 已声明的路由分段组。
  *
- * 目前只有一屏：`/collection/:id` 的三段是**同一路由的三种数据类型**
- * （`CollectionType` 11 / 21 / 31），靠 `?type=` 区分、缺省 11。
+ * `/collection/:id` 的三段是**同一路由的三种数据类型**（`CollectionType`
+ * 11 / 21 / 31），靠 `?type=` 区分、缺省 11。标签末尾的 11 / 21 / 31 **是
+ * 类型码，不是集合数量**。这一点曾在 P1 被读作数量（当时登记的理由是
+ * 「标签内嵌集合数量，需真实收藏数据后才能在壳层声明」），于是这一屏的
+ * 分段组被无限期推迟 —— 因为「真实收藏数量」永远不会成为壳层的输入。
+ * 取证见 spec-lock `topbarSegments.labelSources` 与 `meta.revisions` 1.3.8：
+ * 设计稿第 3 页导语原文是「收藏夹 / 合集 / 系列 共用一套详情模板，**仅数据
+ * 类型不同**」，且三个数字与 `CollectionType` 的三个枚举值逐一相等，激活项
+ * 亦与该屏 `collectionType` 同源。结论：这三段是可以立刻写死的静态标签。
  *
- * 标签末尾的 11 / 21 / 31 **是类型码，不是集合数量**。这一点曾在 P1 被读作数量
- * （当时登记的理由是「标签内嵌集合数量，需真实收藏数据后才能在壳层声明」），
- * 于是这一屏的分段组被无限期推迟 —— 因为「真实收藏数量」永远不会成为壳层的
- * 输入。取证见 spec-lock `topbarSegments.labelSources` 与 `meta.revisions` 1.3.8：
- * 设计稿第 3 页导语原文是「收藏夹 / 合集 / 系列 共用一套详情模板，**仅数据类型
- * 不同**」，且三个数字与 `CollectionType` 的三个枚举值逐一相等，激活项亦与该屏
- * `collectionType` 同源。结论：这三段是可以立刻写死的静态标签。
+ * `/search` 的两段是**结果类型筛选**（两段结果同页共存，分段决定视口落在
+ * 哪一段），标签是**模板**：前缀「音乐视频」/「创作者」+ `countKey` 指向的
+ * 运行时计数槽 —— 尾巴「· 9 / · 2」是搜索结果数，随查询变化，由结果页写入
+ * `useSearchSegments`（spec-lock `topbarSegments.labelSources`，1.3.12）。
+ * 设计稿里「音乐视频」是激活段，故 `activeKey` 缺省 `video`。
  *
  * 其余路由见 `DEFERRED_SEGMENTS`：它们的分段要么内嵌**运行时数据**
- * （`/search` 的结果数、`/local-music` 的目录名），要么子视图尚未落地。
+ * （`/local-music` 的目录名），要么子视图尚未落地。
  * 每屏落地时在此加一条，并同时把该路由从 `DEFERRED_SEGMENTS` 里删掉。
  *
  * `tests/app-shell-interactions.test.ts` 会断言「已声明 + 待声明」正好覆盖
@@ -120,6 +143,15 @@ export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
     // 会让三段全灭，而设计稿里「收藏夹 · 11」是**激活态**。
     activeKey: search => search.get("type") ?? String(CollectionType.Favorite),
   },
+  "/search": {
+    segments: [
+      { key: "video", label: "音乐视频", countKey: "video", href: "?view=video" },
+      { key: "creator", label: "创作者", countKey: "creator", href: "?view=creator" },
+    ],
+    // 两段结果同页共存，`?view=` 只决定视口落在哪一段（滚动定位由页面消费）；
+    // 设计稿里「音乐视频」是激活段，缺省 video。
+    activeKey: search => search.get("view") ?? "video",
+  },
 };
 
 /** 待声明的分段组：路由 pattern → 承接阶段与原因。只减不增。 */
@@ -129,7 +161,6 @@ export const DEFERRED_SEGMENTS: Readonly<Record<string, { phase: string; reason:
   "/later": { phase: "P4", reason: "时间范围筛选随第 03 屏落地" },
   "/local-music": { phase: "P4", reason: "标签内嵌本地目录名，需真实目录列表后才能在壳层声明" },
   "/download-list": { phase: "P4", reason: "类型筛选随第 05 屏落地" },
-  "/search": { phase: "P3", reason: "标签内嵌结果数量，需真实结果集后才能在壳层声明" },
   "/settings": { phase: "P6", reason: "常规 / 播放 / 高级需与设置页自身的分区导航合并，避免两处开关互相打架" },
   "/queue": { phase: "P5", reason: "队列筛选随第 09 屏落地" },
   "/now-playing": { phase: "P5", reason: "封面 / 歌词 / 视频是沉浸态页面自己的顶部控件，不由壳层顶栏渲染" },
@@ -185,6 +216,24 @@ export interface RouteShell {
   /** 当前激活分段的 key。分段组回落到一级导航且都不匹配时为空串。 */
   activeSegmentKey: string;
 }
+
+/**
+ * 把**模板分段**与**运行时计数**组合成最终的分段（`Layout` 在渲染前消费）。
+ *
+ * `resolveRouteShell` 保持纯函数：它只声明「这一段有计数槽」（`countKey`），
+ * 数字本身由 `useSearchSegments` 承载、在这里填进 `count`。计数未知（`null`）
+ * 映射为 `undefined` —— `SegmentedControl` 对 `undefined` 不渲染分隔符与数字，
+ * 悬空的「音乐视频 · 」在结构上不可能出现。`0` 是合法计数（无结果），必须用
+ * nullish 判断保留，不能用 falsy。
+ */
+export const composeSegmentCount = (
+  segment: TopbarSegment,
+  counts: { videoCount: number | null; creatorCount: number | null },
+): TopbarSegment => {
+  if (!segment.countKey) return segment;
+  const count = segment.countKey === "video" ? counts.videoCount : counts.creatorCount;
+  return { ...segment, count: count ?? undefined };
+};
 
 /**
  * 缺省激活判定：取第一个「`href` 的路径部分等于当前 pathname」的分段。

@@ -13,13 +13,22 @@
  * 而把演示队列写进用户的持久化队列，是拿副作用换便利。因此这里的值经
  * `useNowPlaying()` 以**只读视图**的形式叠加在 store 之上，不写回 store。
  */
+import type { AUDIO_QUALITY_LABEL } from "@/common/constants/audio";
+
+/** 质量徽标档位，与 `AUDIO_QUALITY_LABEL` 的键一一对应（新增档位自动收编）。 */
+export type FixtureQualityKind = keyof typeof AUDIO_QUALITY_LABEL;
+
 export interface FixtureNowPlaying {
   /** 主行。设计稿是 `《雨落长街》· 全专上线`（第 02 屏）/ `夜航`（第 01 屏）。 */
   title: string;
   /** 副行。设计稿是 `卧室音乐计划 · 新碟 banner` / `NOISE_LAB`。 */
   sub: string;
-  /** 是否无损 —— 决定质量徽标文案（见 `AUDIO_QUALITY_LABEL`）。 */
-  lossless: boolean;
+  /**
+   * 质量徽标档位 —— 决定徽标文案（`AUDIO_QUALITY_LABEL`：lossless 无损 30251 /
+   * dolby 杜比 30250 / hd 高清 30280）。设计稿第 01/02 页是无损，第 06 页（屏 06）
+   * 是高清 —— 三档都是 `audioQualitySort` 里的既有码值。
+   */
+  quality: FixtureQualityKind;
   /** 已播秒数。82 ⇒ 设计稿的「01:22」。 */
   elapsedSeconds: number;
   /** 总时长秒数。228 ⇒ 设计稿的「03:48」。 */

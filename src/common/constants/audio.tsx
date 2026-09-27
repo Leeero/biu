@@ -64,4 +64,5 @@ export const audioQualitySort = [30257, 30216, 30259, 30260, 30232, 30280, 30250
 export const AUDIO_QUALITY_LABEL = {
   lossless: "无损 30251",
   dolby: "杜比 30250",
+  hd: "高清 30280",
 } as const;
