@@ -1,10 +1,20 @@
 {
   "phase": "P3",
-  "baselineRef": "0ad93a8",
-  "baselineNote": "基线 = P3-S1 提交 0ad93a8（feat(library): 屏 01 我的音乐库过 --target app 比对）。P3-S1 期间新增了 geometry.sectionHead 令牌（--biu-layout-section-head-mb = 8px，spec-lock 1.3.3 勘定），属新增令牌而非基线偏差；其余阶段内改动均为组件/页面/工具层，未触碰基线令牌的有效值。",
+  "baselineRef": "e1065f0",
+  "baselineNote": "基线 = P3-S2 提交 e1065f0（feat(collection): 屏 02 我的收藏 · 详情过 --target app 比对）。P3-S2 期间新增了 --biu-layout-head-h（38px）与 --biu-type-list-title 四原子 —— 新增令牌不在基线集合内，不构成偏差；阶段内的唯一**有效值变更**是 --biu-layout-track-gap 由 31px 改为 21px（spec-lock 1.3.5 勘定的原型—设计稿第 8 处分歧），已随本次基线推进归档到 history。",
   "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。任何被业务代码消费的偏差（有效值变更 / 两侧无法求值的表达式改写 / 令牌消失）都必须额外标 visualImpact: true 显式确认「这会掉像素」；未登记的偏差同样让退出码为 1。",
   "intendedChanges": {},
   "history": [
+    {
+      "phase": "P3-S2",
+      "note": "基线已推进到 P3-S2 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明 —— 判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
+      "changes": {
+        "--biu-layout-track-gap": {
+          "visualImpact": true,
+          "reason": "P3-S2 屏 02：行内「封面右缘 → 曲目文本左缘」的间隙由 31px 改为 21px。取自设计稿实测而非原型 —— 原型 `--track-gap: 31px`，是原型—设计稿的第 8 处分歧（spec-lock 1.3.5 勘定）。取证：封面列两侧完全相同（画布 x120–219，CDP 实测 art 盒 x120 w100），而副标题两侧同为 13px、字形左承载在相减中抵消，故两侧副标题墨迹左缘之差**恰等于盒位之差**：设计稿 241、渲染 251 ⇒ 差 10px ⇒ 设计稿间隙 21px。跨页复核：设计稿第 03/04/06/09/10 页一致为 20–21px，无一页出现 31。改后 CDP 实测 .track-text 盒左缘 241，屏 02 `--target app` 的 list 内容带覆盖率由 88% 升到 100%，L3 11.22。消费方只有 TrackMain（屏 02 与设计系统展页）。"
+        }
+      }
+    },
     {
       "phase": "P2",
       "note": "基线已推进到 P2 提交，故以下声明不再生效，仅作留档。P2 **没有改动任何基线令牌的有效值** —— 组件层只新增令牌（白色叠加梯度 4/5.5/8/9/12/14/18/20/22/28%、弹层材质 surface-modal/veil-14/blur-modal/shadow-modal、弹层几何 dialog-w/dialog-h、影像底板、顶栏标签色），新增项不在基线集合内，因此不构成偏差，这也是本次 check-phase-drift 能以 0 偏差通过的原因。若后续阶段改动这些新增令牌，必须在此处重新声明。",
