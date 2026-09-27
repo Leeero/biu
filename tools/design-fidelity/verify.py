@@ -144,6 +144,75 @@ def load_spec() -> dict:
     return json.loads(SPEC_LOCK.read_text(encoding="utf-8"))
 
 
+def _topbar_bottom_edge(L: np.ndarray) -> int | None:
+    """顶栏下缘：x300–1200 行均值首次连续 3 行落到「顶栏 22.7 / 底板 8.7」的分界以下。"""
+    prof = L[:, 300:1200].mean(axis=1)
+    for y in range(40, 110):
+        if prof[y] < 12 and prof[y + 1] < 12 and prof[y + 2] < 12:
+            return y
+    return None
+
+
+def _playbar_top_edge(L: np.ndarray) -> int | None:
+    """播放栏上缘（x470–560 —— 左段与中段之间的空白带，栏内无内容）。
+
+    **必须自下向上取**：播放栏贴画板底，正向扫描会先撞上栏体上方的页面内容。
+    设计页第 8 页正上方压着注解带与卡片网格，正向取到的是内容而不是栏体。
+    """
+    prof = L[:, 470:560].mean(axis=1)
+    for y in range(880, 780, -1):
+        if prof[y] < 13:
+            return y + 1
+    return None
+
+
+def reference_integrity(spec: dict) -> list[str]:
+    """参考图体检 —— 第一道**针对参考图本身**的闸门。
+
+    此前全部闸门都只看渲染：参考图出错时，它们只会忠实地报「实现不对」。
+    设计页第 8 页纵向被压缩 0.9204（画板高 978 被强制 resize 到 900，见
+    `evidence/reference-page-08-distortion.md`）的问题，因此存活了两个阶段，
+    还被登记成了「该屏设计壳层不同」—— 一个把伪影当设计意图的错误结论。
+
+    做法：逐页测顶栏下缘与播放栏上缘，与 `referenceIntegrity.standard` 比对。
+    非沉浸屏若偏离超过容差、又未在 `declared` 里登记 → FAIL；
+    登记了却不再偏离（参考图被修好）→ 也 FAIL，提示该登记已过时、应当移除。
+    """
+    ri = spec.get("referenceIntegrity") or {}
+    std = ri.get("standard") or {}
+    tol = ri.get("tolerance", 1)
+    declared = ri.get("declared") or {}
+    problems: list[str] = []
+    seen_declared: set[str] = set()
+
+    for screen in spec["screens"]:
+        if screen.get("immersive"):
+            continue  # 沉浸态本就无顶栏与播放栏
+        page = str(screen["designPage"])
+        img = Image.open(reference_path(screen["designPage"])).convert("RGB").resize(CANVAS, Image.LANCZOS)
+        L = luminance(img)
+        measured = {
+            "topbarBottomEdge": _topbar_bottom_edge(L),
+            "playbarTopEdge": _playbar_top_edge(L),
+        }
+        deviated = {
+            k: v
+            for k, v in measured.items()
+            if v is not None and std.get(k) is not None and abs(v - std[k]) > tol
+        }
+        if deviated and page not in declared:
+            detail = "，".join(f"{k} 实测 {v}（标准 {std[k]}）" for k, v in deviated.items())
+            problems.append(f"设计页 {page}（屏 {screen['no']}）壳层偏离且未登记：{detail}")
+        if not deviated and page in declared:
+            seen_declared.add(page)
+            problems.append(
+                f"设计页 {page}（屏 {screen['no']}）实测已与标准一致，"
+                "但 referenceIntegrity.declared 里仍有登记 —— 该登记已过时，应移除"
+            )
+
+    return problems
+
+
 def reference_path(design_page: int) -> pathlib.Path:
     primary = REFERENCE_DIR / f"page-{design_page:02d}.png"
     if primary.exists():
@@ -509,6 +578,15 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     print(f"目标：{args.target}　输出：{out_dir}")
 
+    # 先体检参考图本身 —— 渲染再准，也补不回一张错的参考图。
+    print("\n===== 参考图体检（壳层边缘 vs referenceIntegrity.standard）=====")
+    integrity = reference_integrity(spec)
+    if integrity:
+        for p in integrity:
+            print(f"  FAIL {p}")
+    else:
+        print("  OK   全部设计页壳层与标准一致（或偏离已登记）")
+
     results, failed = [], 0
     for screen in selected:
         target = resolve_target(screen, args)
@@ -529,7 +607,9 @@ def main() -> int:
         mark = "PASS" if not outcome["failures"] else "FAIL"
         print(f"  {mark}  {screen['no']} {screen['name']:20s} 平均亮度差 {outcome['diff']:6.2f}")
     print(f"\n{len(results) - failed} / {len(results)} 通过　并排对照图：{out_dir}")
-    return 0 if failed == 0 else 1
+    if integrity:
+        print(f"参考图体检：{len(integrity)} 项待处理（见上方 FAIL）")
+    return 0 if (failed == 0 and not integrity) else 1
 
 
 if __name__ == "__main__":

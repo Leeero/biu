@@ -162,6 +162,18 @@
 - **设计页**：8 / 9　**原型**：`screens/07-discover-card.html`、`screens/08-discover-list.html`
 - **现状**：`pages/music-recommend`（含 `grid-list` / `list` / `new-music-top` / `menu`）
 
+> **⚠ 开工前置（只影响屏 07）**：设计页第 8 页的参考图**纵向被压缩 0.9204**（画板高约 978 被
+> `prepare_reference.sh` 的逐页 `resize((1440,900))` 压回 900）。因此该页的**全部纵向读数都带
+> 0.9204 的系数**，`verify.py` 的设计侧会读出「顶栏 65 / 播放栏 81」，与 1440×900 的渲染对不上 ——
+> 这是**参考图的缺陷，不是设计的壳层差异**，也不该照它去改实现。下面的 07 各项纵向数值
+> （H1 111–158、导语 186–203、筛选条 226–264、注解带 698）都读自这张被压缩的图，
+> 还原后约为 H1 121 / 导语 202 / 筛选条 246 / 注解带 758。
+>
+> 处理：开工前先落地纠正 —— 把 `page-08.png` 纵向重采样到 1440×978，再按「顶栏 71 + 内容 741 +
+> 播放栏 88」裁回 1440×900（系数登记在 `spec-lock.referenceIntegrity.declared["8"].correction`，
+> **不需要源 PDF**）。屏 08 用设计页第 9 页，实测与标准页一致，**不受影响**。
+> 完整证据与推导见 [`evidence/reference-page-08-distortion.md`](./evidence/reference-page-08-distortion.md)。
+
 **复刻要点（卡片态）**
 
 1. 顶栏带 `topbar-note`：`已下线: 流行 / 鬼畜`。顶栏分段：`音乐分区 | 单一模块`。
