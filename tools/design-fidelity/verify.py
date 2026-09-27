@@ -115,9 +115,18 @@ def reference_path(design_page: int) -> pathlib.Path:
 
 
 def capture(target: str, out_png: pathlib.Path, chrome: str, wait_ms: int = 2500) -> bool:
+    """截一张 1440×900 的整屏图。失败时把 Chrome 的 stderr 一并打出来。
+
+    `--no-sandbox` 是本机必需的：受限环境下 Chrome 初始化不了自己的进程沙箱
+    （`Failed to initialize sandbox: Operation not permitted`），连带 GPU 进程
+    FATAL 退出，结果**一张图都不写**，而调用方只看得到「截图失败」四个字 ——
+    这个盲区上一次白白拖掉了一轮排查。沙箱是进程隔离，与页面渲染无关，
+    关掉它不改变任何像素。
+    """
     cmd = [
         chrome,
         "--headless=new",
+        "--no-sandbox",
         "--disable-gpu",
         "--hide-scrollbars",
         "--force-device-scale-factor=1",
@@ -127,7 +136,12 @@ def capture(target: str, out_png: pathlib.Path, chrome: str, wait_ms: int = 2500
         target,
     ]
     result = subprocess.run(cmd, capture_output=True)
-    return out_png.exists() and result.returncode == 0
+    ok = out_png.exists() and result.returncode == 0
+    if not ok:
+        print(f"    截图失败：exit={result.returncode}，图存在={out_png.exists()}")
+        for line in result.stderr.decode("utf-8", "replace").strip().splitlines()[-6:]:
+            print(f"      | {line}")
+    return ok
 
 
 def luminance(im: Image.Image) -> np.ndarray:

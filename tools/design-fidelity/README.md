@@ -44,6 +44,8 @@ BIU_FIDELITY_PYTHON=/path/to/python bash tools/design-fidelity/run.sh --all
 
 需要 Chrome / Chromium（`/Applications/Google Chrome.app`、`google-chrome`、`chromium` 任一）。
 
+`verify.py` 以 `--headless=new --no-sandbox` 启动它。**`--no-sandbox` 不是可选项**：受限环境下 Chrome 初始化不了自己的进程沙箱（`Failed to initialize sandbox: Operation not permitted`），连带 GPU 进程 FATAL 退出，结果一张图都不写。沙箱是进程隔离，与页面渲染无关，关掉它不改变任何像素。截图失败时 `verify.py` 会打印 Chrome stderr 的末几行——没有这几行，「截图失败」四个字提供不了任何病因，而它曾让一轮排查空转。
+
 ---
 
 ## 判定模型
