@@ -97,7 +97,13 @@
   --c-surface: rgb(255 255 255 / 6%); /* 抬升面板 */
   --c-surface-hover: rgb(255 255 255 / 10%); /* 悬停 */
   --c-surface-sunken: rgb(255 255 255 / 13%); /* 凹槽 / 歌词面板 */
-  --c-surface-field: rgb(255 255 255 / 17%); /* 输入框 */
+  --c-surface-field: rgb(255 255 255 / 17%); /* 输入框 / 药丸底（设计实测 17.8%） */
+
+  /* 顶栏搜索位底。设计稿实测白 9.9%（顶栏底 22.1 → 框底 45.1，全页一致），
+     落地取 10%。**不能复用 `--c-surface-field`**：它同时喂 `.pill--neutral`，
+     而药丸实测 17.8% —— 两个消费者要不同的值。10% 档已有 `--c-surface-hover`
+     这个语义槽（悬停），故按 1.3.7 对 13% 档的同一处置另开一格。 */
+  --c-surface-search: rgb(255 255 255 / 10%); /* 顶栏搜索位底 */
   --c-surface-current: rgb(255 255 255 / 7%); /* 列表当前行整行高亮 */
   --c-line: rgb(255 255 255 / 10%); /* 标准描边 */
   --c-line-weak: rgb(255 255 255 / 6%); /* 弱分隔 */
@@ -150,8 +156,8 @@
      已经犯过一次的错（把 8% / 9% 收敛到 10%）。按数值命名时，名字与取值互为证明，
      对不上就是错。
      已经具备明确语义角色的档位不在此重复：6% → surface、7% → surface-current、
-     10% → surface-hover、13% → surface-sunken、16% → glass、17% → surface-field、
-     18% → glass-border、24% → glass-strong。 */
+     10% → surface-hover / surface-search、13% → surface-sunken、16% → glass、
+     17% → surface-field、18% → glass-border、24% → glass-strong。 */
   --c-veil-4: rgb(255 255 255 / 4%); /* 列表行悬停 */
   --c-veil-5-5: rgb(255 255 255 / 5.5%); /* 迷你窗底 */
   --c-veil-8: rgb(255 255 255 / 8%); /* 分段项悬停 */

@@ -6,6 +6,8 @@ import { SegmentedControl, type SegmentItem } from "@/ui/primitives/segmented-co
 
 interface SegmentNavProps {
   segments: TopbarSegment[];
+  /** 当前激活分段的 key，由 `resolveRouteShell` 给出。 */
+  activeKey: string;
 }
 
 /**
@@ -25,25 +27,47 @@ interface SegmentNavProps {
  * 随之消失，所以这里改回原型值。三处差值分别是 1% / 2% / 通道差 4，
  * 都落在 L3 整屏亮度差的容差之内。
  *
+ * **激活键不是 pathname。** 三段共用同一个 pathname、只靠 query 区分时
+ * （`/collection/:id?type=`），拿 pathname 当激活键会让三段全灭。所以激活
+ * 判定由契约层（`resolveRouteShell`）给出 `activeKey`，本层只负责传递 ——
+ * 「`type` 缺省是 11」这类知识属于那个路由，不属于顶栏。
+ *
  * `window-no-drag` 必须由本层给出：整条顶栏是可拖动窗口区域，分段组要挡住拖动
  * 才能被点到。组件层不该知道 Electron 的窗口拖动，那是壳层的事。
  */
-const SegmentNav = ({ segments }: SegmentNavProps) => {
+const SegmentNav = ({ segments, activeKey }: SegmentNavProps) => {
   const location = useLocation();
 
+  /**
+   * 分段 `href` 以 `?` 开头时表示「**只改这些 query**」：路径与其余参数沿用
+   * 当前地址。两个好处 —— 夹具模式（`?fixture=…`）下点击分段不会掉出夹具；
+   * 用户手改过的其它参数也不会被顺手清掉。
+   */
+  const resolveHref = (href?: string): string | undefined => {
+    if (!href) return undefined;
+    if (!href.startsWith("?")) return href;
+
+    const override = new URLSearchParams(href.slice(1));
+    const merged = new URLSearchParams(location.search);
+    // 先删后加，避免 URLSearchParams.set 在同一键已有多个值时留下残影。
+    for (const key of new Set(override.keys())) merged.delete(key);
+    for (const [key, value] of override) merged.append(key, value);
+
+    const query = merged.toString();
+    return query ? `${location.pathname}?${query}` : location.pathname;
+  };
+
   const items: SegmentItem[] = segments.map(segment => ({
-    // 导航型的稳定键就是目标路径；没有 href 的分段用它自己的标签。
-    key: segment.href ?? segment.label,
+    // 有 `key` 时它是身份（query 型分段）；没有则用目标路径，再没有则用标签。
+    key: segment.key ?? segment.href ?? segment.label,
     label: segment.label,
-    href: segment.href,
+    href: resolveHref(segment.href),
     // 没有 href 表示「标签已声明、子视图切换还没接线」，如实渲染为不可交互，
     // 而不是渲染一个点了没反应的按钮。详见 SegmentItem.pending 的说明。
     pending: !segment.href,
   }));
 
-  return (
-    <SegmentedControl label="顶栏分段导航" activeKey={location.pathname} items={items} className="window-no-drag" />
-  );
+  return <SegmentedControl label="顶栏分段导航" activeKey={activeKey} items={items} className="window-no-drag" />;
 };
 
 export default SegmentNav;

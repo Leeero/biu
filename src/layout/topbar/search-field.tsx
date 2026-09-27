@@ -6,6 +6,7 @@ import { useClickAway, useRequest } from "ahooks";
 import classNames from "classnames";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 
+import { resolveSearchPlaceholder } from "@/layout/route-shell";
 import { getSearchSuggestMain } from "@/service/main-suggest";
 import { useSearchHistory } from "@/store/search-history";
 import { useSettings } from "@/store/settings";
@@ -105,6 +106,9 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange }) => {
       rootRef={containerRef}
       inputRef={inputRef}
       value={value}
+      // 占位**逐页不同**（设计稿第 03 / 04 页与其余页不同）：真值在 spec-lock
+      // 的 `globalChrome.search.placeholderByRoute`，契约在 `route-shell`。
+      placeholder={resolveSearchPlaceholder(location.pathname)}
       onValueChange={setValue}
       onKeyDown={e => {
         if (e.key === "Enter") {

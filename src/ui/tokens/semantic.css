@@ -56,7 +56,8 @@
   --biu-surface-raised: var(--c-surface); /* 抬升面板 */
   --biu-surface-hover: var(--c-surface-hover); /* 悬停 */
   --biu-surface-sunken: var(--c-surface-sunken); /* 凹槽 / 歌词面板 */
-  --biu-surface-field: var(--c-surface-field); /* 输入框 */
+  --biu-surface-field: var(--c-surface-field); /* 输入框 / 药丸底 */
+  --biu-surface-search: var(--c-surface-search); /* 顶栏搜索位底 */
   --biu-surface-current: var(--c-surface-current); /* 列表当前行 */
   --biu-border: var(--c-line); /* 标准描边 */
   --biu-border-weak: var(--c-line-weak); /* 弱分隔 */

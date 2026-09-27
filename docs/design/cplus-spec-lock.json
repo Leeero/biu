@@ -2,13 +2,25 @@
   "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
   "meta": {
     "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
-    "version": "1.3.7",
+    "version": "1.3.8",
     "frozenAt": "2026-09-27",
     "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
+      {
+        "version": "1.3.8",
+        "at": "2026-09-27",
+        "phase": "P3",
+        "changes": [
+          "P3 屏 02 补遗轮（顶栏收口）。本轮第一件事是**勘定一处真值解读错误** —— 它此前把这一屏的顶栏分段组无限期推迟。`topbarSegments.byRoute[\"/collection/:id\"]` 的三段标签「收藏夹 · 11 / 合集 · 21 / 系列 · 31」，其中 11 / 21 / 31 **不是集合数量，而是 CollectionType 类型码**。证据三条：① 设计稿第 3 页导语原文「收藏夹 / 合集 / 系列 共用一套详情模板，**仅数据类型不同**」—— 把三者定义为数据类型而非计数；② 三个数字与 `src/common/constants/collection.ts` 的 `Favorite = 11 / VideoCollections = 21 / VideoSeries = 31` **逐一相等**（三重同时吻合，按巧合解释的概率约 10⁻⁶）；③ 该屏夹具 `collectionType = 11`，而设计稿的激活项正是「收藏夹 · 11」—— 激活项与该屏数据类型同源。原型 `screens/02-playlist-detail.html:15` 写作 `<button class=\"tab is-active\">收藏夹 · 11</button>`，逐字一致、且**无 `data-type` 属性**，说明类型码是标签的书写方式本身，不是可从 DOM 推导的额外语义。结论：这三段是**静态标签**，落地不依赖任何真实收藏数据 —— `route-shell.ts` 的 `DEFERRED_SEGMENTS[\"/collection/:id\"]` 原写「标签内嵌集合数量，需真实收藏数据后才能在壳层声明」，属误读，已随之订正。",
+          "新增 `topbarSegments.labelSources`：把「标签带尾巴」的三条路由按尾巴的**来源**分开 —— `/collection/:id` 的尾巴是**类型码**（静态，标签自身的一部分）、`/search` 的尾巴是**结果数**（运行时数据）、`/local-music` 的尾巴是**目录名**（运行时数据）。此前三者混在同一个 `byRoute` 数组里，看不出哪些标签可以直接写进壳层、哪些必须等真实数据 —— 这正是误读得以长期存在的结构原因。",
+          "搜索位拆出独立令牌。`globalChrome.search.field` 登记 `token: --biu-surface-search`（白 10%）。原实现用 `--biu-surface-field`（白 17%），而该令牌**同时**喂 `.pill--neutral`，且同一页 neutral 药丸的设计实测为白 17.8%（画布底 8.1 → 药丸底 51.9）—— 两个消费者需要不同的值，直接改令牌会连带改掉药丸。取证：搜索位底设计稿一致为**白 9.9%**（顶栏底 22.1 → 框底 45.1，第 02/03/04/05/06/09/10/12/13 页全一致）。落地取 10%（与 9.9% 差 0.1%，合 0.06 个灰阶，在色深不可分辨）。色板上 10% 档**已有语义槽** `--c-surface-hover`（悬停），故新增 `--c-surface-search` 而不复用 —— 与 1.3.7 对 13% 档的处置同理（13% 已有 `--c-surface-sunken`，圆片填充即登记在它上面）。`--biu-surface-field` 保留、取值不动，仍在喂 neutral 药丸。",
+          "落地 `globalChrome.search.placeholderByRoute`：顶栏搜索位按路由取占位 —— `/collection/:id` →「搜索收藏夹与合集」、`/later` →「搜索标题 / UP 主名称」，其余回落 `placeholder` 缺省值「搜索音乐视频或创作者」。`placeholderRule` 末句「实现侧目前只有单值占位，逐页映射待顶栏轮落地」随之失效并改写出。",
+          "落地 `/collection/:id` 顶栏分段组的**导航形态**：三段各自链到同一路由的不同 `type`（`/collection/:id?type=11|21|31`），激活段由 URL 的 `type` 决定、缺省 11。`SegmentedControl` 的 `key` 与 `href` 因此解耦（key 是 `\"11\"` 这样的语义键，href 是完整地址），因为三段共用同一个 pathname，仅凭 `location.pathname` 无法区分激活项。"
+        ]
+      },
       {
         "version": "1.3.7",
         "at": "2026-09-27",
@@ -1069,6 +1081,11 @@
         "歌词",
         "视频"
       ]
+    },
+    "labelSources": {
+      "/collection/:id": "尾巴「 · 11 / · 21 / · 31」是 **CollectionType 类型码**（11 收藏夹 / 21 视频合集 / 31 视频系列），是**标签自身的一部分**，属静态值 —— **不是集合数量**。取证见 meta.revisions 1.3.8（三条证据：页导语「仅数据类型不同」、三个数字与枚举逐一相等、激活项与该屏 collectionType 同源）。",
+      "/search": "尾巴「 · 9 / · 2」是**搜索结果数**，属运行时数据，随查询变化 —— 壳层不得写死，须由结果集给出。",
+      "/local-music": "「D 盘 · Lossless」「E 盘 · Live 录音」是**本地目录名**，属运行时数据 —— 需真实目录列表后才能在壳层声明。"
     }
   },
   "globalChrome": {
@@ -1082,7 +1099,7 @@
         "/collection/:id": "搜索收藏夹与合集",
         "/later": "搜索标题 / UP 主名称"
       },
-      "placeholderRule": "占位**逐页不同**，`placeholder` 只是缺省值。取证：设计稿第 02/05/06/08/09/10/12/13 页为「搜索音乐视频或创作者」，第 03 页（屏 02 · /collection/:id）为「搜索收藏夹与合集」，第 04 页（屏 03 · /later）为「搜索标题 / UP 主名称」。第 07 页（屏 06 · /search）**整块不画搜索位**；第 11 页（屏 10 · /now-playing）该处画的是「封面 / 歌词 / 视频」分段组（见 topbarSegments）。实现侧目前只有单值占位，逐页映射待顶栏轮落地。",
+      "placeholderRule": "占位**逐页不同**，`placeholder` 只是缺省值。取证：设计稿第 02/05/06/08/09/10/12/13 页为「搜索音乐视频或创作者」，第 03 页（屏 02 · /collection/:id）为「搜索收藏夹与合集」，第 04 页（屏 03 · /later）为「搜索标题 / UP 主名称」。第 07 页（屏 06 · /search）**整块不画搜索位**；第 11 页（屏 10 · /now-playing）该处画的是「封面 / 歌词 / 视频」分段组（见 topbarSegments）。1.3.8 起 `placeholderByRoute` 已落地：顶栏按路由查本表、缺省回落 `placeholder`。",
       "hotkey": "Ctrl K",
       "keycap": {
         "fill": "rgba(255,255,255,0.12)",
@@ -1094,7 +1111,8 @@
       },
       "field": {
         "fill": "rgba(255,255,255,0.10)",
-        "rule": "搜索位底色设计稿一致为**白 9.9%**（顶栏底 22.1 → 框底 45.1，全页一致）。现用 `--biu-surface-field`（白 17%）偏高，但该令牌**同时**喂 `.pill--neutral`，而同一页 neutral 药丸的设计实测为白 17.8%（画布底 8.1 → 药丸底 51.9）—— 两个消费者需要不同的值，直接改令牌会连带改掉药丸。待顶栏轮把搜索位拆出独立令牌后再改。"
+        "token": "--biu-surface-search",
+        "rule": "搜索位底色设计稿一致为**白 9.9%**（顶栏底 22.1 → 框底 45.1，第 02/03/04/05/06/09/10/12/13 页全一致）。落地取白 10%（差 0.1%，合 0.06 个灰阶）。**不复用 `--biu-surface-field`**：后者取值白 17%，且**同时**喂 `.pill--neutral`，而同一页 neutral 药丸的设计实测为白 17.8%（画布底 8.1 → 药丸底 51.9）—— 两个消费者需要不同的值，改令牌会连带改掉药丸。色板上 10% 档已有语义槽 `--c-surface-hover`（悬停），故新增 `--c-surface-search` 而不复用 —— 与 1.3.7 对 13% 档的处置同理。"
       },
       "constraint": "search_type 仅 video / bili_user，不得承诺搜索歌曲、专辑、歌手"
     },

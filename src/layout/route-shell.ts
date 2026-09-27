@@ -1,17 +1,33 @@
 import type { ShellChrome } from "@/app/shell/model";
 
+import { CollectionType } from "@/common/constants/collection";
+
 /**
  * 路由 → 壳层契约。
  *
- * 两件事在这里定：某个路由用哪种壳层状态、顶栏分段组显示什么。
- * 之所以放在一处而不是散在 `routes.tsx` 里：`AppShell` 与 `TopBar` 都要读它，
- * 而且它需要被单测与真值文件对照（见 `tests/app-shell-interactions.test.ts`）。
+ * 三件事在这里定：某个路由用哪种壳层状态、顶栏分段组显示什么、搜索位提示什么。
+ * 之所以放在一处而不是散在 `routes.tsx` 里：`AppShell`、`TopBar`、`SearchField`
+ * 都要读它，而且它需要被单测与真值文件对照（见 `tests/app-shell-interactions.test.ts`）。
  */
 
 export interface TopbarSegment {
   label: string;
-  /** 导航型分段：点击即跳转。缺省表示「页面子视图切换」，由声明它的页面自行消费。 */
+  /**
+   * 导航型分段的目标地址；缺省表示「页面子视图切换」，由声明它的页面自行消费。
+   *
+   * 以 `?` 开头表示「**只改这些 query**」：路径与其余参数沿用当前地址，
+   * 合并规则见 `segment-nav.tsx`。这样夹具模式（`?fixture=…`）下点击分段
+   * 不会掉出夹具，用户手改过的其它参数也不会被顺手清掉。
+   */
   href?: string;
+  /**
+   * 稳定键，缺省回落 `href`。
+   *
+   * 三段共用同一个 pathname、只靠 query 区分时（`/collection/:id?type=`），
+   * 三段的 `href` 各不相同，但它们的**身份**是 `type` 的取值 ——
+   * 此时显式给 `key`，激活判定才有一致的比较基准。
+   */
+  key?: string;
 }
 
 /**
@@ -44,29 +60,72 @@ export const SHELL_CHROME_BY_ROUTE: Readonly<Record<string, ShellChrome>> = {
 };
 
 /**
+ * 一份路由的分段组声明。
+ */
+export interface RouteSegmentsSpec {
+  segments: TopbarSegment[];
+  /**
+   * 当前激活分段的 `key`。
+   *
+   * 缺省（不写）时按 `href` 的路径部分与当前 pathname 比对。三段共用同一个
+   * pathname、由 query 区分时**必须**写 —— 「`type` 缺省是 11」这类知识属于
+   * 该路由自己，壳层不该猜。
+   */
+  activeKey?: (search: URLSearchParams) => string;
+}
+
+/**
+ * 集合类型分段。`key` 与 `href` 都由枚举生成，只有标签是设计稿原文。
+ *
+ * 标签末尾的数字与枚举值同源（11 / 21 / 31），但**无**把它 `${type}` 拼出来
+ * 当标签 —— 标签是设计稿的逐字内容，`tests/app-shell-interactions.test.ts`
+ * 会拿它与 spec-lock 的 `topbarSegments.byRoute` 对照。
+ */
+const collectionTypeSegment = (type: CollectionType, label: string): TopbarSegment => ({
+  key: String(type),
+  label,
+  href: `?type=${type}`,
+});
+
+/**
  * 已声明的路由分段组。
  *
- * **P1 有意为空。** 机制（`TopBar` 渲染路由声明的分段）已经建好并接入，
- * 但逐屏的分段标签要到各屏自己的阶段才声明，原因有二：
+ * 目前只有一屏：`/collection/:id` 的三段是**同一路由的三种数据类型**
+ * （`CollectionType` 11 / 21 / 31），靠 `?type=` 区分、缺省 11。
  *
- * 1. 真值里 11 组分段中有 3 组（`/collection/:id`、`/local-music`、`/search`）
- *    的标签内嵌了**数据**（`收藏夹 · 11`、`D 盘 · Lossless`、`音乐视频 · 9`）。
- *    在页面还没有真实数据源时先把它们写进壳层，等于把设计稿的示意内容当成了产品文案。
- * 2. 其余 8 组虽是纯标签，但都是**该页的子视图切换**。P1 的页面还是旧界面，
- *    没有可切换的子视图——此刻渲染出来就是一个点了没反应的控件。
- *    壳层宁可显示能导航的一级导航，也不要显示一个坏掉的开关。
+ * 标签末尾的 11 / 21 / 31 **是类型码，不是集合数量**。这一点曾在 P1 被读作数量
+ * （当时登记的理由是「标签内嵌集合数量，需真实收藏数据后才能在壳层声明」），
+ * 于是这一屏的分段组被无限期推迟 —— 因为「真实收藏数量」永远不会成为壳层的
+ * 输入。取证见 spec-lock `topbarSegments.labelSources` 与 `meta.revisions` 1.3.8：
+ * 设计稿第 3 页导语原文是「收藏夹 / 合集 / 系列 共用一套详情模板，**仅数据类型
+ * 不同**」，且三个数字与 `CollectionType` 的三个枚举值逐一相等，激活项亦与该屏
+ * `collectionType` 同源。结论：这三段是可以立刻写死的静态标签。
  *
+ * 其余路由见 `DEFERRED_SEGMENTS`：它们的分段要么内嵌**运行时数据**
+ * （`/search` 的结果数、`/local-music` 的目录名），要么子视图尚未落地。
  * 每屏落地时在此加一条，并同时把该路由从 `DEFERRED_SEGMENTS` 里删掉。
+ *
  * `tests/app-shell-interactions.test.ts` 会断言「已声明 + 待声明」正好覆盖
  * `cplus-spec-lock.json` 的 `topbarSegments` 全部路由，因此不会漏掉任何一屏。
  */
-export const ROUTE_SEGMENTS: Readonly<Record<string, string[]>> = {};
+export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
+  "/collection/:id": {
+    segments: [
+      collectionTypeSegment(CollectionType.Favorite, "收藏夹 · 11"),
+      collectionTypeSegment(CollectionType.VideoCollections, "合集 · 21"),
+      collectionTypeSegment(CollectionType.VideoSeries, "系列 · 31"),
+    ],
+    // `type` 缺省 11：页面在无 `type` 时按 `CollectionType.Favorite` 渲染，
+    // 所以激活判定必须把这个缺省一并算进去 —— 否则夹具地址（不带 `type`）
+    // 会让三段全灭，而设计稿里「收藏夹 · 11」是**激活态**。
+    activeKey: search => search.get("type") ?? String(CollectionType.Favorite),
+  },
+};
 
 /** 待声明的分段组：路由 pattern → 承接阶段与原因。只减不增。 */
 export const DEFERRED_SEGMENTS: Readonly<Record<string, { phase: string; reason: string }>> = {
   "/": { phase: "P3", reason: "发现音乐的卡片/列表子视图（音乐分区 / 单一模块）随第 07-08 屏落地" },
   "/library": { phase: "P3", reason: "我的歌单 / 我收藏的 / 发现音乐三个子视图随第 01 屏落地" },
-  "/collection/:id": { phase: "P3", reason: "标签内嵌集合数量，需真实收藏数据后才能在壳层声明" },
   "/later": { phase: "P4", reason: "时间范围筛选随第 03 屏落地" },
   "/local-music": { phase: "P4", reason: "标签内嵌本地目录名，需真实目录列表后才能在壳层声明" },
   "/download-list": { phase: "P4", reason: "类型筛选随第 05 屏落地" },
@@ -80,9 +139,11 @@ export const DEFERRED_SEGMENTS: Readonly<Record<string, { phase: string; reason:
   },
 };
 
+/** 去掉尾部斜杠；空串归一为 `/`。 */
+const normalize = (value: string) => value.replace(/\/+$/, "") || "/";
+
 /** 把 `/collection/:id` 这类 pattern 与实际路径对齐。 */
 const matchesPattern = (pathname: string, pattern: string): boolean => {
-  const normalize = (value: string) => value.replace(/\/+$/, "") || "/";
   const path = normalize(pathname);
   if (pattern === "/") return path === "/";
 
@@ -93,24 +154,77 @@ const matchesPattern = (pathname: string, pattern: string): boolean => {
   return patternParts.every((segment, index) => segment.startsWith(":") || segment === pathParts[index]);
 };
 
+/**
+ * 搜索位的**缺省**占位（设计稿第 02/05/06/08/09/10/12/13 页）。
+ *
+ * 与 `ui/primitives/topbar-search` 的组件缺省值同值。两份并存是有意的：
+ * primitives 是最低层、不能反向依赖壳层，而壳层也不该依赖某个组件的缺省参数。
+ * 两处不得漂移，由 `tests/app-shell-interactions.test.ts` 钉住。
+ */
+export const DEFAULT_SEARCH_PLACEHOLDER = "搜索音乐视频或创作者";
+
+/**
+ * 逐页不同的搜索占位（设计稿第 03 / 04 页）。键是路由 pattern。
+ *
+ * 真值见 spec-lock `globalChrome.search.placeholderRule`。
+ */
+export const SEARCH_PLACEHOLDER_BY_ROUTE: Readonly<Record<string, string>> = {
+  "/collection/:id": "搜索收藏夹与合集",
+  "/later": "搜索标题 / UP 主名称",
+};
+
+/** 解析某个路径的搜索占位。未登记的路由回落缺省值。 */
+export const resolveSearchPlaceholder = (pathname: string): string => {
+  const hit = Object.entries(SEARCH_PLACEHOLDER_BY_ROUTE).find(([pattern]) => matchesPattern(pathname, pattern));
+  return hit?.[1] ?? DEFAULT_SEARCH_PLACEHOLDER;
+};
+
 export interface RouteShell {
   chrome: ShellChrome;
   segments: TopbarSegment[];
+  /** 当前激活分段的 key。分段组回落到一级导航且都不匹配时为空串。 */
+  activeSegmentKey: string;
 }
 
 /**
- * 解析某个路径的壳层契约。纯函数，无副作用——路由一变就能直接断言结果。
+ * 缺省激活判定：取第一个「`href` 的路径部分等于当前 pathname」的分段。
+ *
+ * 只服务导航型分段（`href` 是路径）。`href` 是 query-only 的分段单凭 pathname
+ * 无法判定，那种路由必须自己给 `activeKey`。
+ */
+const resolveDefaultActiveKey = (segments: TopbarSegment[], pathname: string): string => {
+  const path = normalize(pathname);
+  const hit = segments.find(segment => {
+    if (!segment.href || segment.href.startsWith("?")) return false;
+    return normalize(segment.href.split("?")[0] ?? "") === path;
+  });
+  return hit ? (hit.key ?? hit.href ?? "") : "";
+};
+
+/**
+ * 解析某个地址的壳层契约。纯函数，无副作用——路由一变就能直接断言结果。
  *
  * 未声明分段的路由回落到一级导航，而不是「什么都不显示」。
+ *
+ * `search` 只参与**激活判定**（`/collection/:id` 的三段靠 `?type=` 区分），
+ * 不影响 `chrome` 与分段内容。
  */
-export const resolveRouteShell = (pathname: string): RouteShell => {
+export const resolveRouteShell = (pathname: string, search = ""): RouteShell => {
   const chrome = SHELL_CHROME_BY_ROUTE[pathname] ?? "default";
 
   const declared = Object.entries(ROUTE_SEGMENTS).find(([pattern]) => matchesPattern(pathname, pattern));
-  if (!declared) return { chrome, segments: DEFAULT_NAV_SEGMENTS };
+  if (!declared) {
+    return {
+      chrome,
+      segments: DEFAULT_NAV_SEGMENTS,
+      activeSegmentKey: resolveDefaultActiveKey(DEFAULT_NAV_SEGMENTS, pathname),
+    };
+  }
 
+  const spec = declared[1];
   return {
     chrome,
-    segments: declared[1].map(label => ({ label })),
+    segments: spec.segments,
+    activeSegmentKey: spec.activeKey?.(new URLSearchParams(search)) ?? resolveDefaultActiveKey(spec.segments, pathname),
   };
 };

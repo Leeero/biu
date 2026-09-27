@@ -8,6 +8,7 @@ import path from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { AppShell } from "@/app/shell";
+import { DEFAULT_SEARCH_PLACEHOLDER } from "@/layout/route-shell";
 import SegmentNav from "@/layout/topbar/segment-nav";
 import {
   DEFAULT_COVER_GRADIENT,
@@ -195,6 +196,17 @@ describe("基础件的可访问名称", () => {
     // `shortcutHint={null}` 是明确关掉；默认（undefined）才是渲染键帽。
     const off = await render(<TopBarSearch value="" onValueChange={() => undefined} shortcutHint={null} />);
     expect(off.querySelector("kbd")).toBeNull();
+  });
+
+  /**
+   * 缺省占位在两处各有一份：primitives 的组件默认值、壳层契约的
+   * `DEFAULT_SEARCH_PLACEHOLDER`。这是有意的 —— primitives 是最低层，
+   * 不能反向依赖 `layout/`，而顶栏又必须按路由给不同占位。两处不得漂移，
+   * 钉住的成本就是这两条断言（另一条在 `app-shell-interactions.test.ts`）。
+   */
+  test("缺省占位与壳层契约同值", async () => {
+    const container = await render(<TopBarSearch value="" onValueChange={() => undefined} />);
+    expect(container.querySelector("input")).toHaveAttribute("placeholder", DEFAULT_SEARCH_PLACEHOLDER);
   });
 });
 
@@ -478,6 +490,7 @@ describe("顶栏分段组消费的是原型登记的那几个令牌", () => {
     const container = await render(
       <MemoryRouter initialEntries={["/library"]}>
         <SegmentNav
+          activeKey="/library"
           segments={[
             { label: "我的音乐库", href: "/library" },
             { label: "发现音乐", href: "/" },
@@ -497,6 +510,35 @@ describe("顶栏分段组消费的是原型登记的那几个令牌", () => {
     const inactive = Array.from(container.querySelectorAll("a")).find(node => node.textContent === "发现音乐");
     expect(inactive?.className).toContain("--biu-text-chrome-label");
     expect(inactive?.className).toContain("--biu-veil-8");
+  });
+
+  /**
+   * `/collection/:id` 的三段共用同一个 pathname、只靠 `?type=` 区分，所以
+   * `href` 写成 query-only 的相对形式（`?type=21`），由本层与当前地址合并。
+   *
+   * 这条测的是**合并**，不是拼字符串：不合并的话，夹具模式（`?fixture=…`）
+   * 下点一下分段就会掉出夹具，而画面上的差别要到重跑比对才看得出来。
+   */
+  test("query 型分段的 href 沿用当前路径与其余参数", async () => {
+    const container = await render(
+      <MemoryRouter initialEntries={["/collection/1?fixture=02-playlist-detail"]}>
+        <SegmentNav
+          activeKey="11"
+          segments={[
+            { key: "11", label: "收藏夹 · 11", href: "?type=11" },
+            { key: "21", label: "合集 · 21", href: "?type=21" },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+
+    const active = container.querySelector('a[aria-current="page"]');
+    expect(active).toHaveTextContent("收藏夹 · 11");
+    // 路径、夹具参数、分段给的 type —— 三者都要在。
+    expect(active?.getAttribute("href")).toBe("/collection/1?fixture=02-playlist-detail&type=11");
+
+    const other = Array.from(container.querySelectorAll("a")).find(node => node.textContent === "合集 · 21");
+    expect(other?.getAttribute("href")).toBe("/collection/1?fixture=02-playlist-detail&type=21");
   });
 });
 

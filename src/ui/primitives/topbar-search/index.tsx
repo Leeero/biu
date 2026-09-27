@@ -41,6 +41,18 @@ interface TopBarSearchProps {
 const DEFAULT_SHORTCUT_HINT = "Ctrl K";
 
 /**
+ * 缺省占位。
+ *
+ * **顶栏总是显式传入** —— 占位逐页不同（设计稿第 03 页「搜索收藏夹与合集」、
+ * 第 04 页「搜索标题 / UP 主名称」，其余页为本值），真值在 spec-lock 的
+ * `globalChrome.search.placeholderByRoute`，契约在 `layout/route-shell` 的
+ * `resolveSearchPlaceholder`。这里留一份是为**无契约的调用方**（设计系统展位、
+ * 单测）。两处同值、不得漂移：primitives 不能反向依赖 `layout/`，
+ * 所以无法收敛成一处，改由 `tests/app-shell-interactions.test.ts` 钉住。
+ */
+const DEFAULT_PLACEHOLDER = "搜索音乐视频或创作者";
+
+/**
  * 输入框右侧为提示留出的固定空间（键帽 54.5 + 与文字之间约 7）。
  *
  * 恒定预留而不是「有提示才预留」：否则输入 / 清空时输入区宽度会跳变。
@@ -51,7 +63,10 @@ const HINT_GUTTER = "pe-[62px]";
 /**
  * 顶栏搜索位（原型 `.search`）。
  *
- * 几何：高 40、圆角 999、左内边距 16、右 8、图标 20、字号 15、底色白 17%。
+ * 几何：高 40、圆角 999、左内边距 16、右 8、图标 20、字号 15、底色白 10%
+ * （`--biu-surface-search`，设计稿实测 9.9%）。**不要**改用 `--biu-surface-field`：
+ * 那一格是白 17%，同时喂 `.pill--neutral`，而药丸设计实测 17.8% —— 两个消费者
+ * 需要不同的值，见 spec-lock `globalChrome.search.field.rule`。
  * 宽度是**弹性**的（`min(32vw, 400px)`，下限 240）：设计稿在 1440 宽下是 400，
  * 但窗口收窄时若写死 400，右侧的头像与窗口按钮会被挤出去。
  *
@@ -72,7 +87,7 @@ export const TopBarSearch = ({
   value,
   onValueChange,
   label = "搜索音乐视频或创作者",
-  placeholder = "搜索音乐视频或创作者",
+  placeholder = DEFAULT_PLACEHOLDER,
   inputRef,
   rootRef,
   shortcutHint,
@@ -108,7 +123,7 @@ export const TopBarSearch = ({
             HINT_GUTTER,
           ),
           inputWrapper:
-            "h-10 rounded-[var(--biu-radius-pill)] border border-transparent bg-[var(--biu-surface-field)] px-4 text-[rgb(var(--biu-text-primary))] shadow-none outline-none transition-[background-color,border-color,box-shadow] group-data-[focus=true]:border-[var(--biu-glass-border)] group-data-[focus=true]:bg-[var(--biu-surface-field)] group-data-[focus=true]:shadow-[0_0_0_3px_var(--biu-accent-soft)] group-data-[focus-visible=true]:ring-0 group-data-[focus-visible=true]:outline-none",
+            "h-10 rounded-[var(--biu-radius-pill)] border border-transparent bg-[var(--biu-surface-search)] px-4 text-[rgb(var(--biu-text-primary))] shadow-none outline-none transition-[background-color,border-color,box-shadow] group-data-[focus=true]:border-[var(--biu-glass-border)] group-data-[focus=true]:bg-[var(--biu-surface-search)] group-data-[focus=true]:shadow-[0_0_0_3px_var(--biu-accent-soft)] group-data-[focus-visible=true]:ring-0 group-data-[focus-visible=true]:outline-none",
         }}
       />
       {showHint && (

@@ -14,7 +14,16 @@ import path from "node:path";
 import { describe, expect, test } from "vitest";
 
 import { resolveShellLayout, type ShellChrome } from "@/app/shell/model";
-import { DEFAULT_NAV_SEGMENTS, DEFERRED_SEGMENTS, ROUTE_SEGMENTS, resolveRouteShell } from "@/layout/route-shell";
+import { CollectionType } from "@/common/constants/collection";
+import {
+  DEFAULT_NAV_SEGMENTS,
+  DEFAULT_SEARCH_PLACEHOLDER,
+  DEFERRED_SEGMENTS,
+  ROUTE_SEGMENTS,
+  SEARCH_PLACEHOLDER_BY_ROUTE,
+  resolveRouteShell,
+  resolveSearchPlaceholder,
+} from "@/layout/route-shell";
 import {
   isSearchShortcut,
   isTypingTarget,
@@ -24,6 +33,12 @@ import {
 
 const spec = JSON.parse(readFileSync(path.resolve(process.cwd(), "docs/design/cplus-spec-lock.json"), "utf8")) as {
   topbarSegments: { byRoute: Record<string, string[]> };
+  globalChrome: {
+    search: {
+      placeholder: string;
+      placeholderByRoute: Record<string, string>;
+    };
+  };
 };
 
 describe("壳层状态", () => {
@@ -110,9 +125,12 @@ describe("顶栏分段与真值对齐", () => {
     expect(declared.filter(route => deferred.includes(route))).toEqual([]);
   });
 
-  test("已声明的分段必须与真值逐字一致", () => {
-    for (const [pattern, labels] of Object.entries(ROUTE_SEGMENTS)) {
-      expect(labels, `${pattern} 与真值不一致`).toEqual(spec.topbarSegments.byRoute[pattern]);
+  test("已声明的分段标签必须与真值逐字一致", () => {
+    for (const [pattern, entry] of Object.entries(ROUTE_SEGMENTS)) {
+      expect(
+        entry.segments.map(segment => segment.label),
+        `${pattern} 与真值不一致`,
+      ).toEqual(spec.topbarSegments.byRoute[pattern]);
     }
   });
 
@@ -121,6 +139,69 @@ describe("顶栏分段与真值对齐", () => {
       expect(entry.phase, `${pattern} 缺阶段`).toMatch(/^P\d$/);
       expect(entry.reason.length, `${pattern} 的理由太短，等于没写`).toBeGreaterThan(10);
     }
+  });
+});
+
+describe("/collection/:id 顶栏分段组", () => {
+  const segmentsOf = () => resolveRouteShell("/collection/123").segments;
+
+  test("三段链到同一路由的三种数据类型", () => {
+    expect(segmentsOf().map(segment => segment.label)).toEqual(["收藏夹 · 11", "合集 · 21", "系列 · 31"]);
+    // query-only 的 href：路径与其余参数由顶栏沿用当前地址（见 segment-nav.tsx）。
+    expect(segmentsOf().map(segment => segment.href)).toEqual(["?type=11", "?type=21", "?type=31"]);
+  });
+
+  test("三段都是可点的：设计稿画的是切换器，不是坏掉的开关", () => {
+    for (const segment of segmentsOf()) {
+      expect(segment.href, `${segment.label} 缺少 href`).toBeTruthy();
+    }
+  });
+
+  /**
+   * 这条把「标签是静态类型码」这个勘定结论钉在枚举上。
+   *
+   * 标签尾的 11 / 21 / 31 曾被读作**集合数量**（理由写作「需真实收藏数据后
+   * 才能在壳层声明」），于是这一屏的分段组被无限期推迟。取证见 spec-lock
+   * `topbarSegments.labelSources` 与 1.3.8：设计稿导语原文「仅数据类型不同」，
+   * 且三个数字与 `CollectionType` 逐一相等。若哪天有人把标签改成真数量，
+   * 这条会红 —— 那时必须同时改 spec-lock 并给出新取证。
+   */
+  test("标签尾的数字与 CollectionType 枚举同源，不是集合数量", () => {
+    expect(segmentsOf().map(segment => segment.key)).toEqual([
+      String(CollectionType.Favorite),
+      String(CollectionType.VideoCollections),
+      String(CollectionType.VideoSeries),
+    ]);
+  });
+
+  test("激活段由 ?type 决定，缺省 11（与页面缺省 CollectionType.Favorite 一致）", () => {
+    expect(resolveRouteShell("/collection/123").activeSegmentKey).toBe("11");
+    expect(resolveRouteShell("/collection/123", "?type=21").activeSegmentKey).toBe("21");
+    // 夹具地址不带 type —— 此时仍须激活「收藏夹 · 11」，否则与设计稿不符。
+    expect(resolveRouteShell("/collection/123", "?fixture=02-playlist-detail").activeSegmentKey).toBe("11");
+  });
+
+  test("其它路由仍回落到一级导航，激活段是当前路径", () => {
+    const shell = resolveRouteShell("/library");
+    expect(shell.segments).toEqual(DEFAULT_NAV_SEGMENTS);
+    expect(shell.activeSegmentKey).toBe("/library");
+  });
+});
+
+describe("顶栏搜索占位与真值对齐", () => {
+  test("缺省占位与真值一致", () => {
+    expect(DEFAULT_SEARCH_PLACEHOLDER).toBe(spec.globalChrome.search.placeholder);
+  });
+
+  test("逐页占位表与真值逐字一致", () => {
+    expect(SEARCH_PLACEHOLDER_BY_ROUTE).toEqual(spec.globalChrome.search.placeholderByRoute);
+  });
+
+  test("按路由解析占位，未登记的路由回落缺省值", () => {
+    expect(resolveSearchPlaceholder("/collection/123")).toBe("搜索收藏夹与合集");
+    expect(resolveSearchPlaceholder("/later")).toBe("搜索标题 / UP 主名称");
+    expect(resolveSearchPlaceholder("/library")).toBe(DEFAULT_SEARCH_PLACEHOLDER);
+    expect(resolveSearchPlaceholder("/")).toBe(DEFAULT_SEARCH_PLACEHOLDER);
   });
 });
 

@@ -56,6 +56,14 @@ type Spec = {
       }
     >;
   };
+  globalChrome: {
+    search: {
+      /** 顶栏搜索位底色（1.3.8 起是独立一格，不复用输入框档位）。 */
+      field: { fill: string; token: string };
+      /** 快捷键键帽底。 */
+      keycap: { token: string };
+    };
+  };
   tokenMap: Record<string, string>;
   immersiveGeometry: Record<string, unknown>;
   tolerances: { contrastDeltaMax: number; [key: string]: unknown };
@@ -345,6 +353,28 @@ describe("色板与真值一致", () => {
     for (const part of parts) {
       expect(resolved, `${token} 缺少成分 ${part}`).toContain(canon(part));
     }
+  });
+
+  /**
+   * 顶栏搜索位底色（1.3.8 起独立成格）。
+   *
+   * 它**不能**复用 `--biu-surface-field`：那一格是白 17%，同时喂
+   * `.pill--neutral`，而药丸的设计实测是 17.8% —— 两个消费者要不同的值，
+   * 合流必然把其中一个改错。取值本身有独立取证（设计稿白 9.9%）。
+   *
+   * 本条断言的是「独立且取值正确」。只断言「令牌存在」是不够的：
+   * 有人把它指回 `--biu-surface-field` 时，存在性依然成立。
+   */
+  test("顶栏搜索位底色是独立一格，取值与真值一致", () => {
+    const { fill, token } = spec.globalChrome.search.field;
+
+    expect(token).toBe("--biu-surface-search");
+    expect(canon(resolve(token))).toBe(canon(fill));
+    // 与键帽底不同格：两者是顶栏里相邻的两个面，合流会让「框底 vs 键帽」的
+    // 递进消失 —— 而那正是 1.3.6 勘定键帽时用的判据。
+    expect(token, "搜索位底色与键帽底合流了").not.toBe(spec.globalChrome.search.keycap.token);
+
+    ASSERTED.add(token);
   });
 });
 

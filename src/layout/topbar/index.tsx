@@ -18,6 +18,8 @@ const platform = window.electron.getPlatform();
 interface TopBarProps {
   /** 分段组，由路由契约给出（见 `@/layout/route-shell`）。 */
   segments: TopbarSegment[];
+  /** 当前激活分段的 key。分段组回落到一级导航且都不匹配时是空串。 */
+  activeSegmentKey: string;
 }
 
 /**
@@ -31,7 +33,7 @@ interface TopBarProps {
  * 展开时必须切到 `window-no-drag`，否则点不到——这是 Electron 桌面端的硬约束，
  * 与视觉无关。Linux / Windows 额外挂窗口控制按钮（macOS 用系统红绿灯，不重复渲染）。
  */
-const TopBar = ({ segments }: TopBarProps) => {
+const TopBar = ({ segments, activeSegmentKey }: TopBarProps) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
@@ -45,7 +47,7 @@ const TopBar = ({ segments }: TopBarProps) => {
       })}
     >
       <Brand />
-      <SegmentNav segments={segments} />
+      <SegmentNav segments={segments} activeKey={activeSegmentKey} />
 
       <div className="window-no-drag ml-auto flex flex-none items-center gap-10">
         <SearchField onFocusChange={setIsSearchFocused} />
