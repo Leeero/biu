@@ -15,6 +15,7 @@
 ```bash
 pnpm verify:literals                      # 令牌护栏（三层边界）
 pnpm verify:literals -- --list            # 存量违规清单与清理阶段
+pnpm verify:reference                     # 参考图体检（不捕获渲染；参考图错了后面只会误判实现）
 pnpm verify:fidelity --all                # 12 屏保真度校验
 pnpm verify:fidelity --screen 01-library  # 单屏
 pnpm exec vitest run tests/design-tokens.test.ts   # 令牌与真值逐项对照

@@ -8,9 +8,10 @@
 | `check-literals.mjs`          | 代码护栏   | 按令牌三层边界拦截：字面色值越层、原始色板越层、HeroUI 主题回退   |
 | `tests/design-tokens.test.ts` | 真值对照   | 把 `cplus-spec-lock.json` 逐项断言到 CSS 令牌，任一侧漂移即失败   |
 | `check-phase-drift.mjs`       | 阶段边界   | 比较基线与工作区的遗留令牌有效值，把「只增不改」变成可执行闸门    |
+| `correct_reference.py`        | 参考图纠正 | 修参考图自身的几何失真（第 8 页纵向压缩），并堵住生成路径的复发   |
 | `extract_reference.py`        | 辅助诊断   | 从设计稿 PNG 提取逐屏结构基准，用于排查测量异常                   |
 
-`check-literals.mjs`、`tests/design-tokens.test.ts`、`check-phase-drift.mjs` 已接入 CI（`.github/workflows/pr-test-build.yml` 的 `Token Guardrails` job，在 `src/ui/tokens/**`、`tools/design-fidelity/**`、`tests/design-tokens.test.ts`、`docs/design/cplus-spec-lock.json` 变更时触发）。
+**参考图体检**（`verify.py --reference-only`）与上面三道护栏**一并接入 CI**（`.github/workflows/pr-test-build.yml` 的 `Token Guardrails` job，在 `src/ui/tokens/**`、`tools/design-fidelity/**`、`tests/design-tokens.test.ts`、`docs/design/cplus-spec-lock.json` 变更时触发）。它抓的是**参考图本身**：参考图错了，后面每一道闸门都只会忠实地报「实现不对」—— 第 8 页的纵向压缩就是这样活了两个阶段的。
 
 ---
 
@@ -34,6 +35,11 @@ pnpm exec vitest run tests/design-tokens.test.ts
 # 4. 阶段边界（相对基线的遗留令牌只增不改）
 pnpm verify:phase-drift                 # 基线取 phase-boundary.json 的 baselineRef
 pnpm verify:phase-drift origin/main      # 指定基线 ref
+
+# 5. 参考图体检（不捕获渲染、不需要 Chrome；CI 与本机快查同一入口）
+pnpm verify:reference
+python tools/design-fidelity/correct_reference.py --check       # 已登记失真页的纠正状态
+python tools/design-fidelity/correct_reference.py --selftest    # 回归：生成路径不再压扁画板
 ```
 
 `run.sh` 会自动准备 Python 环境（在 `tools/design-fidelity/.venv` 内安装 `pillow` + `numpy`）。若已有可用解释器：
@@ -83,9 +89,17 @@ BIU_FIDELITY_PYTHON=/path/to/python bash tools/design-fidelity/run.sh --all
 tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf"
 ```
 
-依赖 `pdftoppm`（macOS：`brew install poppler`）。脚本以 110 dpi 渲染（2200 × 1375），再等比缩放到 1440 × 900。
+依赖 `pdftoppm`（macOS：`brew install poppler`）。脚本以 110 dpi 渲染（2200 × 1375），再按**保宽等比**缩放到 1440 × 900。
 
 > 设计稿画板为满幅 2200 × 1375（比例精确 1.60000），四角有约 33px 圆角，圆角外是页面白底。**探针列必须避开 x > 1400 与 y < 40 的圆角区**，否则会量到白底。`verify.py` 的顶栏探针取 x 300–1200 正是为此。
+
+### 画板高度不为 900 的页
+
+第 8 页（屏 07）的 PDF 画板高 **978**。早期的生成脚本对它做的是 `resize((1440, 900))` —— **非等比拉伸**，于是该页被纵向压缩 0.9204：圆变椭圆、71/88 的壳层变 65/81。这个伪影存在了两个阶段，还被登记成「该屏设计壳层与其余页不同」。
+
+现在这条路径由 `correct_reference.py` 的 `fit_canvas()` 统一处理：**保宽等比 → 壳层两端对齐 → 内容取 900 视口能看到的部分**（顶栏 72 行 + 内容 740 行 + 播放栏 88 行）。`prepare_reference.sh` 直接复用它，**从 PDF 重生成不会再压一次**；`--selftest` 会把现有参考图放大回渲染尺寸、走一遍生成路径并比对，防止有人把它改回去。
+
+仓库内的 `reference/page-08.png` 已是纠正后的图，原始失真图留档在 `reference/_source/page-08-raw.png`（**唯一可追溯来源**：源 PDF 不在仓库内，`meta.sourceRender` 指向的 `/tmp` 已失效）。纠正记录在 `cplus-spec-lock.json` 的 `referenceIntegrity.history["8"]`，完整推导见 [`../../docs/design/evidence/reference-page-08-distortion.md`](../../docs/design/evidence/reference-page-08-distortion.md)，落地前后对照图见 [`../../docs/design/evidence/page08-correction-applied.png`](../../docs/design/evidence/page08-correction-applied.png)。
 
 ---
 
@@ -109,6 +123,8 @@ tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf
 | 10 正在播放 · 沉浸 |         11.46 | infoTitle, lyrics                                 |
 | 11 设置            |          7.06 | —                                                 |
 | 12 迷你播放器      |          9.73 | list, note, right                                 |
+
+> 第 07 行里的**顶栏 / 播放栏**两条失败是**参考图伪影**（第 8 页纵向压缩 0.9204），不是原型的问题；该页已于 2026-09-28 纠正，见上文「画板高度不为 900 的页」。其余条目仍按原样留档。
 
 **原型的定位**：它是本轮之前达成过的参考实现，**不是验收线**。比对对象始终是设计稿 PNG。这张表的作用是给每屏一个明确的「必须超过」的起点。
 

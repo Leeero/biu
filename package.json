@@ -34,6 +34,7 @@
     "build": "rsbuild build",
     "test": "vitest",
     "verify:fidelity": "bash tools/design-fidelity/run.sh",
+    "verify:reference": "bash tools/design-fidelity/run.sh --reference-only",
     "verify:literals": "node tools/design-fidelity/check-literals.mjs",
     "verify:phase-drift": "node tools/design-fidelity/check-phase-drift.mjs",
     "knip": "knip --no-exit-code --max-show-issues 5 --reporter github-actions",

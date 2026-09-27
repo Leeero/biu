@@ -162,26 +162,31 @@
 - **设计页**：8 / 9　**原型**：`screens/07-discover-card.html`、`screens/08-discover-list.html`
 - **现状**：`pages/music-recommend`（含 `grid-list` / `list` / `new-music-top` / `menu`）
 
-> **⚠ 开工前置（只影响屏 07）**：设计页第 8 页的参考图**纵向被压缩 0.9204**（画板高约 978 被
-> `prepare_reference.sh` 的逐页 `resize((1440,900))` 压回 900）。因此该页的**全部纵向读数都带
-> 0.9204 的系数**，`verify.py` 的设计侧会读出「顶栏 65 / 播放栏 81」，与 1440×900 的渲染对不上 ——
-> 这是**参考图的缺陷，不是设计的壳层差异**，也不该照它去改实现。下面的 07 各项纵向数值
-> （H1 111–158、导语 186–203、筛选条 226–264、注解带 698）都读自这张被压缩的图，
-> 还原后约为 H1 121 / 导语 202 / 筛选条 246 / 注解带 758。
+> **✅ 开工前置已落地（1.3.15，2026-09-28）**：设计页第 8 页的参考图曾**纵向被压缩 0.9204**
+> （画板高 978 被 `prepare_reference.sh` 的逐页 `resize((1440,900))` 压回 900），已纠正为
+> 1440 × 900：`reference/page-08.png` 现为纠正后的图，原图留档 `reference/_source/page-08-raw.png`，
+> 工具 `tools/design-fidelity/correct_reference.py`（幂等；生成脚本已复用同一份 `fit_canvas()`，
+> **从 PDF 重生成不会再压一次**，`--selftest` 守住这一点）。
+> **下方 07 的各项纵向数值均已换到 1440×900 口径**，可直接与渲染比对；壳层读数与其余 11 页一致
+> （顶栏 72 / 播放栏 812）—— `verify.py` 的参考图体检（`pnpm verify:reference`，已接入 CI）现在把它
+> 当标准页看待。完整证据与推导见 [`evidence/reference-page-08-distortion.md`](./evidence/reference-page-08-distortion.md)，
+> 落地前后对照见 [`evidence/page08-correction-applied.png`](./evidence/page08-correction-applied.png)。
+> 屏 08 用设计页第 9 页，始终未受影响。
 >
-> 处理：开工前先落地纠正 —— 把 `page-08.png` 纵向重采样到 1440×978，再按「顶栏 71 + 内容 741 +
-> 播放栏 88」裁回 1440×900（系数登记在 `spec-lock.referenceIntegrity.declared["8"].correction`，
-> **不需要源 PDF**）。屏 08 用设计页第 9 页，实测与标准页一致，**不受影响**。
-> 完整证据与推导见 [`evidence/reference-page-08-distortion.md`](./evidence/reference-page-08-distortion.md)。
+> **纠正后才看得见的两件事**（都要落到实现里）：
+> ① 本页头部节奏与第 9 页**不同** —— H1 起点一致（121 / 122），但**导语低 10px、筛选条低 3px**，
+> 此前被压缩吞掉；② **设计窗口比本工程高**（画板 978 对 900），设计页在播放栏之上有 819 行内容、
+> 我们只有 741 行，多出的 78 行里躺着**本页的注解带**（画板 841–876）—— 所以注解带要按**页流**排在
+> 专辑网格之后（首屏不可见），**不要**做成贴视口底的固定带。
 
 **复刻要点（卡片态）**
 
 1. 顶栏带 `topbar-note`：`已下线: 流行 / 鬼畜`。顶栏分段：`音乐分区 | 单一模块`。
-2. 标题列用 `head-main--flat`（去掉错位基线），实测 H1 111–158 / 导语 186–203 / 筛选条 226–264。
-3. `hero-card`：`353px | 1fr | 128px`，左侧 16:9 主视觉（`.hero-art`），中部标题 + 描述，右侧 56px 圆形播放键 + `.hero-tag`。
-4. `album-grid` 3 张 `album-card`，卡高 176，正文上边距 34。
+2. 标题列用 `head-main--flat`（去掉错位基线），实测算 H1 墨迹 **121–172** / 导语 **202–221** / 筛选条 **239–287**。
+3. 首段标题墨迹 315–330；`hero-card` **339–570**：`353px | 1fr | 128px`，左侧 16:9 主视觉（`.hero-art`），中部标题 + 描述，右侧 56px 圆形播放键 + `.hero-tag`。
+4. 第二段标题墨迹 598–613；`album-grid` 3 张 `album-card` 自 **622** 起（900 视口内被播放栏截断），卡高 176，正文上边距 34。
 5. 首个 `Section` 用 `section--push`（23px）。
-6. 注解带 `note--lowest`（top 698）。
+6. 注解带 `note--lowest`：**画板 841–876，在 900 视口折线以下** → 按页流置于网格之后，首屏不可见。
 
 **复刻要点（列表态）**
 

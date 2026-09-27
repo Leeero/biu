@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # 从设计稿 PDF 重新生成 1440 × 900 参考图（tools/design-fidelity/reference/）。
 #
+# 逐页「保宽等比 → 壳层两端对齐 → 内容取 900 视口」由 correct_reference.py 的 fit_canvas() 负责。
+# **不要再退回逐页 resize((1440,900))**：那会把高度不是 900 的画板非等比拉伸
+# （第 8 页就是这样被压掉 0.9204 的，见 docs/design/evidence/reference-page-08-distortion.md）。
+#
 # 用法：
 #   tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf"
 #
-# 依赖：poppler（pdftoppm）。macOS: brew install poppler
+# 依赖：poppler（pdftoppm）与 Python 侧的 pillow + numpy。macOS: brew install poppler
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,35 +35,27 @@ echo "▸ 以 110 dpi 渲染 PDF（2200 × 1375）…"
 pdftoppm -png -r 110 "$PDF" "$WORK/page"
 
 mkdir -p "$OUT"
-echo "▸ 缩放到 1440 × 900 并写入 $OUT …"
+echo "▸ 保宽等比缩放到 1440 × 900 并写入 $OUT …（画板高度不为 900 的页按壳层对齐裁切，见 correct_reference.py）"
 
 PY="${BIU_FIDELITY_PYTHON:-python3}"
-if ! "$PY" -c "import PIL" >/dev/null 2>&1; then
+if ! "$PY" -c "import numpy, PIL" >/dev/null 2>&1; then
   if [ -x "$HERE/.venv/bin/python" ]; then
     PY="$HERE/.venv/bin/python"
   else
-    echo "需要 Pillow。请先运行一次 run.sh 以准备虚拟环境，或 pip install pillow。" >&2
+    echo "需要 Pillow 与 numpy。请先运行一次 run.sh 以准备虚拟环境，或 pip install pillow numpy。" >&2
     exit 127
   fi
 fi
 
-"$PY" - "$WORK" "$OUT" <<'PY'
+"$PY" - "$HERE" "$WORK" "$OUT" <<'PY'
 import pathlib, sys
-from PIL import Image
 
-work, out = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
-pages = sorted(work.glob("page-*.png"))
-if not pages:
-    sys.exit("未渲染出任何页面")
-for page in pages:
-    suffix = page.stem.split("-")[-1]
-    number = int(suffix)
-    if number < 2 or number > 13:
-        continue
-    Image.open(page).convert("RGB").resize((1440, 900), Image.LANCZOS).save(
-        out / f"page-{number:02d}.png", optimize=True
-    )
-print(f"完成：{len([p for p in pages if 2 <= int(p.stem.split('-')[-1]) <= 13])} 页")
+here, work, out = (pathlib.Path(p) for p in sys.argv[1:4])
+sys.path.insert(0, str(here))
+from correct_reference import prepare_all  # 与页面纠正共用同一把尺子
+
+for line in prepare_all(work, out, raw_dir=out / "_source"):
+    print(f"  {line}")
 PY
 
 echo "▸ 参考图就绪。"

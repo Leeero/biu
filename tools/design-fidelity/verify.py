@@ -163,7 +163,36 @@ def _playbar_top_edge(L: np.ndarray) -> int | None:
     for y in range(880, 780, -1):
         if prof[y] < 13:
             return y + 1
-    return None
+    return _playbar_top_edge_from_plateau(prof)
+
+
+# 兜底判据的平台容差与扫描区间。该窗口是栏内无内容的空带，读数稳定在 15.0
+# （播放栏底 #0E0E11 ≈ 14.3）。向上紧邻的内容约 19–29，足以区分。
+PLAYBAR_PLATEAU_RANGE = (700, 900)
+PLAYBAR_PLATEAU_TOL = 2.0
+
+
+def _playbar_top_edge_from_plateau(prof: np.ndarray) -> int | None:
+    """**兜底**：主判据要求「栏体正上方有一行底板」，而第 8 页贴着栏体的正好是卡片内容。
+
+    这一页被纠正之后，`_playbar_top_edge` 一路扫到 y=780 都取不到暗行 ——
+    若就此返回 None，`reference_integrity` 会把整项检查静默跳过（`v is None` 不计偏离），
+    参考图体检等于对这页失效。改判**栏底平台**：AT 窗口是栏内无内容的空带，
+    取「与平台值连续一致的最长一段」的上缘 —— 比逐行比较稳健，
+    底部 1–2 行的缩放残边（第 8 页整行偏白）不会被算进最长段，自然被排除。
+    """
+    lo, hi = PLAYBAR_PLATEAU_RANGE
+    plateau = float(np.median(prof[820:896]))  # 取栏体中段求平台值，避开两端
+    run_len = best = 0
+    best_top = None
+    for y in range(lo, hi):
+        if abs(prof[y] - plateau) <= PLAYBAR_PLATEAU_TOL:
+            run_len += 1
+            if run_len > best:
+                best, best_top = run_len, y - run_len + 1
+        else:
+            run_len = 0
+    return best_top
 
 
 def reference_integrity(spec: dict) -> list[str]:
@@ -580,10 +609,28 @@ def main() -> int:
     parser.add_argument("--strict", action="store_true", help="内容带也逐条严格比对")
     parser.add_argument("--verbose", action="store_true", help="打印未覆盖带与渲染带明细")
     parser.add_argument("--out", default=None, help="输出目录（默认临时目录）")
+    parser.add_argument(
+        "--reference-only",
+        action="store_true",
+        help="只跑参考图体检（不捕获渲染、不需要 Chrome / 开发服务器），供 CI 与本地快查",
+    )
     args = parser.parse_args()
 
     spec = load_spec()
     screens = spec["screens"]
+
+    if args.reference_only:
+        print("===== 参考图体检（壳层边缘 vs referenceIntegrity.standard）=====")
+        problems = reference_integrity(spec)
+        if problems:
+            for p in problems:
+                print(f"  FAIL {p}")
+            print(f"\n{len(problems)} 项待处理：参考图本身有问题时，后面的比对只会忠实报「实现不对」。")
+            return 1
+        pages = (spec.get("referenceIntegrity") or {}).get("standard", {}).get("appliesTo") or []
+        print(f"  OK   {len(pages)} 个标准壳层页一律 {spec['referenceIntegrity']['standard']['topbarBottomEdge']} / "
+              f"{spec['referenceIntegrity']['standard']['playbarTopEdge']}，无待处理项")
+        return 0
 
     if args.list:
         for s in screens:
