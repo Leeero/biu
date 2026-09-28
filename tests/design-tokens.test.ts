@@ -795,7 +795,7 @@ describe("发现音乐卡片几何与真值对齐", () => {
 });
 
 describe("顶栏说明的材质令牌", () => {
-  test("三处令牌都指向既有档位，不为它新开一个色板项", () => {
+  test("容器底与字色复用既有色板项，字号另立字阶档", () => {
     const note = spec.globalChrome.topbarNote;
 
     ASSERTED.add(note.containerToken);
@@ -804,7 +804,10 @@ describe("顶栏说明的材质令牌", () => {
 
     expect(note.containerToken).toBe("--biu-veil-9");
     expect(note.inkToken).toBe("--biu-text-chrome-label");
-    expect(note.sizeToken).toBe("--biu-type-label-size");
+    // 1.3.25 由 `--biu-type-label-size`(13) 改成 `--biu-type-chrome`(14)：实测第 08 / 09
+    // 两页读 13.75，而 13 对应 19.86 物理 px —— 测量里**只有 21、没有 19 / 20 的样本**。
+    // 与同容器的分段标签（13.96）、搜索占位（14.03）同档。
+    expect(note.sizeToken).toBe("--biu-type-chrome");
 
     // resolve 会在令牌不存在时抛错，这一行是「三者确实存在」的证据。
     expect(canon(resolve(note.containerToken))).toBe(canon(resolve("--biu-veil-9")));

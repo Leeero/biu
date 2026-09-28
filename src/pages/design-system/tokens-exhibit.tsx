@@ -119,6 +119,7 @@ const TYPE_STEPS = [
   { token: "--biu-type-list-title", role: "曲目表标题 17" },
   { token: "--biu-type-section-title", role: "分组标题 16" },
   { token: "--biu-type-body", role: "列表正文与元信息 15" },
+  { token: "--biu-type-chrome", role: "顶栏 chrome 文字 14" },
   { token: "--biu-type-note", role: "注解带 14" },
   { token: "--biu-type-label", role: "标签与徽标 13" },
   { token: "--biu-type-micro", role: "表头与角标 12" },

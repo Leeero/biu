@@ -8,6 +8,7 @@
 
 | 版本 | 阶段 | 变更 |
 | --- | --- | --- |
+| 1.3.0 | P3–P4 | §3 排版映射与真值对齐：`--fs-lead` 由原型的 `22px` 订正为设计实测 **20px**；补录 1.3.24 / 1.3.25 新立的四档（`listTitle` 17 / `sectionTitle` 16 / `note` 14 / `chrome` 14）。这四档在原型里没有对应令牌（或借用了别的档），旧表因此整片缺失 —— 表里现在用 `⚠` 与「新立」标出所有与原型不同的行。 |
 | 1.2.0 | P0 | ① 补录 `material.scrimVeil.stops`：遮罩渐隐的四个停止点原先只写在 `rule` 自由文本里，无法被断言。② 测试新增「登记即断言」完备性校验：真值中任何 `token` / `borderToken` / `tokens.*` 都必须被某条断言覆盖，否则失败 —— 此前存在登记未断言的静默缺口（`--biu-radius-image` / `--biu-radius-window` / `--biu-scrim` / `--biu-scrim-veil`）。③ 补齐上述四条的取值断言。 |
 | 1.1.0 | P0 | ① 修正 §1.7 沉浸态背景：原表记录的是**拟合前的中间参数**，与原型实现不一致，已同步为原型现值。② 补录原型实际使用但未登记的合成色（反色对、强调药丸文字、弱化文字、底板环境光、顶栏渐变停止点）。③ 排版令牌 `--biu-text-<role>` → `--biu-type-<role>`，消除与文字颜色令牌 `--biu-text-primary` 的同前缀歧义。④ §7 护栏细化为「字面色值仅限 palette.css，`--c-` 引用仅限 semantic.css」。⑤ 明确占位封面渐变属数据夹具，不进色板。 |
 | 1.0.0 | — | 首版，随重构方案一并冻结。 |
@@ -169,11 +170,20 @@ semantic.css     语义令牌        --biu-*      唯一允许被业务代码引
 | `--font-num` | 数字字族 | `--biu-font-numeric` | `"SF Pro Display", -apple-system, "Helvetica Neue", sans-serif` |
 | `--fs-page-title` / `--fw-page-title` / `--lh-page-title` | 满幅标题 | `--biu-type-page-title-*` | `56px / 600 / 1.16 / -1px` |
 | `--fs-track-title` / `--fw-track-title` / `--lh-track-title` | 曲名 | `--biu-type-track-title-*` | `40px / 600 / 1.2 / -0.8px` |
-| `--fs-lead` | 页面副标题 | `--biu-type-lead-*` | `22px / 400 / 1.27` |
+| `--fs-lead` | 页面副标题 | `--biu-type-lead-*` | `20px / 400 / 1.4` ⚠ |
 | `--fs-small` / `--lh-small` | 歌词与浮层小字 | `--biu-type-small-*` | `17px / 400 / 1.62` |
+| `--fs-body`（`.track-name` 借） | 曲目表标题 | `--biu-type-list-title-*` | `17px / 600 / 1` ⚠ 新立 |
+| `--fs-small`（`Section` 的 h2 借） | 分组标题 | `--biu-type-section-title-*` | `16px / 600 / 1.5` ⚠ 新立 |
 | `--fs-body` | 列表正文与元信息 | `--biu-type-body-*` | `15px / 400 / 1.33` |
+| （无） | 顶栏 chrome 文字 | `--biu-type-chrome-*` | `14px / 400 / 1.33` ⚠ 新立 |
+| `--fs-label`（`.note` 借） | 注解带 | `--biu-type-note-*` | `14px / 400 / 1.43` ⚠ 新立 |
 | `--fs-label` | 标签与徽标 | `--biu-type-label-*` | `13px / 400 / 1.6` |
 | `--fs-micro` | 表头与角标 | `--biu-type-micro-*` | `12px / 400 / 1.33` |
+
+> **读法**：标 `⚠` 的行与原型的取值**不同**，标「新立」的行**在原型里没有对应令牌**（或借了别的档）。
+> 两者都属「原型—设计稿分歧」，真值里逐条带 `divergence` 字段，处置纪律是**档位按角色立、
+> 不为省一个令牌让两处角色共用一个数**。原型值只是起点，不是验收线 —— 这里写的是**设计稿实测值**。
+> `--fs-lead` 的 22px 是原型自述的「派生字号（按 1.15 阶梯收敛）」，设计稿实测 **20.0**，跨十页一致（1.3.24）。
 
 用法：
 

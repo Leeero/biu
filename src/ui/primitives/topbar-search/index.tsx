@@ -118,8 +118,11 @@ export const TopBarSearch = ({
         startContent={<Icon name="search" size={20} className="text-[rgb(var(--biu-text-quaternary))]" />}
         className="window-no-drag w-full"
         classNames={{
+          // 输入文字与占位同取顶栏档 `--biu-type-chrome`(14)：设计稿里这一串占位
+          // 出现在 8 页顶栏，逐页实测都是 14（14.03），此前借 `--biu-type-body-size`(15)
+          // 偏大一档。取证见 docs/design/evidence/type-scale-audit.md。
           input: twMerge(
-            "text-[length:var(--biu-type-body-size)] outline-none focus-visible:outline-none placeholder:text-[var(--biu-text-placeholder)]",
+            "text-[length:var(--biu-type-chrome-size)] outline-none focus-visible:outline-none placeholder:text-[var(--biu-text-placeholder)]",
             HINT_GUTTER,
           ),
           inputWrapper:
