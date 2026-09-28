@@ -11,18 +11,22 @@ import AsyncButton from "@/components/async-button";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
 import { DiscoverListView, discoverListColumns } from "@/features/discover/discover-list-view";
 import { DiscoverView } from "@/features/discover/discover-view";
-import { useDiscoverFixtureData, useDiscoverFixtureName, useDiscoverListFixtureData } from "@/features/discover/fixture";
+import {
+  useDiscoverFixtureData,
+  useDiscoverFixtureName,
+  useDiscoverListFixtureData,
+} from "@/features/discover/fixture";
 import { DISCOVER_LIST_TRACK_ACTIONS } from "@/features/discover/track-actions";
 import { getMusicComprehensiveWebRank, type Data as MusicItem } from "@/service/music-comprehensive-web-rank";
 import { getRegionFeedRcmd, type Archive } from "@/service/web-interface-region-feed-rcmd";
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
+import { DISCOVER_CARD_FIXTURE_NAME } from "@/ui/fixtures/screen-07-discover-card";
+import { DISCOVER_LIST_FIXTURE_NAME } from "@/ui/fixtures/screen-08-discover-list";
 import { AnnotationBand } from "@/ui/patterns/annotation-band";
 import { PageHeader } from "@/ui/patterns/page-header";
 import { PageState } from "@/ui/states/page-state";
-import { DISCOVER_CARD_FIXTURE_NAME } from "@/ui/fixtures/screen-07-discover-card";
-import { DISCOVER_LIST_FIXTURE_NAME } from "@/ui/fixtures/screen-08-discover-list";
 
 import MusicRecommendGridList from "./grid-list";
 import MusicRecommendList from "./list";
@@ -42,15 +46,22 @@ const REGION_MAP: Record<Exclude<RecommendTabKey, "pop">, number> = {
 /**
  * 真实数据路径的发现音乐页。
  *
- * **本轮的处置说明（P3-S4）**：屏 07 的呈现层已在 `DiscoverView` 里落地，
- * 夹具路径（`?fixture=07-discover-card`）走的就是它。真实路径仍用下面这套
- * 既有实现 —— 把它迁到同一套骨架要先把 new/music 从 `NewMusicTop` 内部的
- * 自取数据里提出来（设计稿第 8 页的两段主体内容都来自 new/music：首段是
- * banner 大卡、第二段是它的方形封面专辑卡），并同时接线顶栏分段
- * 「音乐分区 | 单一模块」（`DEFERRED_SEGMENTS["/"]`，随屏 08 落地）。
- * 这两件事一起做才不会出现「页面里两套分区切换」的中间态。
+ * **处置说明（屏 07 / 08 验收后的常态）**：两屏的呈现层都已落地 —— 卡片态在
+ * `DiscoverView`、列表态在 `DiscoverListView`，夹具路径
+ * （`?fixture=07-discover-card` / `?fixture=08-discover-list`）走的就是它们。
+ * 真实路径仍用下面这套既有实现，**这是有意保留的**，不是遗漏：
  *
- * 在那之前，本页的真实路径**保持不动** —— 迁移中的半成品比旧实现更难判断。
+ * 把它迁到同一套骨架要先把 new/music 从 `NewMusicTop` 内部的自取数据里提出来
+ * （设计稿第 8 页的两段主体内容都来自 new/music：首段是 banner 大卡、第二段是
+ * 它的方形封面专辑卡），并同时接线顶栏分段「音乐分区 | 单一模块」。这两件事
+ * 必须一起做 —— 分段组是**数据源**切换，先接线会造出一个点了没反应的控件，
+ * 而只迁呈现层又会留下「页面里两套分区切换」的中间态。
+ *
+ * 因此本页真实路径的迁移**没有随屏 07 / 08 收口**，欠账登记在
+ * `src/layout/route-shell.ts` 的 `DEFERRED_SEGMENTS["/"]`（那里写着确切的
+ * 阻塞条件，且该条目受 `tests/app-shell-interactions.test.ts` 与真值
+ * `topbarSegments.byRoute` 双向看守）。**在它落地之前，本页真实路径保持不动**
+ * —— 迁移中的半成品比旧实现更难判断。
  */
 const MusicRecommendLive = () => {
   const scrollerRef = useRef<ScrollRefObject>(null);
