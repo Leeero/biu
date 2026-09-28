@@ -1,23 +1,28 @@
 {
   "phase": "P3",
-  "baselineRef": "e1065f0",
-  "baselineNote": "基线 = P3-S2 提交 e1065f0（feat(collection): 屏 02 我的收藏 · 详情过 --target app 比对）。P3-S2 期间新增了 --biu-layout-head-h（38px）与 --biu-type-list-title 四原子 —— 新增令牌不在基线集合内，不构成偏差；阶段内的唯一**有效值变更**是 --biu-layout-track-gap 由 31px 改为 21px（spec-lock 1.3.5 勘定的原型—设计稿第 8 处分歧），已随本次基线推进归档到 history。",
+  "baselineRef": "11e51c4",
+  "baselineNote": "基线 = P3-S4 提交 11e51c4（feat(discover): 屏 08 发现音乐 · 列表态过 --target app 比对）。P3-S4 期间新增了 --biu-type-section-title 与 --biu-type-note 两组四原子（各 5 条）—— 新增令牌不在基线集合内，不构成偏差；阶段内的**有效值变更**是 --biu-type-lead-size 由 22px 改为 20px（spec-lock 1.3.24 订正的字阶第 10 处分歧）及其简写侧 --biu-type-lead-leading / --biu-type-lead，已随本次基线推进归档到 history。",
   "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。任何被业务代码消费的偏差（有效值变更 / 两侧无法求值的表达式改写 / 令牌消失）都必须额外标 visualImpact: true 显式确认「这会掉像素」；未登记的偏差同样让退出码为 1。",
-  "intendedChanges": {
-    "--biu-type-lead-size": {
-      "visualImpact": true,
-      "reason": "P3-S4 屏 08：导语字号由 22px 改为 20px（spec-lock 1.3.24，原型—设计稿第 10 处分歧）。原型的 22 是 tokens.css 自述的「派生字号（同族，按 1.15 阶梯收敛）」—— 不是从设计稿量出来的。设计稿实测 20.0 且跨十页一致（第 02 / 03 / 04 / 06 / 07 / 08 / 09 / 10 / 12 / 13 页）。方法：汉字 advance 恒等于 font-size，取一行横向墨迹的「最长等步进段」，报告步进 d 与段数（段数越多越可信，排除 ASCII / 空格造成的杂步进）。这是影响面最大的一处字号错误：每一屏都有导语，22px 让所有页面的导语比设计稿宽 10%（第 09 页整行 1053 对 970），而 `lead` 是**结构带**、只判 y 起点 —— 这条偏差此前从未被任何闸门量到过。**这是有意掉像素**：掉的是「导语比设计稿宽 10%」这个错误本身。行盒不受影响：`PageLead` 用 `leading-7`（28px）、搜索页的导语同样 `leading-7`，行盒由像素类名给定、与字身解耦，故改字号不挪任何 y（已由屏 08 `--target app` 复跑确认 lead 结构带仍 OK）。消费方：PageLead、pages/search、pages/now-playing、设计系统展页。"
-    },
-    "--biu-type-lead-leading": {
-      "visualImpact": false,
-      "reason": "随字号订正回填：1.27 → 1.4，使 font 简写给出 28px，与 `PageLead` 的 `leading-7` 一致（此前 1.27 会让简写给出 22 × 1.27 = 27.94，与像素类名的 28 自相矛盾）。本令牌**无业务代码消费方**（只被 `--biu-type-lead` 简写引用，而该简写亦无消费方），故无可视影响。"
-    },
-    "--biu-type-lead": {
-      "visualImpact": false,
-      "reason": "同上：简写由四个原子令牌拼出，随 `-size` / `-leading` 变化而变，**无业务代码消费方**。"
-    }
-  },
+  "intendedChanges": {},
   "history": [
+    {
+      "phase": "P3-S4",
+      "note": "基线已推进到 P3-S4 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明 —— 判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
+      "changes": {
+        "--biu-type-lead-size": {
+          "visualImpact": true,
+          "reason": "P3-S4 屏 08：导语字号由 22px 改为 20px（spec-lock 1.3.24，原型—设计稿第 10 处分歧）。原型的 22 是 tokens.css 自述的「派生字号（同族，按 1.15 阶梯收敛）」—— 不是从设计稿量出来的。设计稿实测 20.0 且跨十页一致（第 02 / 03 / 04 / 06 / 07 / 08 / 09 / 10 / 12 / 13 页）。方法：汉字 advance 恒等于 font-size，取一行横向墨迹的「最长等步进段」，报告步进 d 与段数（段数越多越可信，排除 ASCII / 空格造成的杂步进）。这是影响面最大的一处字号错误：每一屏都有导语，22px 让所有页面的导语比设计稿宽 10%（第 09 页整行 1053 对 970），而 `lead` 是**结构带**、只判 y 起点 —— 这条偏差此前从未被任何闸门量到过。**这是有意掉像素**：掉的是「导语比设计稿宽 10%」这个错误本身。行盒不受影响：`PageLead` 用 `leading-7`（28px）、搜索页的导语同样 `leading-7`，行盒由像素类名给定、与字身解耦，故改字号不挪任何 y（已由屏 08 与屏 01 / 02 / 06 / 07 的 `--target app` 复跑确认，五屏全 PASS）。消费方：PageLead、pages/search、pages/now-playing、设计系统展页。"
+        },
+        "--biu-type-lead-leading": {
+          "visualImpact": false,
+          "reason": "随字号订正回填：1.27 → 1.4，使 font 简写给出 28px，与 `PageLead` 的 `leading-7` 一致（此前 1.27 会让简写给出 22 × 1.27 = 27.94，与像素类名的 28 自相矛盾）。本令牌**无业务代码消费方**（只被 `--biu-type-lead` 简写引用，而该简写亦无消费方），故无可视影响。"
+        },
+        "--biu-type-lead": {
+          "visualImpact": false,
+          "reason": "同上：简写由四个原子令牌拼出，随 `-size` / `-leading` 变化而变，**无业务代码消费方**。"
+        }
+      }
+    },
     {
       "phase": "P3-S2",
       "note": "基线已推进到 P3-S2 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明 —— 判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
