@@ -93,7 +93,15 @@ export const TrackTable = ({
             style={{ gridTemplateColumns: gridTemplate }}
           >
             {columns?.map(column => (
-              <span key={column.key} className={column.align === "end" ? "text-right" : undefined}>
+              <span
+                key={column.key}
+                className={column.align === "end" ? "text-right" : undefined}
+                // 表头标签的列内缩（见 `TrackTableColumn.inset`）。设计稿第 03 / 04 /
+                // 09 / 10 / 13 页的「标题」都比列起点右 121px —— 它对齐的是行内的
+                // **文字列**，不是列起点。此前表头只走行网格，于是整整错 120px
+                // 却没有任何闸门发现（`verify.py` 的纵向带对 x 完全不敏感，1.3.22）。
+                style={column.inset === undefined ? undefined : { paddingLeft: column.inset }}
+              >
                 {column.label}
               </span>
             ))}

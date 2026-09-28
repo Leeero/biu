@@ -156,7 +156,16 @@ export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
 
 /** 待声明的分段组：路由 pattern → 承接阶段与原因。只减不增。 */
 export const DEFERRED_SEGMENTS: Readonly<Record<string, { phase: string; reason: string }>> = {
-  "/": { phase: "P3", reason: "发现音乐的卡片/列表子视图（音乐分区 / 单一模块）随第 07-08 屏落地" },
+  "/": {
+    phase: "P3",
+    reason:
+      "两段是**数据源**切换（音乐分区 = rid 1003 的分区推荐 / 单一模块 = new/music），" +
+      "不是卡片与列表 —— 那个是筛选条第 5 枚「显示模式」的档。标签本身是静态的（真值 " +
+      "`topbarSegments.byRoute[\"/\"]` 两条，无 `labelSources` 条目），卡的是 `/` 的真实数据" +
+      "路径尚未收敛为这两个子视图：`pages/music-recommend` 眼下仍是「音乐 / 流行 / 鬼畜」三个" +
+      "旧 Tab，而屏 08 的注解带记的结论恰恰是「流行与鬼畜从信息架构中移除」。先声明会造出一个" +
+      "点了没反应的控件。两个夹具分支（屏 07 / 08）已落地，不受影响。",
+  },
   "/library": { phase: "P3", reason: "我的歌单 / 我收藏的 / 发现音乐三个子视图随第 01 屏落地" },
   "/later": { phase: "P4", reason: "时间范围筛选随第 03 屏落地" },
   "/local-music": { phase: "P4", reason: "标签内嵌本地目录名，需真实目录列表后才能在壳层声明" },
@@ -210,11 +219,31 @@ export const resolveSearchPlaceholder = (pathname: string): string => {
   return hit?.[1] ?? DEFAULT_SEARCH_PLACEHOLDER;
 };
 
+/**
+ * 顶栏分段组右侧的弱化说明（原型 `.topbar-note`）。键是路由 pattern。
+ *
+ * `/` 上的「已下线: 流行 / 鬼畜」标注该页**已下线的分区**。真值见 spec-lock
+ * `globalChrome.topbarNote`（1.3.18 订正了它的材质：**无独立底色**，与未选中
+ * 分段同处 `--biu-veil-9` 容器底、字色 `--biu-text-chrome-label`；1.3.16 记的
+ * 「自带底的片」是墨迹污染的读数）。它**不是交互元素**，渲染成 `<span>`。
+ *
+ * 与搜索占位一样，这里只声明「哪个路由有什么说明」；怎么画是组件的事。
+ */
+export const TOPBAR_NOTE_BY_ROUTE: Readonly<Record<string, string>> = {
+  "/": "已下线: 流行 / 鬼畜",
+};
+
+/** 解析某个路径的顶栏说明。未登记的路由没有说明（`undefined`）。 */
+export const resolveTopbarNote = (pathname: string): string | undefined =>
+  Object.entries(TOPBAR_NOTE_BY_ROUTE).find(([pattern]) => matchesPattern(pathname, pattern))?.[1];
+
 export interface RouteShell {
   chrome: ShellChrome;
   segments: TopbarSegment[];
   /** 当前激活分段的 key。分段组回落到一级导航且都不匹配时为空串。 */
   activeSegmentKey: string;
+  /** 分段组右侧的弱化说明。未登记的路由没有它。 */
+  topbarNote?: string;
 }
 
 /**
@@ -260,6 +289,7 @@ const resolveDefaultActiveKey = (segments: TopbarSegment[], pathname: string): s
  */
 export const resolveRouteShell = (pathname: string, search = ""): RouteShell => {
   const chrome = SHELL_CHROME_BY_ROUTE[pathname] ?? "default";
+  const topbarNote = resolveTopbarNote(pathname);
 
   const declared = Object.entries(ROUTE_SEGMENTS).find(([pattern]) => matchesPattern(pathname, pattern));
   if (!declared) {
@@ -267,6 +297,7 @@ export const resolveRouteShell = (pathname: string, search = ""): RouteShell => 
       chrome,
       segments: DEFAULT_NAV_SEGMENTS,
       activeSegmentKey: resolveDefaultActiveKey(DEFAULT_NAV_SEGMENTS, pathname),
+      topbarNote,
     };
   }
 
@@ -275,5 +306,6 @@ export const resolveRouteShell = (pathname: string, search = ""): RouteShell => 
     chrome,
     segments: spec.segments,
     activeSegmentKey: spec.activeKey?.(new URLSearchParams(search)) ?? resolveDefaultActiveKey(spec.segments, pathname),
+    topbarNote,
   };
 };

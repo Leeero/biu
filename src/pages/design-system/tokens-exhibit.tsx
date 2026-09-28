@@ -87,7 +87,7 @@ const VEILS: Swatch[] = [
   { token: "--biu-veil-5-5", use: "迷你窗底", kind: "solid" },
   { token: "--biu-veil-8", use: "分段项悬停", kind: "solid" },
   { token: "--biu-veil-9", use: "分段容器底", kind: "solid" },
-  { token: "--biu-veil-12", use: "已关注底 / 标签描边 / 顶栏键帽底", kind: "solid" },
+  { token: "--biu-veil-12", use: "已关注底 / 药丸描边 / 顶栏键帽底", kind: "solid" },
   { token: "--biu-veil-14", use: "徽标底 / 行内操作带 / 弹层描边", kind: "solid" },
   { token: "--biu-veil-18", use: "进度槽", kind: "solid" },
   { token: "--biu-veil-20", use: "瓦片操作带描边", kind: "solid" },
@@ -107,12 +107,19 @@ const RADII: { token: string; role: string }[] = [
   { token: "--biu-radius-pill", role: "药丸 / 搜索 / 播放键 999" },
 ];
 
+/**
+ * 字阶展位。**每个 role 里的数字要与 `typography.scale` 逐字一致** —— 这里写死过一次
+ * 过期值（1.3.24 把导语由 22 订正为 20 时差点漏掉）。数字只作人读标签，真值是令牌本身。
+ */
 const TYPE_STEPS = [
   { token: "--biu-type-page-title", role: "满幅标题 56" },
   { token: "--biu-type-track-title", role: "曲名 40" },
-  { token: "--biu-type-lead", role: "页面副标题 22" },
+  { token: "--biu-type-lead", role: "页面副标题 20" },
   { token: "--biu-type-small", role: "歌词与浮层小字 17" },
+  { token: "--biu-type-list-title", role: "曲目表标题 17" },
+  { token: "--biu-type-section-title", role: "分组标题 16" },
   { token: "--biu-type-body", role: "列表正文与元信息 15" },
+  { token: "--biu-type-note", role: "注解带 14" },
   { token: "--biu-type-label", role: "标签与徽标 13" },
   { token: "--biu-type-micro", role: "表头与角标 12" },
 ] as const;

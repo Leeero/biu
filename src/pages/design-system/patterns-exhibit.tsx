@@ -197,7 +197,7 @@ export const PatternsExhibit = () => {
         name="页面标题"
         proto=".page-head / .head-main"
         page={2}
-        note="两列网格 minmax(0,1fr) + 右栏，右栏默认 360。baseline=flat 对应原型的 .head-main--flat（第 07 屏：标题列整体上移 11px，因为没有 h1 上方的对齐需要）。title 是 <h1>，一页只有一个。actions 是迁移期的兼容别名，原型里页面级操作实际在 FilterBar 内 —— 新屏请把操作放进 FilterBar。"
+        note="两列网格 minmax(0,1fr) + 右栏，右栏默认 360。baseline 缺省是 aligned（标题列带 11px 上边距，与右侧玻璃面板构成设计稿里那条错位基线）；flat 去掉这 11px —— 它是原型 .head-main--flat 的忠实还原，但**第 07 屏不该用它**：设计稿第 8 页的 H1 墨迹在 121，只有保留了 11px 基线才闭合（去掉会落到 111，高 10px）。屏级的上/下间距走 leadOffsetPx / gapPx 这类**像素覆写**入参，不按屏加档位。title 是 <h1>，一页只有一个。actions 是迁移期的兼容别名，原型里页面级操作实际在 FilterBar 内 —— 新屏请把操作放进 FilterBar。"
       >
         <div className="flex flex-col gap-10">
           <PageHeader
@@ -470,7 +470,7 @@ export const PatternsExhibit = () => {
         name="大卡"
         proto=".hero-card / .hero-art / .hero-body .tag / .hero-tags / .hero-play"
         page={8}
-        note="三列 420 / 1fr / 96，间距 32，内边距 24。第三列是**播放键的槽位**（宽 96、键 62 居中）—— 播放键不是绝对定位而是 grid 的一列，这样窄容器下会自动收窄；改成绝对定位就会压到文案上。发现音乐的卡片分支与列表分支用两条不同的固定渐变，都在数据夹具里。"
+        note="三列 356 / 1fr / 128，间距 24，内边距 15（设计稿第 8 页实测；原型写的是 420 / 1fr / 96、间距 32、内边距 24 —— 四处都不同，实现按设计稿）。第三列是**播放键的槽位**（宽 128、键 56 贴右缘）—— 播放键不是绝对定位而是 grid 的一列，这样窄容器下会自动收窄；改成绝对定位就会压到文案上。发现音乐的卡片分支与列表分支用两条不同的固定渐变，都在数据夹具里。"
       >
         <HeroCard
           title="反乌托邦 · 2024 Remaster"
@@ -493,7 +493,7 @@ export const PatternsExhibit = () => {
         name="专辑卡与栅格"
         proto=".album-grid / .album-card / .album-art / .album-body / .album-foot"
         page={2}
-        note="**原型把 .album-card 定义了两次**，生效的是文件末尾那一处：内边距 16（不是 18）、固定高 176、body 上内边距 34、标题 22/28。照前一处写会得到 18px 内边距和自适应高度 —— 那是原型自己改掉的旧稿。固定 176 是设计决策：三张卡在同一行高度必须一致。栅格间距 23 也与瓦片的 20 不同，别顺手统一。"
+        note="几何取自设计稿第 8 页：封面 160 见方、卡高 200、内边距 19、图文间距 20，栅格 3 列间距 23。**原型把 .album-card 定义了两次**，生效的是文件末尾那一处（118 / 176 / 16 / 18）—— 它自己也是错的，照它写会得到 118 的封面与 176 的卡高。**卡里没有画幅说明**：原型画了 `1:1`，设计稿三张封面左下角逐点为空，那是原型发挥 —— 组件结构上不提供，补不回来。固定 200 是设计决策：三张卡在同一行高度必须一致。栅格间距 23 也与瓦片的 20 不同，别顺手统一。"
       >
         <AlbumGrid>
           {[
@@ -508,7 +508,6 @@ export const PatternsExhibit = () => {
               meta={item.meta}
               artKey={`album-${index}`}
               badge={item.badge}
-              ratioNote="118 × 118"
               footer={
                 <>
                   <Button variant="ghost" icon="play">

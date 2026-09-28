@@ -15,6 +15,8 @@
   L2 横向实心带  进度条等实心矩形按**行**取段，逐段比较起点与终点（±2px）。
                 —— 纵向带对「宽度」不敏感（270.5 与 380 在纵向上同形），这一层补上横向
                 （见 PLAYBAR_H_PROBES）
+  L2 表头标签    曲目表表头的标签按**带**取横向段，比段数与各段起点（±2px）。
+                —— 纵向带对「x 位置」完全不敏感，表头列位此前零覆盖（见 TRACK_HEAD_PROBES）
   L2 内容带     列表 / 右列 / 注解带：设计带起点被渲染带覆盖的比例 ≥ 0.75（±4px 内）
                 —— 内容带随文案与封面变化，逐条严格相等不合理；用覆盖率保证结构不被破坏
   L3 整屏观感   平均亮度差 ≤ 12
@@ -65,8 +67,33 @@ DEFAULT_PROBES = {
     "right": (960, 1380, 300, 740, 60),
     "note": (64, 1400, 580, 812, 60),
     "playbar": (64, 200, 795, 900, 12),
-    "artRows": (64, 172, 290, 790, 16),
 }
+
+# 缩略图行（`rowPitch` 的取法，1.3.23 重写）。
+#
+# `rowPitch` 要的是**行距** —— 「缩略图实心带起点之差」。此前它借道一条通用探针
+# `artRows = (64, 172, 290, 790, 16)`，即「列表左侧 108px 宽的窄列、从内容顶到注解之上」。
+# 问题是这条窄列里**不止有缩略图**：段标题（x65 起）、表头序号 `#`（x64–71）、
+# 注解带的色块与文字都落在同一列里，而 `bands()` 只问「这一行有没有高于阈值的像素」。
+# 屏 08 实测：设计侧读出 9 条带（308 段标题 / 347 表头 / 380·448·516·584·652 缩略图 /
+# 728·748 注解两行），把四类东西混成了行距，`rowPitch` 于是读成 55.0（渲染 60.1）——
+# 而两侧**真实行距都是 68**。它一直是这样：只要有屏恰好「没少读」，就照样全绿。
+#
+# 修法不是挪 y 边界（段标题与注解的位置逐屏不同，挪了就是把某一屏的数字刻进工具），
+# 而是回到注释原本说的「**实心**带」：把窗口收进**缩略图内部**，并要求该行**近乎满宽**。
+# 缩略图是 100 × 56 的实心矩形，文字墨迹再密也在列方向留空 —— 屏 08 实测的
+# 最大列占比：缩略图 1.00 / 段标题 0.85 / 表头 0.83 / 注解 0.55，`0.9` 落在空档中央。
+#
+# x 窗口 124–170 是缩略图 120–219 的内侧一段（左右各留 4px / 49px 余量），
+# 这样即便缩略图边缘有 1px 的抗锯齿溢出也不影响判定。
+#
+# 已知副作用（可接受）：`.track-row.is-current` 的 7% 白上浮叠在底板上亮度 ≈ 26 > 16，
+# 于是一个**整行高亮**的当前行会读成一条高 68 的实心带 —— 但它的**起点就是行顶**，
+# 与缩略图带同起点，行距不变。这正是不打算用「带高必须 ≈ 56」来筛的原因。
+ART_ROW_WINDOW = (124, 170, 290, 812)
+ART_ROW_THRESHOLD = 16
+ART_ROW_FILL = 0.9
+ART_ROW_MIN_H = 8
 
 # 沉浸态没有顶栏与播放栏，也没有曲目列表，探针组完全不同
 IMMERSIVE_PROBES = {
@@ -112,6 +139,31 @@ PLAYBAR_H_PROBES = {
     "playbarProgress": (700, 1200, 856, 30),
 }
 PLAYBAR_H_MIN_LEN = 60
+
+# 曲目表**表头标签**的横向实心段（1.3.22 补录）。
+#
+# 补它的理由比前两组更硬：**结构带（H1 / lead / filter / playbar）与内容带
+# （list / right / note）全部走 `bands()`，而 `bands()` 只问「某一行有没有高于阈值的
+# 像素」，对 x 位置完全不敏感。** 于是表头标签的 y 一直是对的、x 可以错 120px 而全绿。
+#
+# 实测差距：设计稿把第二列标签对齐到**行内文字列**（第 03 / 04 / 09 / 10 / 13 页读
+# 240 / 240 / 240 / 241 / 241，见 spec-lock geometry.listHead.titleInset），
+# 而原型（`--cols` 行网格）与迁移前的实现都把它放在**列起点** x120 —— 横向差 120px。
+# 屏 02 就是带着这个错位通过验收的。
+#
+#   trackHeadLabels  y 346–358（表头墨迹带）/ x80–900 / 阈值 40（与表头墨迹同档）。
+#                    x 下界 80：**排除序号列**。序号列的 `#` 在设计侧是几道 1–2px 的
+#                    笔画（读不出 ≥ minlen 的连续段），在渲染侧却因抗锯齿连成整整
+#                    8px（x64–71）—— 恰好在 minlen 的门槛上，于是「同一个表头」两侧
+#                    读出的段数不同。`#` 的 x 位置就是列起点（= 列表左缘 64），已由
+#                    `gutterLeft` 看守，本探针要看的是**标签相对列位的内缩**，排除它
+#                    比调 minlen 更贴本意（调 minlen 会顺带改变对其他窄标签的宽容度）。
+#                    x 上界收到 900：右侧两列（统计 964 / 时长 1184）的标签各屏文案与
+#                    列宽都不同，纳入只会引入与「表头列位」无关的噪声。
+TRACK_HEAD_PROBES = {
+    "trackHeadLabels": (80, 900, 346, 358, 40),
+}
+TRACK_HEAD_MIN_LEN = 8
 
 # 顶栏厚度探针：取 x 300–1200 内部区，避开画板 33px 圆角与右侧内容。
 # 阈值 18 高于底板（8.7）与内容区微光（≤16），低于顶栏最低档 #131315（19.0）。
@@ -326,6 +378,27 @@ def xruns(L: np.ndarray, y: int, x0: int, x1: int, thr: float, minlen: int = 20)
     return out
 
 
+def xruns_band(L: np.ndarray, y0: int, y1: int, x0: int, x1: int, thr: float, minlen: int = 8):
+    """**多行**窗口的横向实心段 —— 与 `bands()` 的行判据对偶。
+
+    `xruns()` 只看一行，适合「进度条」这类单行实心块；带里的文字墨迹只占其中几行，
+    取单行会随基线位置抖动，故这里用「窗口内任一行高于阈值即算该列有墨迹」。
+    """
+    m = (L[y0:y1, x0:x1] > thr).any(axis=0)
+    out, i = [], 0
+    while i < len(m):
+        if m[i]:
+            j = i
+            while j < len(m) and m[j]:
+                j += 1
+            if j - i >= minlen:
+                out.append((x0 + i, x0 + j - 1))
+            i = j
+        else:
+            i += 1
+    return out
+
+
 def vertical_extent(L: np.ndarray, x: int, y_start: int, y_end: int, step: int) -> int | None:
     """从 y_start 沿 step 方向连续统计亮度高于常驻层阈值的像素数。"""
     col = L[:, x] > CHROME_BG_THRESHOLD
@@ -350,6 +423,29 @@ def mask_bbox(L: np.ndarray, x0: int, x1: int, y0: int, y1: int, thr: float, fil
     if not len(cols):
         return None
     return int(x0 + cols.min()), top, int(x0 + cols.max()), bottom
+
+
+def art_row_bands(L: np.ndarray) -> list:
+    """缩略图行的实心带（`rowPitch` 的唯一取法，常量见 ART_ROW_*）。
+
+    与 `bands()` 的差别只有一处：一行算不算「有墨迹」，这里要求窗口内**近乎满宽**
+    （`ART_ROW_FILL`），而不是「至少有一个像素」。文字墨迹再密也会在列方向留空，
+    缩略图是实心矩形 —— 这是把缩略图从同列的文字里分开的唯一可靠判据。
+    """
+    x0, x1, y0, y1 = ART_ROW_WINDOW
+    on = (L[y0:y1, x0:x1] > ART_ROW_THRESHOLD).mean(axis=1) >= ART_ROW_FILL
+    out, i = [], 0
+    while i < len(on):
+        if on[i]:
+            j = i
+            while j < len(on) and on[j]:
+                j += 1
+            if j - i >= ART_ROW_MIN_H:
+                out.append([int(y0 + i), int(y0 + j - 1)])
+            i = j
+        else:
+            i += 1
+    return out
 
 
 def measure_anchors(L: np.ndarray, bands_map: dict, immersive: bool, has_row_pitch: bool) -> dict:
@@ -383,9 +479,9 @@ def measure_anchors(L: np.ndarray, bands_map: dict, immersive: bool, has_row_pit
         if len(cols):
             anchors["gutterLeft"] = int(cols.min())
 
-    # 行距：仅对有真实曲目表的屏有意义，且需缩略图高度 ≥ 8px 的实心带
+    # 行距：仅对有真实曲目表的屏有意义，且只认**实心**的缩略图带（见 art_row_bands）
     if has_row_pitch:
-        art_rows = [b for b in (bands_map.get("artRows") or []) if b[1] - b[0] >= 8]
+        art_rows = art_row_bands(L)
         if len(art_rows) >= 2:
             pitches = [art_rows[i + 1][0] - art_rows[i][0] for i in range(len(art_rows) - 1)]
             anchors["rowPitch"] = round(sum(pitches) / len(pitches), 1)
@@ -442,9 +538,14 @@ def hprobe(im: Image.Image, screen: dict) -> dict:
 
     沉浸态没有播放栏，返回空；标准壳层**按屏启用**（spec-lock
     `screens[].playbarProgress.enabled`）—— 与栏内探针同一纪律：设计侧没有可比对象时
-    不启用，而不是把窗口调宽了事。当前排除两屏，理由写在真值里：
-      · 07 `发现音乐 · 卡片`：设计页第 8 页壳层不同（顶栏 65 / 播放栏 81），栏内无标准进度条；
+    不启用，而不是把窗口调宽了事。当前只排除一屏，理由写在真值里：
       · 12 `/mini-player`：属 P7，壳层尚未重建（渲染顶栏实测 159），播放栏不是标准形态。
+
+    **屏 07 曾在排除名单里，1.3.21 移除。** 那条「设计页第 8 页壳层不同（顶栏 65 / 播放栏 81）」
+    的理由是 1.3.15 之前**参考图被纵向压缩 0.9204** 留下的伪影，而真值里
+    `screens[6].playbarProgress.enabled` 早就是 `true` —— 文档与真值互相矛盾了好几个版本，
+    读到的人会以为这屏没在判。纠正后的页 8 与其余标准页同值（[(792, 1172)]）。
+    （教训：工具里的**排除理由**也是需要随参考图订正一起复核的资产。）
 
     启用面上这条口径比栏内探针更宽：进度槽底是数据无关的满宽实心块，因此不依赖夹具
     提供的「正在播放」内容 —— 第 03–06/08/09/11 屏在壳层尚未重建时也一并被覆盖。
@@ -456,6 +557,29 @@ def hprobe(im: Image.Image, screen: dict) -> dict:
     return {
         name: xruns(L, y, x0, x1, thr, minlen=PLAYBAR_H_MIN_LEN)
         for name, (x0, x1, y, thr) in PLAYBAR_H_PROBES.items()
+    }
+
+
+def trackhead_probe(im: Image.Image, screen: dict) -> dict:
+    """曲目表表头标签的**横向**实心段。
+
+    **按屏启用**（spec-lock `screens[].trackHeadLabels.enabled`）：只有真的渲染了
+    `.track-head` 的屏才有可比对象。搜索结果的 `tracklist--search` 形态
+    （`TrackTable` 不传 `columns`）**没有表头**，对它启用会拿设计侧的读数去比渲染侧的
+    空集，把「本屏没有这个件」判成缺陷 —— 与 `playbarDetail` / `playbarProgress`
+    同一条纪律：设计侧没有可比对象时不启用，而不是把窗口调宽了事。
+
+    **只比段起点与段数，不比段长度**：段的长度由字形宽度决定，而两侧的字形来源不同
+    （设计稿不是本工程渲染出来的），比长度会把字体度量差判成结构缺陷 ——
+    要抓的是「标签放在了哪一列」，不是「字宽差了几个百分点」。
+    """
+    declared = screen.get("trackHeadLabels") or {}
+    if screen.get("immersive") or not declared.get("enabled"):
+        return {}
+    L = luminance(im)
+    return {
+        name: xruns_band(L, y0, y1, x0, x1, thr, minlen=TRACK_HEAD_MIN_LEN)
+        for name, (x0, x1, y0, y1, thr) in TRACK_HEAD_PROBES.items()
     }
 
 
@@ -541,6 +665,18 @@ def evaluate(screen: dict, spec: dict, rendered_png: pathlib.Path, verbose: bool
                 print(f"    {'':4s} {'':12s} 渲染 {r}")
                 failures.append(f"L2 {name} 横向实心带不一致")
 
+    # ---------------- L2 表头标签（横向） ----------------
+    td, trl = trackhead_probe(design_img, screen), trackhead_probe(render_img, screen)
+    if td:
+        print(f"  [L2 表头标签 · 段数一致且各段起点 ±{band_tol}px（不比段长，见 trackhead_probe）]")
+        for name, d in td.items():
+            r = trl.get(name) or []
+            ok = len(d) == len(r) and all(abs(a[0] - b[0]) <= band_tol for a, b in zip(d, r))
+            print(f"    {'OK  ' if ok else 'FAIL'} {name:12s} 设计 {d}")
+            if not ok:
+                print(f"    {'':4s} {'':12s} 渲染 {r}")
+                failures.append(f"L2 {name} 表头标签起点不一致")
+
     # ---------------- L2 内容带 ----------------
     label = "严格逐条" if strict else f"覆盖率 ≥ {CONTENT_COVERAGE_MIN:.0%}（±{CONTENT_MATCH_PX}px）"
     print(f"  [L2 内容带 · {label}]")
@@ -586,7 +722,9 @@ def resolve_target(screen: dict, args) -> str | None:
     base = f"{args.base_url.rstrip('/')}/#{route}"
     # 夹具注入（见 fixtures/README.md 契约 4）：目标屏有夹具时通过 ?fixture=
     # 让应用渲染固定内容，否则真实数据的波动会让内容带无法判定。
-    # 应用侧由 src/features/library/fixture.ts 读取该参数（随屏扩展）。
+    # 应用侧由各屏自己的 `src/ui/fixtures/screen-NN-*.ts` 读取该参数（页面内容），
+    # 播放栏另需登记进 `src/features/player/now-playing.ts` 的 `NOW_PLAYING_FIXTURES`
+    # —— 那是全局组件，不读页面夹具；只写夹具不登记，播放栏就还是空态（1.3.21）。
     fixture = FIXTURES_DIR / (screen["prototype"].split("/")[-1].replace(".html", "") + ".json")
     if fixture.exists():
         return f"{base}?fixture={fixture.stem}"

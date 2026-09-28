@@ -59,6 +59,18 @@ interface SegmentedControlProps {
    * 读屏用户会找不到内容。宁可少一层语义，也不要给一个兑现不了的承诺。
    */
   panelId?: string;
+  /**
+   * 容器末端的弱化说明（原型 `.topbar-note`）。
+   *
+   * 设计稿第 8 页实测它**在容器内**：容器底从 x112 一路延到 x467，说明文字
+   * （x324–443）落在其中、右侧仍留 25px 容器底；容器之外立刻回落到顶栏底。
+   * 原型把 note 排在 `.tabgroup` 之外、且给的是无底裸文字 —— 两处都不符。
+   * 横向内边距取与分段项相同的 22（文字左缘 305 + 22 = 327，实测 324）。
+   *
+   * **它不是可交互项**：渲染成 `<span>`，不进 `items`、不参与方向键与
+   * 激活判定。真值见 spec-lock `globalChrome.topbarNote`。
+   */
+  note?: ReactNode;
   className?: string;
 }
 
@@ -96,6 +108,7 @@ export const SegmentedControl = ({
   onSelect,
   size = "default",
   panelId,
+  note,
   className,
 }: SegmentedControlProps) => {
   const isNavigation = items.some(item => item.href);
@@ -201,10 +214,22 @@ export const SegmentedControl = ({
     className,
   );
 
+  /**
+   * 末端说明。左内边距与分段项一致（22），这样它与未选中分段落在同一条
+   * 字线上；字色也取未选中分段那一档（`--biu-text-chrome-label`），
+   * 因为它与它们同处容器底、属于同一层信息。
+   */
+  const noteBody = note ? (
+    <span className="flex-none px-[22px] text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-chrome-label))]">
+      {note}
+    </span>
+  ) : null;
+
   if (isNavigation) {
     return (
       <nav aria-label={label} className={containerClass}>
         {body}
+        {noteBody}
       </nav>
     );
   }
@@ -212,6 +237,7 @@ export const SegmentedControl = ({
   return (
     <div role={useTabs ? "tablist" : "group"} aria-label={label} onKeyDown={handleKeyDown} className={containerClass}>
       {body}
+      {noteBody}
     </div>
   );
 };

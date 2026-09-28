@@ -51,6 +51,15 @@ interface AnnotationBandProps {
  * 注解带叠在 y=653 等内容之上，列表滚动时行会经过它。若让它可以接收指针事件，
  * 那块区域的行就点不动了 —— 这类「有一部分点不动」的问题极难定位。
  * 代价是注解文字不可选中；需要可选中时用 `anchor="inline"` 把它排进内容流。
+ *
+ * **字号 14 / 行距 20 走独立档 `--biu-type-note`（spec-lock 1.3.24）**，不借
+ * `--biu-type-label-size`（13）。原型 `.note` 用的是 `--fs-label`，但设计稿实测注解带是
+ * **14.0**（跨 6 页一致），而 label 档在同一份测量里被行内副标题验证为 13 且设计 = 应用
+ * —— 两档混用会把 25 处 label 消费方一起带偏。行距 20 来自设计侧两行墨迹起点 728 / 748。
+ *
+ * **这一档还决定了一件事：注解带在窄文本上应当折行。**14px 下较长的注文会超出文本框
+ * 宽度而自然折成两行（屏 08 即如此，设计稿也是两行）。若看到实现只渲染出一行，
+ * 先查这里的字号是不是被改回了 13，而不是去加 `max-w` 或者手写换行。
  */
 export const AnnotationBand = ({ anchor, children, className }: AnnotationBandProps) => {
   const isInline = anchor === "inline";
@@ -59,7 +68,7 @@ export const AnnotationBand = ({ anchor, children, className }: AnnotationBandPr
     <p
       className={twMerge(
         "z-[var(--biu-z-note)] m-0 flex items-start gap-3",
-        "text-[length:var(--biu-type-label-size)] leading-[20.8px] text-[rgb(var(--biu-text-quaternary))]",
+        "text-[length:var(--biu-type-note-size)] leading-[1.43] text-[rgb(var(--biu-text-quaternary))]",
         isInline
           ? "relative mt-6"
           : "pointer-events-none absolute right-[var(--biu-layout-gutter)] left-[var(--biu-layout-gutter)]",

@@ -18,6 +18,15 @@ const OFFSETS: Record<LeadOffset, string> = {
 
 interface PageLeadProps {
   offset?: LeadOffset;
+  /**
+   * **屏级**上边距覆写（像素）。给了它即压过 `offset` 档位。
+   *
+   * 与 `Section.gapPx` 同一个理由：导语上边距逐屏不同（第 07 屏 18，档位表里
+   * 最接近的 `low` 是 14），且 `flat` 那一档本身就是「第 07 屏」的特例命名 ——
+   * 再按屏加档会一路加上去。第 07 屏的出处：
+   * spec-lock `screens[06].rhythmImplementation.leadMarginTop`。
+   */
+  offsetPx?: number;
   children: ReactNode;
   className?: string;
 }
@@ -30,15 +39,18 @@ interface PageLeadProps {
  * 导语直接接在搜索框下面。若把它埋在 PageHeader 内部，那一屏就只能
  * 另抄一份同样的样式 —— 抄出来的那份迟早会与这份漂移。
  *
- * 字号 22、行高 28、字距 -0.2、色为二级文字。
+ * 字号 **20**（spec-lock 1.3.24 订正：原型 `--fs-lead` 的 22 是「按 1.15 阶梯收敛」推出来的
+ * 派生值，设计稿实测跨十页一致为 20）、行高 28（`leading-7`，**像素给定、与字号解耦** ——
+ * 所以改字号不会挪任何 y）、字距 -0.2、色为二级文字。
  */
-export const PageLead = ({ offset = "base", children, className }: PageLeadProps) => (
+export const PageLead = ({ offset = "base", offsetPx, children, className }: PageLeadProps) => (
   <p
     className={twMerge(
-      OFFSETS[offset],
+      offsetPx === undefined && OFFSETS[offset],
       "text-[length:var(--biu-type-lead-size)] leading-7 tracking-[-0.2px] text-[rgb(var(--biu-text-secondary))]",
       className,
     )}
+    style={offsetPx === undefined ? undefined : { marginTop: offsetPx }}
   >
     {children}
   </p>

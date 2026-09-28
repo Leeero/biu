@@ -39,6 +39,7 @@ import { GlassButton } from "@/ui/primitives/glass-button";
 import { KbdRow } from "@/ui/primitives/kbd-row";
 import { ProgressBar } from "@/ui/primitives/progress-bar";
 import { SegmentedControl } from "@/ui/primitives/segmented-control";
+import { Tag, type TagVariant } from "@/ui/primitives/tag";
 import { TopBarSearch } from "@/ui/primitives/topbar-search";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -604,5 +605,57 @@ describe("design system components", () => {
     await act(async () => playButton?.click());
     expect(onPlay).toHaveBeenCalledOnce();
     expect(onPress).toHaveBeenCalledOnce();
+  });
+});
+
+/* ------------------------------------------------------------------ 芯片材质 */
+
+/**
+ * `material.tag`（1.3.20）：设计稿的芯片**没有可辨描边**。
+ *
+ * 这一条是屏 07 应用侧比对逼出来的：设计稿第 8 页 5 枚芯片的上下缘亮度与填充
+ * 同档（44–46 / 38–42，无过冲），而按变体表画出来的 `accent/26%` 叠在填充上
+ * 应当是 72.9 —— 渲染侧实测正是那两条 1px 亮线。亮线还把「标签行」与「封面画幅
+ * 说明」两条内容带**粘成了一条**，`list` 覆盖率因此卡在 90%。
+ *
+ * 这里钉两件事：真值登记为「无可辨描边」；以及**四个变体渲染出来都不带任何
+ * 非透明描边工具类**（`border-transparent` 与纯宽度类 `border` 除外）。
+ * 只断言真值是不够的 —— 真值说自己没有描边、组件却画了一条，正是这一轮的病。
+ */
+describe("Tag 的描边是透明的", () => {
+  const spec = JSON.parse(readFileSync(path.resolve(process.cwd(), "docs/design/cplus-spec-lock.json"), "utf8")) as {
+    material: { tag: { border: string; evidencePage: number; scope: string } };
+  };
+
+  const VARIANTS: readonly TagVariant[] = ["quality", "accent", "plain", "danger"];
+
+  test("真值登记为「无可辨描边」，并写明取证范围只到屏 07", () => {
+    expect(String(spec.material.tag.border)).toContain("none");
+    expect(spec.material.tag.evidencePage).toBe(8);
+    // 取证范围必须写明 —— 没写就容易被后来的读者当成「全站已复核」。
+    expect(spec.material.tag.scope).toContain("屏 07");
+  });
+
+  test("四个变体都只带 border-transparent，没有别的描边色类", async () => {
+    const container = await render(
+      <>
+        {VARIANTS.map(variant => (
+          <Tag key={variant} variant={variant}>
+            {variant}
+          </Tag>
+        ))}
+      </>,
+    );
+
+    const chips = Array.from(container.querySelectorAll("span"));
+    expect(chips).toHaveLength(VARIANTS.length);
+
+    for (const chip of chips) {
+      expect(chip.className).toContain("border-transparent");
+      const offenders = chip.className
+        .split(/\s+/)
+        .filter(cls => cls.startsWith("border-") && cls !== "border-transparent");
+      expect(offenders, "芯片仍带描边色类：" + offenders.join(" ")).toEqual([]);
+    }
   });
 });

@@ -21,9 +21,11 @@ import {
   DEFERRED_SEGMENTS,
   ROUTE_SEGMENTS,
   SEARCH_PLACEHOLDER_BY_ROUTE,
+  TOPBAR_NOTE_BY_ROUTE,
   composeSegmentCount,
   resolveRouteShell,
   resolveSearchPlaceholder,
+  resolveTopbarNote,
 } from "@/layout/route-shell";
 import {
   isSearchShortcut,
@@ -39,6 +41,7 @@ const spec = JSON.parse(readFileSync(path.resolve(process.cwd(), "docs/design/cp
       placeholder: string;
       placeholderByRoute: Record<string, string>;
     };
+    topbarNote: { text: string; routes: string[] };
   };
 };
 
@@ -246,6 +249,37 @@ describe("顶栏搜索占位与真值对齐", () => {
     expect(resolveSearchPlaceholder("/later")).toBe("搜索标题 / UP 主名称");
     expect(resolveSearchPlaceholder("/library")).toBe(DEFAULT_SEARCH_PLACEHOLDER);
     expect(resolveSearchPlaceholder("/")).toBe(DEFAULT_SEARCH_PLACEHOLDER);
+  });
+});
+
+describe("顶栏说明与真值对齐", () => {
+  /**
+   * `/` 上那句「已下线: 流行 / 鬼畜」是**路由级 chrome**（不是页面内容），
+   * 真值登记在 `globalChrome.topbarNote`。它与分段组同机制：声明在
+   * `route-shell.ts`、由 `TopBar` 渲染，所以也在这里钉住。
+   */
+  test("说明表与真值逐字一致，且真值声明的每条路由都在表里", () => {
+    expect(new Set(Object.keys(TOPBAR_NOTE_BY_ROUTE))).toEqual(new Set(spec.globalChrome.topbarNote.routes));
+    for (const route of spec.globalChrome.topbarNote.routes) {
+      expect(TOPBAR_NOTE_BY_ROUTE[route]).toBe(spec.globalChrome.topbarNote.text);
+    }
+  });
+
+  test("只有登记过的路由带说明，其余路由没有这一段", () => {
+    expect(resolveTopbarNote("/")).toBe("已下线: 流行 / 鬼畜");
+    expect(resolveTopbarNote("/library")).toBeUndefined();
+    expect(resolveTopbarNote("/search")).toBeUndefined();
+  });
+
+  test("它随路由契约一起下发，不是页面自己塞的", () => {
+    expect(resolveRouteShell("/").topbarNote).toBe("已下线: 流行 / 鬼畜");
+    expect(resolveRouteShell("/library").topbarNote).toBeUndefined();
+  });
+
+  test("末尾斜杠归一后再匹配（/ 的说明不能因为多一个斜杠就消失）", () => {
+    // `matchesPattern` 会把尾部斜杠去掉，所以 `/` 与 `//` 都要命中。
+    // 这条防的是「有人把说明的查找换成按 pathname 直接取键」。
+    expect(resolveTopbarNote("//")).toBe(resolveTopbarNote("/"));
   });
 });
 

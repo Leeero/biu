@@ -39,6 +39,7 @@ const Layout = () => {
     chrome,
     segments: declaredSegments,
     activeSegmentKey,
+    topbarNote,
   } = resolveRouteShell(location.pathname, location.search);
   const { videoCount, creatorCount } = useSearchSegments();
 
@@ -65,7 +66,7 @@ const Layout = () => {
     >
       <AppShell
         chrome={chrome}
-        topbar={<TopBar segments={segments} activeSegmentKey={activeSegmentKey} />}
+        topbar={<TopBar segments={segments} activeSegmentKey={activeSegmentKey} note={topbarNote} />}
         player={<PlayBar />}
       >
         <Outlet />

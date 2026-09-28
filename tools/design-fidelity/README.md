@@ -1,6 +1,6 @@
 # design-fidelity · C+ 保真度校验工具
 
-保证「按视觉稿重构」这件事**可执行、可验证、不可绕过**。四件工具，对应 [`../../docs/design/biu-cplus-refactor-plan.md`](../../docs/design/biu-cplus-refactor-plan.md) §7 的三道闸门。
+保证「按视觉稿重构」这件事**可执行、可验证、不可绕过**。前四件对应 [`../../docs/design/biu-cplus-refactor-plan.md`](../../docs/design/biu-cplus-refactor-plan.md) §7 的三道闸门，其余是辅助件（它们是**手段**，不参与判定）。
 
 | 工具                          | 闸门       | 作用                                                              |
 | ----------------------------- | ---------- | ----------------------------------------------------------------- |
@@ -10,6 +10,25 @@
 | `check-phase-drift.mjs`       | 阶段边界   | 比较基线与工作区的遗留令牌有效值，把「只增不改」变成可执行闸门    |
 | `correct_reference.py`        | 参考图纠正 | 修参考图自身的几何失真（第 8 页纵向压缩），并堵住生成路径的复发   |
 | `extract_reference.py`        | 辅助诊断   | 从设计稿 PNG 提取逐屏结构基准，用于排查测量异常                   |
+| `build-app.mjs`               | 辅助构建   | 用 rsbuild Node API 构建 web 产物并**手动落盘**（绕过本机写盘失效） |
+| `serve-app.mjs`               | 辅助伺服   | 把 `dist/web` 以 SPA 方式伺服给 `verify.py --target app`          |
+| `measure-dom.mjs`             | 辅助测量   | 用 CDP 量**真实 DOM 几何**：PNG 带分析答「差多少」，它答「差在哪」 |
+
+**`measure-dom.mjs` 为什么必须有**：PNG 带分析能把「设计 vs 渲染」的差异压成一个
+数，但那个数**不带病因** —— 卡片内边距错了、某一层 margin 错了、还是居中算错了，
+在截图上都是同一片位移。屏 07 就是靠它闭合的：正文列高 148.5、内容盒高 200.25 ⇒
+居中偏移 25.875，加包装层行盒上承载 1.5 = 27.375，与实测 382.33 − 354.95 = 27.38
+逐值一致 —— 于是「居中没错，是设计稿的正文列更高」才成为有依据的判断，而不是猜。
+它也看得见**稿面上没有对应物**的盒子（包装层高度、行盒承载）。
+
+```bash
+node tools/design-fidelity/measure-dom.mjs \
+  'http://127.0.0.1:4173/#/?fixture=07-discover-card' \
+  'article' 'article h3' 'article > div:nth-child(2)'
+```
+
+**分工**：`verify.py` 判「像不像」（唯一有 PASS/FAIL 权的），`measure-dom.mjs`
+答「为什么」。后者**不参与判定** —— 闸门永远只认像素。
 
 **参考图体检**（`verify.py --reference-only`）与上面三道护栏**一并接入 CI**（`.github/workflows/pr-test-build.yml` 的 `Token Guardrails` job，在 `src/ui/tokens/**`、`tools/design-fidelity/**`、`tests/design-tokens.test.ts`、`docs/design/cplus-spec-lock.json` 变更时触发）。它抓的是**参考图本身**：参考图错了，后面每一道闸门都只会忠实地报「实现不对」—— 第 8 页的纵向压缩就是这样活了两个阶段的。
 
@@ -41,6 +60,42 @@ pnpm verify:reference
 python tools/design-fidelity/correct_reference.py --check       # 已登记失真页的纠正状态
 python tools/design-fidelity/correct_reference.py --selftest    # 回归：生成路径不再压扁画板
 ```
+
+### 本机跑 `--target app`：走「构建 + 静态伺服」而不是 dev server
+
+本机存在一个**环境级**问题：rspack 的文件写入被静默丢弃 —— `rsbuild build` / `dev`
+都报「built 成功」并列出产物，而 `dist/web` 实际为空；dev server 也因此对 `/` 返回
+404（HTML 在内存里没落地）。排查过：非沙箱、非 `cleanDistPath`、非权限/磁盘、
+非 electron 插件、非 `writeToDisk` 配置。
+
+绕法是 `build-app.mjs`。它同时绕过**两个**独立的坎 —— 只解决第一个会得到一包
+「产物齐了但一打开就白屏」的东西，所以两个都得写下来：
+
+1. **产物不落盘**：构建后从 `stats.compilation.assets`（内存里的 Source）逐个取
+   内容，用 Node 的 `fs.writeFile` 写盘 —— Node 自己写盘是正常的。
+2. **程序化调用拿不到配置里的 `plugins`**：`createRsbuild({ cwd })` 会读到
+   `dev` / `server` / `html` / `output`，**但 `plugins` 是空的**。于是 pluginReact
+   不生效（swc 退回 classic runtime，产物里全是 `React.createElement`，而源码没有
+   `import React` → 浏览器 `ReferenceError: React is not defined`，整页空白），
+   pluginSvgr 也不生效（`.svg` 落回 `svg-asset`，`ReactComponent` 具名导出不存在，
+   报 `ESModulesLinkingError`）。**CLI 没有这个问题**，因为它显式 `loadConfig()`
+   之后再把结果交给 `createRsbuild` —— `build-app.mjs` 照抄这个做法，于是 1 与 2
+   可以同时满足。**自检必须验到这一条**：脚本末尾会数产物里的 `React.createElement`
+   （应为 0）与模块图里的 `react/jsx-runtime`（应 ≥ 1），不合格就非零退出 ——
+   只看「落盘 N 个产物」会漏掉这一类白屏。
+
+之后用 `serve-app.mjs` 伺服，比对目标就是**发布形态的产物**（比 dev 变换后的代码更该被验收）：
+
+```bash
+node tools/design-fidelity/build-app.mjs                      # → dist/web（手动落盘）
+node tools/design-fidelity/serve-app.mjs --root dist/web --port 4173
+bash tools/design-fidelity/run.sh --screen 07 --target app --base-url http://127.0.0.1:4173
+```
+
+`build-app.mjs` 会带 `BIU_WEB_ONLY=1`，跳过 Electron 主进程打包与 electron-builder 封装
+（后者还要 Xcode 的 `actool`，本机没有）。构建末尾 rspack 在关闭编译器时可能报
+`Rspack build failed`，**但产物已经落盘** —— 判断成功与否看那行「手动落盘 N 个产物」，
+不要看退出码。
 
 `run.sh` 会自动准备 Python 环境（在 `tools/design-fidelity/.venv` 内安装 `pillow` + `numpy`）。若已有可用解释器：
 
@@ -125,6 +180,8 @@ tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf
 | 12 迷你播放器      |          9.73 | list, note, right                                 |
 
 > 第 07 行里的**顶栏 / 播放栏**两条失败是**参考图伪影**（第 8 页纵向压缩 0.9204），不是原型的问题；该页已于 2026-09-28 纠正，见上文「画板高度不为 900 的页」。其余条目仍按原样留档。
+>
+> 1.3.21 起屏 06/07 也启用了 `playbarDetail`（三枚实心块探针在**原型侧实测 OK**，`playbarGap` 为设计空带 ⇒ n/a）；这些不在上表的「未通过门禁」列里，因为该列录的是 2026-09-25 的快照。
 
 **原型的定位**：它是本轮之前达成过的参考实现，**不是验收线**。比对对象始终是设计稿 PNG。这张表的作用是给每屏一个明确的「必须超过」的起点。
 
@@ -203,10 +260,26 @@ tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf
 
 `fixtures/` 承载两类东西：
 
-1. **逐屏固定数据** —— 让比对不受真实数据波动影响（`01-library.json` 等，**待 P2 补**）。
+1. **逐屏固定数据** —— 让比对不受真实数据波动影响（`01-library.json` / `02-playlist-detail.json` / `06-search.json` / `07-discover-card.json`；其余随对应屏施工落地）。**文件名 = `screens[].no`**，`verify.py` 由原型文件名反查、以 `?fixture=<stem>` 注入。
 2. **占位素材** —— 封面渐变等。这些是数据不是令牌，所以它们的色值写在这里，不进 `palette.css`。`placeholder-art.json` 已就绪。
 
 契约见 [`fixtures/README.md`](./fixtures/README.md)。在逐屏夹具就位前，`--target app` 的比对只能用于**验证流程可跑通**，不能用于判定 PASS / FAIL。
+
+### 夹具与闸门之间的两根接线（`tests/now-playing-fixtures.test.ts`）
+
+夹具能带出**页面**内容，带不出**播放栏** —— 后者是全局组件，读 `usePlayList` /
+`usePlayProgress`，只认 `src/features/player/now-playing.ts` 的 `NOW_PLAYING_FIXTURES`
+登记表。于是「夹具 vs 闸门」之间存在两根**靠人记得**的接线，1.3.20 时两根同时断了：
+
+| 断法                                                 | 后果                                                                 |
+| ---------------------------------------------------- | -------------------------------------------------------------------- |
+| 夹具写了 `nowPlaying`，忘了登记进 `NOW_PLAYING_FIXTURES` | 设计稿是满态、渲染是空态 —— **看得见，但没人判**（屏 07）             |
+| 该屏真值里没有 `playbarDetail`                        | 栏内构成零闸门，`playbar` 结构带只判「栏高 88」—— **看不见也没人判**（屏 06/07） |
+
+所以那条单测遍历 `fixtures/*.json`（与 `verify.py` 同一批取数源，**将来的新屏会自动被扫到**），
+断言：① 凡声明 `nowPlaying` 的屏必须在登记表里、且与 JSON 逐字一致、且无孤儿登记；
+② 凡声明 `nowPlaying` 的屏，`spec-lock` 里必须有 `playbarDetail`，且探针与实测值成对齐全。
+这两条守的不是某一份夹具的内容，而是接线本身 —— 与 P0 的「登记即断言」同族。
 
 ---
 

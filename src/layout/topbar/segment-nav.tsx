@@ -8,6 +8,8 @@ interface SegmentNavProps {
   segments: TopbarSegment[];
   /** 当前激活分段的 key，由 `resolveRouteShell` 给出。 */
   activeKey: string;
+  /** 分段组右侧的弱化说明（如 `/` 的「已下线: 流行 / 鬼畜」）。 */
+  note?: string;
 }
 
 /**
@@ -35,7 +37,7 @@ interface SegmentNavProps {
  * `window-no-drag` 必须由本层给出：整条顶栏是可拖动窗口区域，分段组要挡住拖动
  * 才能被点到。组件层不该知道 Electron 的窗口拖动，那是壳层的事。
  */
-const SegmentNav = ({ segments, activeKey }: SegmentNavProps) => {
+const SegmentNav = ({ segments, activeKey, note }: SegmentNavProps) => {
   const location = useLocation();
 
   /**
@@ -70,7 +72,9 @@ const SegmentNav = ({ segments, activeKey }: SegmentNavProps) => {
     pending: !segment.href,
   }));
 
-  return <SegmentedControl label="顶栏分段导航" activeKey={activeKey} items={items} className="window-no-drag" />;
+  return (
+    <SegmentedControl label="顶栏分段导航" activeKey={activeKey} items={items} note={note} className="window-no-drag" />
+  );
 };
 
 export default SegmentNav;

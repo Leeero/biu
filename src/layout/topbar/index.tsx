@@ -20,6 +20,11 @@ interface TopBarProps {
   segments: TopbarSegment[];
   /** 当前激活分段的 key。分段组回落到一级导航且都不匹配时是空串。 */
   activeSegmentKey: string;
+  /**
+   * 分段组右侧的弱化说明（`globalChrome.topbarNote`），由路由契约给出。
+   * 未登记的路由没有它 —— 传 `undefined` 即不渲染。
+   */
+  note?: string;
 }
 
 /**
@@ -33,7 +38,7 @@ interface TopBarProps {
  * 展开时必须切到 `window-no-drag`，否则点不到——这是 Electron 桌面端的硬约束，
  * 与视觉无关。Linux / Windows 额外挂窗口控制按钮（macOS 用系统红绿灯，不重复渲染）。
  */
-const TopBar = ({ segments, activeSegmentKey }: TopBarProps) => {
+const TopBar = ({ segments, activeSegmentKey, note }: TopBarProps) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
@@ -47,7 +52,7 @@ const TopBar = ({ segments, activeSegmentKey }: TopBarProps) => {
       })}
     >
       <Brand />
-      <SegmentNav segments={segments} activeKey={activeSegmentKey} />
+      <SegmentNav segments={segments} activeKey={activeSegmentKey} note={note} />
 
       <div className="window-no-drag ml-auto flex flex-none items-center gap-10">
         <SearchField onFocusChange={setIsSearchFocused} />

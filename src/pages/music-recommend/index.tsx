@@ -9,13 +9,20 @@ import { getTrackSourceUrl, toFavoriteSelection, toMediaDownloadInfo, toPlayItem
 import { adaptRankItemToTrack, adaptRegionArchiveToTrack } from "@/adapters/track/recommendation";
 import AsyncButton from "@/components/async-button";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
+import { DiscoverListView, discoverListColumns } from "@/features/discover/discover-list-view";
+import { DiscoverView } from "@/features/discover/discover-view";
+import { useDiscoverFixtureData, useDiscoverFixtureName, useDiscoverListFixtureData } from "@/features/discover/fixture";
+import { DISCOVER_LIST_TRACK_ACTIONS } from "@/features/discover/track-actions";
 import { getMusicComprehensiveWebRank, type Data as MusicItem } from "@/service/music-comprehensive-web-rank";
 import { getRegionFeedRcmd, type Archive } from "@/service/web-interface-region-feed-rcmd";
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
+import { AnnotationBand } from "@/ui/patterns/annotation-band";
 import { PageHeader } from "@/ui/patterns/page-header";
 import { PageState } from "@/ui/states/page-state";
+import { DISCOVER_CARD_FIXTURE_NAME } from "@/ui/fixtures/screen-07-discover-card";
+import { DISCOVER_LIST_FIXTURE_NAME } from "@/ui/fixtures/screen-08-discover-list";
 
 import MusicRecommendGridList from "./grid-list";
 import MusicRecommendList from "./list";
@@ -32,7 +39,20 @@ const REGION_MAP: Record<Exclude<RecommendTabKey, "pop">, number> = {
   guichu: 1007,
 };
 
-const MusicRecommend = () => {
+/**
+ * 真实数据路径的发现音乐页。
+ *
+ * **本轮的处置说明（P3-S4）**：屏 07 的呈现层已在 `DiscoverView` 里落地，
+ * 夹具路径（`?fixture=07-discover-card`）走的就是它。真实路径仍用下面这套
+ * 既有实现 —— 把它迁到同一套骨架要先把 new/music 从 `NewMusicTop` 内部的
+ * 自取数据里提出来（设计稿第 8 页的两段主体内容都来自 new/music：首段是
+ * banner 大卡、第二段是它的方形封面专辑卡），并同时接线顶栏分段
+ * 「音乐分区 | 单一模块」（`DEFERRED_SEGMENTS["/"]`，随屏 08 落地）。
+ * 这两件事一起做才不会出现「页面里两套分区切换」的中间态。
+ *
+ * 在那之前，本页的真实路径**保持不动** —— 迁移中的半成品比旧实现更难判断。
+ */
+const MusicRecommendLive = () => {
   const scrollerRef = useRef<ScrollRefObject>(null);
 
   const [list, setList] = useState<Track[]>([]);
@@ -285,6 +305,97 @@ const MusicRecommend = () => {
       </div>
     </ScrollContainer>
   );
+};
+
+/**
+ * 屏 07 的夹具渲染（`?fixture=07-discover-card`）。
+ *
+ * 容器与真实路径同款（`ScrollContainer` + 满幅 div），**不再自加上边距** ——
+ * 壳层的 `<main>` 已经给了 `pt-[var(--biu-layout-content-pt)]`（33）与左右 64 的
+ * 留白，页面再补一层就会把 H1 顶下去（这正是本屏 `prototypeBaseline` 里
+ * 「渲染比设计高 10–20px」的成因之一）。
+ */
+const FixtureDiscover = () => {
+  const fixture = useDiscoverFixtureData();
+
+  if (!fixture) return null;
+
+  return (
+    <ScrollContainer enableBackToTop className="h-full w-full">
+      <div className="w-full pb-8">
+        <DiscoverView
+          title={fixture.title}
+          lead={fixture.lead}
+          filters={fixture.filters}
+          heroSectionTitle={fixture.heroSectionTitle}
+          hero={fixture.hero}
+          albumSectionTitle={fixture.albumSectionTitle}
+          albums={fixture.albums}
+          note={fixture.note}
+        />
+      </div>
+    </ScrollContainer>
+  );
+};
+
+/**
+ * 屏 08 的夹具渲染（`?fixture=08-discover-list`）。
+ *
+ * 与卡片分支的两处不同，都是真值要求的，不要「统一」掉：
+ *
+ * 1. **注解带是 `<ScrollContainer>` 的兄弟**，不在 `DiscoverListView` 里。设计页
+ *    第 9 页的注解带（墨迹 728–760）落在 900 视口之内，必须用 `AnnotationBand`
+ *    缺省锚点（`top: 653`，相对内容区顶）—— 而缺省锚点是**绝对定位**，定位上下文
+ *    是壳层的 `<main>`（`relative`，起于 y=71，71 + 653 = 724 ✓）。`ScrollContainer`
+ *    自己的根是 `position: relative`（overlayscrollbars 的 `[data-overlayscrollbars]`
+ *    规则、起于 y=104），排在它内部会落到 757、低 33px。屏 02 的
+ *    `FixturePlaylistDetail` 采用同一处置。
+ * 2. **没有 `pb-8` 包裹层**：`DiscoverListView` 的根就是滚动容器，再套一层内边距
+ *    只会把内容顶下去（壳层 `<main>` 已经给了上 33、左右 64）。
+ */
+const FixtureDiscoverList = () => {
+  const fixture = useDiscoverListFixtureData();
+
+  if (!fixture) return null;
+
+  return (
+    <>
+      <DiscoverListView
+        title={fixture.title}
+        lead={fixture.lead}
+        filters={fixture.filters}
+        sectionTitle={fixture.sectionTitle}
+        columns={discoverListColumns(fixture.head)}
+        tracks={fixture.tracks}
+        rowActions={DISCOVER_LIST_TRACK_ACTIONS}
+        demoActionRowIds={fixture.demoActionRowIds}
+        onPillPress={() => {
+          /* 夹具模式不触网、不切换展示模式：比对需要画面稳定。 */
+        }}
+        onRowAction={() => {
+          /* 夹具模式不触网。 */
+        }}
+      />
+      <AnnotationBand>{fixture.note}</AnnotationBand>
+    </>
+  );
+};
+
+/**
+ * 发现音乐（`/`）。
+ *
+ * 三条路径在**这一层**分流，而不是在组件内部 early return：真实路径的 hooks
+ * 数量远多于两条夹具路径（十余个 useState / useRef / useEffect），条件返回会让
+ * 同一个组件实例前后渲染出不同数量的 hooks；枚举夹具名同样是为了让「本路由有
+ * 哪几条分支」在代码里可数。
+ */
+const MusicRecommend = () => {
+  const fixtureName = useDiscoverFixtureName();
+
+  if (fixtureName === DISCOVER_CARD_FIXTURE_NAME) return <FixtureDiscover />;
+  if (fixtureName === DISCOVER_LIST_FIXTURE_NAME) return <FixtureDiscoverList />;
+
+  return <MusicRecommendLive />;
 };
 
 export default MusicRecommend;

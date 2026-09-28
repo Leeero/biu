@@ -27,6 +27,13 @@ interface FilterBarProps {
   /** 无障碍名称。筛选条是一组按钮，读屏需要知道这组按钮管什么。 */
   label: string;
   gap?: FilterBarGap;
+  /**
+   * **屏级**间距覆写（像素）。给了它即压过 `gap` 档位 —— 与 `Section.gapPx`
+   * 同一个理由：设计稿里这个间距逐屏不同（第 07 屏 13，而档位表里最接近的
+   * `flat` 是 15），把每屏的值都加成档位会让档位表随屏数膨胀。
+   * 第 07 屏的出处：spec-lock `screens[06].rhythmImplementation.filterMarginTop`。
+   */
+  gapPx?: number;
   children: ReactNode;
   className?: string;
 }
@@ -44,16 +51,17 @@ interface FilterBarProps {
  * 用 `role="group"` 而不是 `role="toolbar"`：toolbar 承诺方向键在按钮间移动，
  * 而这里没有实现 roving tabindex，用 Tab 逐个走。不给兑现不了的语义承诺。
  */
-export const FilterBar = ({ label, gap = "base", children, className }: FilterBarProps) => (
+export const FilterBar = ({ label, gap = "base", gapPx, children, className }: FilterBarProps) => (
   <div
     role="group"
     aria-label={label}
     className={twMerge(
       "inline-flex h-[var(--biu-layout-filterbar-h)] items-center gap-[var(--biu-layout-pill-gap)]",
       "rounded-[var(--biu-radius-pill)] bg-[var(--biu-surface-sunken)] px-[var(--biu-layout-pill-pad)]",
-      GAPS[gap],
+      gapPx === undefined && GAPS[gap],
       className,
     )}
+    style={gapPx === undefined ? undefined : { marginTop: gapPx }}
   >
     {children}
   </div>

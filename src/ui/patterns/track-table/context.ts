@@ -45,6 +45,24 @@ export interface TrackTableColumn {
   label: ReactNode;
   /** 原型 `.track-cell--end`：列尾（时长 / 大小 / 项数）一律右对齐。 */
   align?: "start" | "end";
+  /**
+   * 表头单元格的**左内边距**（任意合法 CSS 长度，通常给 `var(…)`）。
+   *
+   * 存在的唯一理由：设计稿把「标题」这一列的表头标签对齐到**行内文字列**
+   * （缩略图 + 图文间距之后），而不是列起点。列起点是 x120，文字列是 x241 ——
+   * 差 121px。测得的五页（第 03 / 04 / 09 / 10 / 13 页）一致，故不是某一屏的
+   * 特例，而是 `.track-head` 的性质（真值 `geometry.listHead`，spec-lock 1.3.22）。
+   *
+   * 值**不给数字、给令牌**（`var(--biu-layout-head-title-inset)`）：121 是
+   * 「封面宽 100 + 图文间距 21」的派生量，令牌与派生的两个令牌同处
+   * `geometry.css`，由 `tests/design-tokens.test.ts` 断言三者相等。
+   * 在调用方写死 121 会让这条推导关系无从检查。
+   *
+   * 为什么不做成自动：表头只拿到一组列名，无从知道哪一列的行内是「图 + 文」。
+   * 按列序猜（第 2 列）在 `settings` 变体（`56px 121px minmax(0,1fr) …`）上就错了
+   * —— 那一列本身就是 121px 的窄列。所以由调用方指名，与 `align` 同一处置。
+   */
+  inset?: string;
 }
 
 export interface TrackTableContextValue {

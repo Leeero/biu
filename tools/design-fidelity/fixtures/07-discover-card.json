@@ -1,0 +1,87 @@
+{
+  "doc": "第 07 屏「发现音乐 · 卡片」的展示内容夹具。来源：设计稿第 8 页（tools/design-fidelity/reference/page-08.png，1.3.15 已纠正为 1440×900）与原型 screens/07-discover-card.html 的逐字内容。夹具只描述展示内容（H1 / 导语 / 筛选药丸 / 大卡 / 3 张专辑卡 / 注解带 / 播放栏正在播放），不描述布局；布局真值在 cplus-spec-lock.json 的 geometry.heroCard / geometry.albumCard / geometry.albumGrid（1.3.16，1.3.17 精修）与 screens[06].verticalRhythm。",
+  "topbarRule": "顶栏的「已下线: 流行 / 鬼畜」与本屏的「音乐分区 | 单一模块」分段组**都不在这里** —— 它们是**路由级 chrome**（`globalChrome.topbarNote` 与 `topbarSegments.byRoute[\"/\"]`），机制在 `src/layout/route-shell.ts`，由 `TopBar` 渲染。与 1.3.12 的 `/search` 结果数相反：那是运行时数据，必须由页面给出。",
+  "artVariantRule": "专辑卡的 `artVariant` 指向 `placeholder-art.json` 的 radialVariants（`albumCard1/2/3`，按卡位次命名），**不做哈希挑选**。1.3.16 曾按屏 02 / 06 的先例取原型的 `gradients[5 / 11 / 12]`（逐字抄原型的 `--tile-art`），1.3.19 改掉，原因是**数据夹具的亮度会进闸门**：设计稿第 8 页三张封面是**纯平色**（(43,43,51) / (51,49,58) / (54,50,44)，纯色区逐点相同、不同色数 = 1），而原型那三条 150° 渐变的**起点亮度 69.7 高于内容带探针阈值 60** —— 渲染侧封面顶部整片被判成墨迹，把封面左上角徽标的墨迹并进同一条带（渲染 `[643,704]` 对设计 `[660,671]` + `[677,693]`），`list` 覆盖率因此卡在 60%。改用等值渐变（`linear-gradient(c, c)`，同 `playbarCover` 的写法：Artwork 走 background-image 通道，平色不是合法值）。",
+  "heroArtRule": "大卡封面用 `PLACEHOLDER_RADIALS.heroCard`，**不是** `heroList`。取证：设计稿大卡封面实测**纯平色 `(27,33,49) = #1b2131`**（窗口 x150–400 / y430–520，「不同色数 = 1」逐点相同），`heroList`（起点 `#2b3550`）是**列表分支**（屏 08）的固定渐变，本屏是卡片分支。1.3.19 起 `heroCard` 这一档写成**等值渐变**（1.3.16 只保证「起点逐通道相同」，封面其余部分会一路暗到 `#14161d`，整片比稿面暗一档）。原型 `assets/app.css` 对 `.hero-art` 有两处定义，生效的是后一处（app.css:1550 = `#1b2131`），与设计稿同。",
+  "no": "07",
+  "name": "发现音乐 · 卡片",
+  "route": "/",
+  "head": {
+    "title": "发现音乐",
+    "lead": "新碟 banner 与分区推荐合并去重后呈现，支持 卡片 / 列表 / 紧凑 三种展示模式。"
+  },
+  "headRule": "H1「发现音乐」墨迹实测 x66–285（宽 220，4 字 ⇒ 字身约 54），y121–172（1.3.15 起按纠正后的 1440×900 口径）。导语墨迹 x65–768、y202–221 —— 与第 9 页（屏 08）比 H1 起点一致（121 / 122）但**第 9 页的导语高 10px（192 对 202）、筛选条高 3px（236 对 239）**（1.3.22 订正方向：本条原写「导语低 10px、筛选条低 3px」，方向反了；数字 10 / 3 无误），本页是 `head-main--flat` 变体，不得沿用第 9 页的节奏（落地值：导语 margin 18、筛选条 margin 13）。",
+  "filters": [
+    { "label": "全部播放", "variant": "primary" },
+    { "label": "随机播放", "variant": "secondary" },
+    { "label": "数据源 · 新碟 banner + 分区推荐", "variant": "neutral" },
+    { "label": "去重后合并 27 条", "variant": "neutral" },
+    { "label": "显示模式 · 卡片 ▾", "variant": "accent" }
+  ],
+  "filtersRule": "5 枚药丸逐字取自原型，宽度与设计稿**逐枚对得上**（实测药丸左右缘：65–166 / 170–271 / 276–503 / 508–643 / 648–793 ⇒ 宽 101 / 101 / 227 / 135 / 145；前两枚同为四字 101、第三枚最长 227、第五枚 145），变体也由实测底色反解：第 1 枚近白填充（列均值 233–241，深字反白 = primary）、第 2 枚 64 灰（secondary）、第 3/4 枚 55 灰（neutral）、第 5 枚 `rgb(33,46,59)` 偏蓝（accent）。第 5 枚的「卡片」是**当前展示模式**，屏 07 即卡片分支 —— 「▾」是下拉指示符，属标签文案的一部分，不要另画图标。",
+  "heroSection": {
+    "title": "精选 · 新碟 banner"
+  },
+  "hero": {
+    "badge": "新碟 banner",
+    "ratioNote": "16:9 原始比例 · 不做方形裁切",
+    "tag": "独家首发",
+    "title": "《雨落长街》全专上线 · 官方无损音源",
+    "meta": "卧室音乐计划 · 2026-09-22 上线 · 专辑 12 首 · 总时长 46:18",
+    "tags": [
+      { "label": "无损 30251", "variant": "quality" },
+      { "label": "杜比全景声 · 30250", "variant": "plain" },
+      { "label": "与分区推荐共用播放队列", "variant": "plain" }
+    ],
+    "artVariant": "heroCard"
+  },
+  "heroRule": "逐字取自原型。画幅说明**有**（1.3.16 第 4 条：设计稿墨迹 x93–254 × y528–539，取左 14 / 下 12）。三枚标签的变体由实测底色反解：第 1 枚 `(24,42,61)` 偏蓝（quality）、第 2/3 枚 `(42,42,44)` / `(44,44,46)` 中性灰（plain）—— 与原型 `tag--quality` / `tag--plain` / `tag--plain` 一致。标题上方的 `tag`（独家首发）芯片底同为 `(25,45,65)` 强调蓝，是 `accent` 变体，**不是**原型写的 `tag--quality`（1.3.16 divergence 已记）。",
+  "albumSection": {
+    "title": "新碟速报 · 方形专辑封面（new/music）"
+  },
+  "albumsRule": "3 张卡逐字取自设计稿第 8 页，段标题墨迹实测 x65–352（宽 288），与「新碟速报 · 方形专辑封面（new/music）」按 17px 字身反解（12 汉字 + 「 · 」+ 9 个 latin ≈ 286）**吻合**，故标题文案可信。**首枚标签是「想听」，不是「畅销」**（1.3.19 订正：此前照原型写错了，三张卡同错；设计稿逐张读出「想听 1.2 万 / 8,640 / 3,120」）。**专辑卡没有画幅说明**：设计稿三张封面左下角 `> 底 + 8` 的像素数均为 0（1.3.16 第 4 条），原型的 `<span class=\"ratio-note\">1:1</span>` 是原型发挥 —— 因此这里**没有 ratioNote 字段**，与屏 02 的「缺字段也是真值」同一处置，并由 `tests/fixture-screen-07.test.ts` 断言其缺席。两枚标签的底色实测 `(22,41,63)` 偏蓝（accent）/ `(39,40,45)` 中性灰（plain），与原型 `tag--accent` / `tag--plain` 一致。",
+  "albums": [
+    {
+      "badge": "独家首发",
+      "title": "《夏夜回声》",
+      "meta": "琴键上的猫",
+      "tags": [
+        { "label": "想听 1.2 万", "variant": "accent" },
+        { "label": "无损", "variant": "plain" }
+      ],
+      "artVariant": "albumCard1"
+    },
+    {
+      "badge": "首发",
+      "title": "《夜航（录音室版）》",
+      "meta": "NOISE_LAB",
+      "tags": [
+        { "label": "想听 8,640", "variant": "accent" },
+        { "label": "无损", "variant": "plain" }
+      ],
+      "artVariant": "albumCard2"
+    },
+    {
+      "badge": "新碟",
+      "title": "《器乐练习集 Vol.3》",
+      "meta": "卧室音乐计划",
+      "tags": [
+        { "label": "想听 3,120", "variant": "accent" },
+        { "label": "高解析", "variant": "plain" }
+      ],
+      "artVariant": "albumCard3"
+    }
+  ],
+  "noteRule": "逐字取自原型注解带（`note--lowest`）。**本条的取证方式与其余条目不同，须显式说明**：设计页第 8 页画板高 978，比本工程窗口高 78，注解带墨迹在**画板 841–855 / 862–876 —— 位于 900 视口折线以下**，1.3.15 纠正参考图时随折线一并裁掉，因此它**不在 page-08.png 的像素里**，无法用像素比对校验；文本只能取自原型（原型由设计稿逐屏抄写）。落地时注解带按**页流**排在专辑网格之后（首屏不可见），不要做成贴视口底的固定带。",
+  "note": "这一屏补的都是接口已返回、界面没兑现的东西：new/music 的 cover 本是方形专辑图，唯一消费方却用 672w_378h_1c 裁成 16:9（项目已有 400w_400h_1c 方形范例），且该模块此前只挂在已被移除的「流行」Tab 上，活该落回本页；分区推荐的 rec_reason 与 stat:like / stat:danmaku 同样被适配器丢弃，displayMode 实为三档（card / list / compact）。",
+  "nowPlaying": {
+    "title": "《雨落长街》· 全专上线",
+    "sub": "卧室音乐计划 · 新碟 banner",
+    "quality": "lossless",
+    "elapsedSeconds": 82,
+    "durationSeconds": 228,
+    "queueCount": 12,
+    "playing": false
+  },
+  "nowPlayingRule": "设计稿第 8 页播放栏逐字内容：曲名《雨落长街》· 全专上线 / 副行 卧室音乐计划 · 新碟 banner / 徽标 无损 30251（AUDIO_QUALITY_LABEL 的 lossless 档）/ 01:22 / 03:48 / 队列 · 12。82 / 228 = 36.0% —— 与原型的 `width: 36%` 一致，故两处是同一份数据。**副行是小写 `banner`**（1.3.21 订正：本条此前写的是「「Banner」首字母大写是设计稿原样，不要改大小写」——与像素相反；设计页第 8 页与第 3 页的副行**逐像素一致**（两页整条栏体 1440×88 的平均亮度差仅 1.73），读出来都是小写）。**运输键是播放三角、不是暂停**，故 `playing: false`。**本对象必须同时登记进 `src/features/player/now-playing.ts` 的 `NOW_PLAYING_FIXTURES`** —— 那才是应用侧真正的取数入口，只写在本文件里播放栏仍是空态（1.3.21 之前正是这样漏掉的，见 cplus-spec-lock 1.3.21 第 ① 条）；`tests/now-playing-fixtures.test.ts` 会拦。**进度填充宽度无闸门**：本页填充实测 x792–923（宽 132 = 34.7%），与它自己的 82 / 228 = 36% 自洽（Δ≈5px）；但设计页第 3 页同样写 01:22 / 03:48 却只画到 x792–891（宽 100 = 26.3%），是**设计稿自身**的不一致，故本工程不为填充宽度设探针。"
+}

@@ -12,6 +12,8 @@ import {
   SCREEN_02_PLAYLIST_DETAIL_FIXTURE,
 } from "@/ui/fixtures/screen-02-playlist-detail";
 import { SEARCH_FIXTURE_NAME, SCREEN_06_SEARCH_FIXTURE } from "@/ui/fixtures/screen-06-search";
+import { DISCOVER_CARD_FIXTURE_NAME, SCREEN_07_DISCOVER_CARD_FIXTURE } from "@/ui/fixtures/screen-07-discover-card";
+import { DISCOVER_LIST_FIXTURE_NAME, SCREEN_08_DISCOVER_LIST_FIXTURE } from "@/ui/fixtures/screen-08-discover-list";
 
 /**
  * 「正在播放」视图模型。
@@ -24,11 +26,20 @@ import { SEARCH_FIXTURE_NAME, SCREEN_06_SEARCH_FIXTURE } from "@/ui/fixtures/scr
  *
  * 因此这里把两者**合成一个只读视图**：夹具模式下取夹具，其余情况取 store，
  * 一份都不写回。形状与 `LibraryTile` 同一思路（见 `features/library/model.ts`）。
+ *
+ * **这张表是「夹具提供 `nowPlaying`」与「播放栏渲染出内容」之间的唯一接线。**
+ * 1.3.21 之前屏 07 的夹具写了 `nowPlaying` 却没登记在这里 —— 页面夹具照常带出列表，
+ * 播放栏却仍是空态，而它那屏又没有 `playbarDetail` 探针，于是差异一路走过两道闸门。
+ * 现在由 `tests/now-playing-fixtures.test.ts` 兜住：遍历 `tools/design-fidelity/fixtures/*.json`，
+ * 凡声明了 `nowPlaying` 的屏必须在这里有同名登记（内容还与 JSON 逐字一致），
+ * 且不得有孤儿登记。补新屏夹具时忘了登记，测试会红。
  */
-const NOW_PLAYING_FIXTURES: Record<string, FixtureNowPlaying> = {
+export const NOW_PLAYING_FIXTURES: Record<string, FixtureNowPlaying> = {
   [LIBRARY_FIXTURE_NAME]: SCREEN_01_LIBRARY_FIXTURE.nowPlaying,
   [PLAYLIST_DETAIL_FIXTURE_NAME]: SCREEN_02_PLAYLIST_DETAIL_FIXTURE.nowPlaying,
   [SEARCH_FIXTURE_NAME]: SCREEN_06_SEARCH_FIXTURE.nowPlaying,
+  [DISCOVER_CARD_FIXTURE_NAME]: SCREEN_07_DISCOVER_CARD_FIXTURE.nowPlaying,
+  [DISCOVER_LIST_FIXTURE_NAME]: SCREEN_08_DISCOVER_LIST_FIXTURE.nowPlaying,
 };
 
 export const useNowPlayingFixture = (): FixtureNowPlaying | null => {

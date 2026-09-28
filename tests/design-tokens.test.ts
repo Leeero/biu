@@ -72,7 +72,14 @@ type Spec = {
       /** 快捷键键帽底。 */
       keycap: { token: string };
     };
+    /** 顶栏分段组右侧的弱化说明（1.3.16 首次登记、1.3.18 订正材质）。 */
+    topbarNote: { text: string; containerToken: string; inkToken: string; sizeToken: string };
   };
+  /**
+   * 组件几何。这里只用到发现音乐的三组（1.3.16 补录），它们**每一项都以
+   * `值 + 值Token` 成对登记** —— 末位的用例遍历真值自身来消费这个形状。
+   */
+  geometry: Record<string, Record<string, unknown>>;
   tokenMap: Record<string, string>;
   immersiveGeometry: Record<string, unknown>;
   tolerances: { contrastDeltaMax: number; [key: string]: unknown };
@@ -411,6 +418,33 @@ describe("排版与真值一致", () => {
     expect(resolve("--biu-font-sans")).toContain("PingFang SC");
     expect(resolve("--biu-font-numeric")).toContain("SF Pro Display");
   });
+
+  /**
+   * 设计系统「字阶」展位上的数字必须与真值一致，且不得漏档。
+   *
+   * 那处展位把字号写进 role 文案（`页面副标题 20`），本质是**第二份手抄的真值** ——
+   * 1.3.24 把导语由 22 订正为 20 时，这里差点漏掉；漏掉的后果是**展页自己说错话**，
+   * 而展页正是给人查令牌的地方。所以两个方向都要锁：数字对得上、每个字阶都有展位。
+   *
+   * 不 import 组件模块（页面里的常量没导出，也不该为测试导出），直接读源文抽两列 ——
+   * 与本文件读 CSS 的做法同源。
+   */
+  test("设计系统展页的字阶数字与真值一致，且不漏档", () => {
+    const source = readFileSync(path.resolve(ROOT, "src/pages/design-system/tokens-exhibit.tsx"), "utf8");
+    const shown = [...source.matchAll(/token:\s*"(--biu-type-[\w-]+)",\s*role:\s*"[^"]*?(\d+)"/g)];
+    expect(shown.length, "字阶展位被重排或清空").toBeGreaterThanOrEqual(9);
+
+    const byToken = new Map(roles.map(([, entry]) => [entry.token, entry]));
+    for (const [, token, size] of shown) {
+      const entry = byToken.get(token!);
+      expect(entry, `真值里没有 ${token}`).toBeDefined();
+      expect(Number(size), `展页上 ${token} 的数字与真值不符`).toBe(parseFloat(entry!.size));
+    }
+    const displayed = new Set(shown.map(match => match[1]));
+    for (const [, entry] of roles) {
+      expect(displayed, `${entry.token} 在字阶展位上缺档`).toContain(entry.token);
+    }
+  });
 });
 
 /* ------------------------------------------------------------------ 几何 */
@@ -474,6 +508,29 @@ describe("几何与真值一致", () => {
     expect(top).toBe(band[0]);
     expect(bottom).toBe(band[1]);
     expect(parseFloat(resolve("--biu-layout-immersive-controls-h"))).toBe(band[1]! - band[0]!);
+  });
+
+  /**
+   * 表头标题列的左内缩（1.3.22 补录，第 9 处分歧）。
+   *
+   * 为什么非补不可：设计稿把「标题 / 内容」这一列的标签对齐到**行内文字列**
+   * （第 03 / 04 / 09 / 10 / 13 页五页一致读 240 / 240 / 240 / 241 / 241），
+   * 而原型按行网格把它放在**列起点**（x120）—— 横向差 120px。verify.py 的结构带
+   * 与内容带都走 `bands()`、**只判 y**，所以这条差异一直零覆盖：屏 02 就是带着
+   * 它通过验收的。1.3.22 为此同时补了横向探针 `trackHeadLabels`（工具侧）
+   * 与这条恒等式断言（令牌侧），两边都不再依赖肉眼。
+   *
+   * 恒等式：内缩 = 封面宽 + 图文间距 = 100 + 21 = 121（与行内文本列 x241 同源）。
+   * 断言的是**两处令牌之和**而不是写死的 121，这样任一端被改都会红。
+   */
+  test("表头标题列内缩 = 封面宽 + 图文间距", () => {
+    const insetToken = String(pick("geometry.listHead.titleInsetToken"));
+    ASSERTED.add(insetToken);
+    expect(insetToken).toBe("--biu-layout-head-title-inset");
+    expect(canonLength(resolve(insetToken))).toBe(canonLength(pick("geometry.listHead.titleInset")));
+    expect(parseFloat(resolve(insetToken))).toBe(
+      parseFloat(resolve("--biu-layout-art-w")) + parseFloat(resolve("--biu-layout-track-gap")),
+    );
   });
 
   /**
@@ -652,6 +709,112 @@ describe("几何与真值一致", () => {
     // 本地目录徽标的文字是反色墨（深字压亮芯片），不是强调蓝 ——
     // 蓝字压蓝底会读不出字。
     expect(resolve(dirTextToken)).toBe(resolve("--biu-inverse-ink"));
+  });
+});
+
+/* ------------------------------------------------- 发现音乐卡片（屏 07） */
+
+describe("发现音乐卡片几何与真值对齐", () => {
+  /**
+   * `geometry.heroCard` / `albumCard` / `albumGrid` 的每一项都以
+   * `值 + 值Token` **成对**登记（1.3.16 补录时立的形状）。
+   *
+   * 这里的用例遍历**真值自身**而不是照抄一份令牌名单 —— 名单要与真值保持同步，
+   * 而真值每次补录都会变，抄出来的那份必然分叉。遍历的代价是「成对项」要能被
+   * 无歧义地识别：`值Token` 的键名去掉尾部的 `Token` 就是兄弟键。
+   * 三组几何此前**没有任何断言**（1.3.16 补录、1.3.17 精修两轮都没补），
+   * 漂移不会报警 —— 1.3.18 落地实现时才发现，故在此补齐。
+   */
+  const cardGroups: { group: string; node: Record<string, unknown> }[] = [
+    { group: "geometry.heroCard", node: spec.geometry.heroCard as Record<string, unknown> },
+    { group: "geometry.albumCard", node: spec.geometry.albumCard as Record<string, unknown> },
+    { group: "geometry.albumGrid", node: spec.geometry.albumGrid as Record<string, unknown> },
+  ];
+
+  /** 成对项：有 `x` 也有 `xToken`，且 `x` 是长度字符串。 */
+  const pairs = cardGroups.flatMap(({ group, node }) =>
+    Object.entries(node)
+      .filter(([key, value]) => typeof node[`${key}Token`] === "string" && typeof value === "string")
+      .map(([key, value]) => ({ group, key, value: value as string, token: node[`${key}Token`] as string })),
+  );
+
+  /**
+   * 只登记了 `xToken`、配不到 `x` 的项。它们不是漏登记，而是「令牌名本身就是
+   * 那条结论」（圆角用的是全局档、卡高由 `box` 的恒等式给出），故显式列白名单
+   * 并在下一条用例里逐一断言 —— 白名单是**穷举**，多一个少一个都会红。
+   */
+  const orphans = cardGroups.flatMap(({ group, node }) =>
+    Object.keys(node)
+      .filter(key => key.endsWith("Token") && typeof node[key.slice(0, -"Token".length)] !== "string")
+      .map(key => `${group}.${key}`),
+  );
+
+  test("成对项足够多（防止上游几何被整体删空）", () => {
+    expect(pairs.length).toBeGreaterThanOrEqual(20);
+  });
+
+  test.each(pairs)("$group.$key = $value（$token）", ({ value, token }) => {
+    ASSERTED.add(token);
+    expect(canonLength(resolve(token))).toBe(canonLength(value));
+  });
+
+  test("配不到值的 Token 项只有这三条，且都指向既有全局档", () => {
+    expect(orphans.sort()).toEqual([
+      "geometry.albumCard.artRadiusToken",
+      "geometry.albumCard.heightToken",
+      "geometry.heroCard.artRadiusToken",
+    ]);
+
+    // 封面圆角用的是全局圆角档，不是为卡片另发明的值。
+    expect(spec.geometry.heroCard.artRadiusToken).toBe("--biu-radius-md");
+    expect(spec.geometry.albumCard.artRadiusToken).toBe("--biu-radius-md");
+    // 卡高没有独立的 `height` 数字字段：它是恒等式（描边 2 + 2×内边距 + 封面）
+    // 的闭合结果，登记在 `box` 的散文里，令牌指向自身。
+    expect(spec.geometry.albumCard.heightToken).toBe("--biu-layout-album-h");
+    expect(canonLength(resolve("--biu-layout-album-h"))).toBe("200px");
+  });
+
+  /**
+   * 大卡与专辑卡的封面**不是同一个尺寸**（356 宽 16:9 对 160 见方），
+   * 而两处的画幅说明也相反：大卡有、专辑卡没有。这两条都是设计稿的结论，
+   * 落到实现里分别是 `HeroCard.ratioNote` 与 `AlbumCard` **结构上没有该 prop**。
+   */
+  test("大卡有画幅说明、专辑卡没有（真值里前者有值、后者明写「无」）", () => {
+    expect(spec.geometry.heroCard.ratioNoteLeft).toBe("14px");
+    expect(spec.geometry.heroCard.ratioNoteBottom).toBe("12px");
+    expect(String(spec.geometry.albumCard.ratioNote)).toContain("无");
+  });
+
+  test("大卡内的芯片比标准 Tag 高一档（25 对 22，同页两档）", () => {
+    expect(canonLength(resolve("--biu-layout-hero-tag-h"))).toBe("25px");
+    expect(canonLength(resolve("--biu-layout-album-badge-inset"))).toBe("12px");
+    // 标准 Tag 的 22 是组件内的字面值，不在几何令牌里 —— 断言两者**不相等**，
+    // 免得有人「顺手统一」把大卡芯片改回 22。
+    expect(canonLength(resolve("--biu-layout-hero-tag-h"))).not.toBe("22px");
+  });
+});
+
+describe("顶栏说明的材质令牌", () => {
+  test("三处令牌都指向既有档位，不为它新开一个色板项", () => {
+    const note = spec.globalChrome.topbarNote;
+
+    ASSERTED.add(note.containerToken);
+    ASSERTED.add(note.inkToken);
+    ASSERTED.add(note.sizeToken);
+
+    expect(note.containerToken).toBe("--biu-veil-9");
+    expect(note.inkToken).toBe("--biu-text-chrome-label");
+    expect(note.sizeToken).toBe("--biu-type-label-size");
+
+    // resolve 会在令牌不存在时抛错，这一行是「三者确实存在」的证据。
+    expect(canon(resolve(note.containerToken))).toBe(canon(resolve("--biu-veil-9")));
+    expect(canon(resolve(note.inkToken))).toBe(canon(resolve("--biu-text-chrome-label")));
+  });
+
+  test("容器底与字色都不是分段项悬停那一档（说明与 hover 是两回事）", () => {
+    // 说明文字是**常驻**的，不该借用 `--biu-veil-8`（分段项 hover 的叠层）——
+    // 借了之后，「未选中分段被悬停」和「这里有一句说明」会长成一个样子。
+    expect(spec.globalChrome.topbarNote.containerToken).not.toBe("--biu-veil-8");
   });
 });
 

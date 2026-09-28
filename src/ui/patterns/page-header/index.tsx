@@ -16,6 +16,8 @@ interface PageHeaderProps {
   /** 导语（原型 `.page-lead`）。 */
   lead?: ReactNode;
   leadOffset?: LeadOffset;
+  /** 屏级导语上边距覆写（像素），压过 `leadOffset`。见 `PageLead.offsetPx`。 */
+  leadOffsetPx?: number;
   baseline?: HeadBaseline;
   /**
    * 右列。标准内容是 `<InfoPanel />`。
@@ -63,6 +65,7 @@ export const PageHeader = ({
   title,
   lead,
   leadOffset = "base",
+  leadOffsetPx,
   baseline = "aligned",
   aside,
   asideWidth = 360,
@@ -83,7 +86,11 @@ export const PageHeader = ({
         <h1 className="m-0 text-[length:var(--biu-type-page-title-size)] leading-[var(--biu-type-page-title-leading)] font-semibold tracking-[var(--biu-type-page-title-tracking)] text-[rgb(var(--biu-text-primary))]">
           {title}
         </h1>
-        {leadContent && <PageLead offset={effectiveOffset}>{leadContent}</PageLead>}
+        {leadContent && (
+          <PageLead offset={effectiveOffset} offsetPx={leadOffsetPx}>
+            {leadContent}
+          </PageLead>
+        )}
         {actions && <div className="mt-4 flex flex-wrap items-center gap-2">{actions}</div>}
         {children}
       </div>

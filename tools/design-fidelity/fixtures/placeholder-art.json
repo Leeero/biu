@@ -23,7 +23,15 @@
     "radial-gradient(120% 120% at 30% 25%, #4d4d55, #1e1e23 72%)",
     "linear-gradient(150deg, #2b3550, #14161d)",
     "linear-gradient(150deg, #242b3d, #171c28)",
-    "linear-gradient(150deg, #1b2131, #14161d)",
-    "linear-gradient(150deg, #282932, #282932)"
+    "linear-gradient(150deg, #1b2131, #1b2131)",
+    "linear-gradient(150deg, #282932, #282932)",
+    "linear-gradient(150deg, #2b2b33, #2b2b33)",
+    "linear-gradient(150deg, #33313a, #33313a)",
+    "linear-gradient(150deg, #36322c, #36322c)",
+    "linear-gradient(150deg, #252731, #252731)",
+    "linear-gradient(150deg, #2b2934, #2b2934)",
+    "linear-gradient(150deg, #2f2c29, #2f2c29)",
+    "linear-gradient(150deg, #292d2b, #292d2b)",
+    "linear-gradient(150deg, #2d2932, #2d2932)"
   ]
 }
