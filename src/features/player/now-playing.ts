@@ -11,6 +11,7 @@ import {
   PLAYLIST_DETAIL_FIXTURE_NAME,
   SCREEN_02_PLAYLIST_DETAIL_FIXTURE,
 } from "@/ui/fixtures/screen-02-playlist-detail";
+import { SCREEN_03_WATCH_LATER_FIXTURE, WATCH_LATER_FIXTURE_NAME } from "@/ui/fixtures/screen-03-watch-later";
 import { SEARCH_FIXTURE_NAME, SCREEN_06_SEARCH_FIXTURE } from "@/ui/fixtures/screen-06-search";
 import { DISCOVER_CARD_FIXTURE_NAME, SCREEN_07_DISCOVER_CARD_FIXTURE } from "@/ui/fixtures/screen-07-discover-card";
 import { DISCOVER_LIST_FIXTURE_NAME, SCREEN_08_DISCOVER_LIST_FIXTURE } from "@/ui/fixtures/screen-08-discover-list";
@@ -40,6 +41,7 @@ export const NOW_PLAYING_FIXTURES: Record<string, FixtureNowPlaying> = {
   [SEARCH_FIXTURE_NAME]: SCREEN_06_SEARCH_FIXTURE.nowPlaying,
   [DISCOVER_CARD_FIXTURE_NAME]: SCREEN_07_DISCOVER_CARD_FIXTURE.nowPlaying,
   [DISCOVER_LIST_FIXTURE_NAME]: SCREEN_08_DISCOVER_LIST_FIXTURE.nowPlaying,
+  [WATCH_LATER_FIXTURE_NAME]: SCREEN_03_WATCH_LATER_FIXTURE.nowPlaying,
 };
 
 export const useNowPlayingFixture = (): FixtureNowPlaying | null => {
