@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 
-import { addToast, Spinner, Switch } from "@heroui/react";
-import { RiDeleteBinLine } from "@remixicon/react";
+import { addToast } from "@heroui/react";
 import { useShallow } from "zustand/react/shallow";
 
-import IconButton from "@/components/icon-button";
+import { formatDuration, formatSecondsToDate } from "@/common/utils/time";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
 import { postHistoryClear } from "@/service/history-clear";
 import { postHistoryDelete } from "@/service/history-delete";
@@ -16,12 +16,28 @@ import {
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
+import { FilterBar } from "@/ui/patterns/filter-bar";
+import { InfoPanel } from "@/ui/patterns/info-panel";
+import { PageHeader } from "@/ui/patterns/page-header";
+import { Section } from "@/ui/patterns/section";
+import {
+  TrackArt,
+  TrackCell,
+  TrackIndex,
+  TrackMain,
+  TrackTable,
+  TrackTableActions,
+  TrackTableRow,
+  TrackText,
+} from "@/ui/patterns/track-table";
+import { Button } from "@/ui/primitives/button";
+import { PageState } from "@/ui/states/page-state";
 
-import GridList from "./grid-list";
-import HistoryList from "./list";
 import HistorySearch from "./search";
 
 const History = () => {
+  const [searchParams] = useSearchParams();
+  const range = searchParams.get("range") ?? "all";
   const scrollerRef = useRef<ScrollRefObject>(null);
 
   const [loading, setLoading] = useState(false);
@@ -31,7 +47,6 @@ const History = () => {
   const keywordRef = useRef("");
   const dateRangeRef = useRef<{ start?: number; end?: number } | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const displayMode = useSettings(state => state.displayMode);
   const { reportPlayHistory, updateSettings } = useSettings(
     useShallow(state => ({
       reportPlayHistory: state.reportPlayHistory,
@@ -140,26 +155,10 @@ const History = () => {
   );
 
   useEffect(() => {
-    // 首次进入页面加载一次
-    let cancelled = false;
-
-    const load = async () => {
-      setLoading(true);
-      try {
-        await fetchHistory();
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [fetchHistory]);
+    const days = range === "7d" ? 7 : range === "30d" ? 30 : 0;
+    dateRangeRef.current = days ? { start: Date.now() - days * 86_400_000, end: Date.now() } : null;
+    void refreshList();
+  }, [range, refreshList]);
 
   const handleMenuAction = useCallback(async (key: string, item: HistoryListItem) => {
     switch (key) {
@@ -255,51 +254,103 @@ const History = () => {
 
   return (
     <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
-      <div className="mb-2">
-        <div className="flex items-center justify-between">
-          <h1>历史记录</h1>
-          <div className="flex items-center justify-end space-x-2">
-            <Switch
-              size="sm"
-              isSelected={reportPlayHistory}
-              onValueChange={isSelected => {
-                updateSettings({ reportPlayHistory: isSelected });
-              }}
-            >
-              记录播放历史
-            </Switch>
-            <IconButton variant="flat" size="sm" onPress={handleClear}>
-              <RiDeleteBinLine size={18} />
-            </IconButton>
-          </div>
-        </div>
-        <HistorySearch onSearch={handleSearch} onDateRangeChange={handleDateRangeChange} />
-      </div>
-
+      <PageHeader
+        title="B站历史"
+        lead="按时间查看、搜索和管理观看记录。"
+        aside={
+          <InfoPanel
+            eyebrow="同步状态"
+            items={[`共 ${list.length} 条已加载`, reportPlayHistory ? "播放历史上报 · 开启" : "播放历史上报 · 关闭"]}
+          />
+        }
+      >
+        <FilterBar label="历史操作">
+          <Button
+            variant={reportPlayHistory ? "primary" : "neutral"}
+            onClick={() => updateSettings({ reportPlayHistory: !reportPlayHistory })}
+          >
+            {reportPlayHistory ? "记录历史 · 开" : "记录历史 · 关"}
+          </Button>
+          <Button variant="danger" onClick={handleClear}>
+            清空历史
+          </Button>
+        </FilterBar>
+      </PageHeader>
+      <HistorySearch onSearch={handleSearch} onDateRangeChange={handleDateRangeChange} />
       {loading && list.length === 0 ? (
-        <div className="flex h-[40vh] items-center justify-center">
-          <Spinner />
-        </div>
+        <PageState kind="loading" />
       ) : isEmpty ? (
-        <div className="flex h-[40vh] items-center justify-center text-gray-500">暂无历史记录</div>
-      ) : displayMode === "card" ? (
-        <GridList
-          items={list}
-          hasMore={hasMore}
-          loading={loadingMore}
-          onLoadMore={handleLoadMore}
-          getScrollElement={() => scrollerRef.current?.osInstance()?.elements().viewport || null}
-          onMenuAction={handleMenuAction}
-        />
+        <PageState kind="empty" title="暂无历史记录" />
       ) : (
-        <HistoryList
-          items={list}
-          hasMore={hasMore}
-          loading={loadingMore}
-          onLoadMore={handleLoadMore}
-          getScrollElement={() => scrollerRef.current?.osInstance()?.elements().viewport || null}
-          onMenuAction={handleMenuAction}
-        />
+        <Section title={`观看记录 · ${list.length} 条`}>
+          <TrackTable
+            columns={[
+              { key: "index", label: "#" },
+              { key: "title", label: "标题" },
+              { key: "progress", label: "进度" },
+              { key: "time", label: "观看时间", align: "end" },
+            ]}
+          >
+            {list.map((item, index) => (
+              <TrackTableRow
+                key={`${item.history.business}-${item.kid}`}
+                onDoubleClick={() =>
+                  void usePlayList.getState().play({
+                    type: "mv",
+                    title: item.title,
+                    cover: item.cover,
+                    bvid: item.history.bvid,
+                    ownerName: item.author_name,
+                    ownerMid: item.author_mid,
+                  })
+                }
+              >
+                <TrackIndex value={index + 1} />
+                <TrackMain>
+                  <TrackArt src={item.cover} artKey={String(item.kid)} />
+                  <TrackText title={item.title} subtitle={item.author_name} />
+                </TrackMain>
+                <TrackCell>{`${formatDuration(item.progress ?? 0)} / ${formatDuration(item.duration ?? 0)}`}</TrackCell>
+                <TrackCell align="end">{formatSecondsToDate(item.view_at)}</TrackCell>
+                <TrackTableActions
+                  actions={[
+                    {
+                      key: "play-next",
+                      label: "下一首",
+                      icon: "next",
+                      onPress: () => void handleMenuAction("play-next", item),
+                    },
+                    {
+                      key: "queue-add",
+                      label: "入队",
+                      icon: "queue-add",
+                      onPress: () => void handleMenuAction("add-to-playlist", item),
+                    },
+                    {
+                      key: "download",
+                      label: "下载",
+                      icon: "download",
+                      onPress: () => void handleMenuAction("download-audio", item),
+                    },
+                    {
+                      key: "delete",
+                      label: "删除",
+                      icon: "trash",
+                      onPress: () => void handleMenuAction("delete", item),
+                    },
+                  ]}
+                />
+              </TrackTableRow>
+            ))}
+          </TrackTable>
+          {hasMore && (
+            <div className="mt-5 flex justify-center">
+              <Button variant="neutral" disabled={loadingMore} onClick={() => void handleLoadMore()}>
+                {loadingMore ? "加载中…" : "加载更多"}
+              </Button>
+            </div>
+          )}
+        </Section>
       )}
     </ScrollContainer>
   );

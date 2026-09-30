@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, type Control } from "react-hook-form";
 
-import { Form, Input, Select, SelectItem } from "@heroui/react";
+import { Button, Form, Input, Select, SelectItem, addToast } from "@heroui/react";
 
 interface ProxySettingsProps {
   control: Control<AppSettings>;
@@ -14,98 +14,111 @@ const PROXY_TYPE_OPTIONS: { key: ProxyType; label: string }[] = [
   { key: "socks5", label: "SOCKS5 代理" },
 ];
 
+const EMPTY_PROXY: ProxySettings = {
+  type: "none",
+  host: "",
+  port: undefined,
+  username: "",
+  password: "",
+};
+
+const ProxyEditor = ({ value, onApply }: { value: ProxySettings; onApply: (value: ProxySettings) => void }) => {
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => setDraft(value), [value]);
+
+  const setProxy = (patch: Partial<ProxySettings>) => setDraft(current => ({ ...current, ...patch }));
+  const needsAddress = draft.type !== "none";
+  const isValid = !needsAddress || (Boolean(draft.host.trim()) && Boolean(draft.port && draft.port <= 65535));
+  const isDirty = JSON.stringify(draft) !== JSON.stringify(value);
+  const showPassword = draft.type === "http" || draft.type === "socks5";
+
+  const apply = () => {
+    if (!isValid) return;
+    onApply(draft);
+    addToast({ title: "代理设置已应用", color: "success" });
+  };
+
+  return (
+    <div className="w-full space-y-5">
+      <div className="w-[240px] max-sm:w-full">
+        <Select
+          disallowEmptySelection
+          aria-label="代理类型"
+          selectedKeys={new Set([draft.type])}
+          onSelectionChange={keys => {
+            const next = Array.from(keys)[0] as ProxyType | undefined;
+            setProxy({ type: next ?? "none" });
+          }}
+        >
+          {PROXY_TYPE_OPTIONS.map(option => (
+            <SelectItem key={option.key}>{option.label}</SelectItem>
+          ))}
+        </Select>
+      </div>
+
+      {needsAddress && (
+        <>
+          <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+            <Input
+              label="主机"
+              placeholder="例如 127.0.0.1"
+              value={draft.host ?? ""}
+              isInvalid={!draft.host.trim()}
+              errorMessage="请输入代理主机"
+              onValueChange={host => setProxy({ host })}
+            />
+            <Input
+              label="端口"
+              placeholder="1–65535"
+              inputMode="numeric"
+              value={draft.port ? String(draft.port) : ""}
+              isInvalid={!draft.port || draft.port > 65535}
+              errorMessage="请输入有效端口"
+              onValueChange={nextValue => {
+                const port = Number(nextValue.trim());
+                setProxy({ port: Number.isInteger(port) && port > 0 ? port : undefined });
+              }}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+            <Input
+              label="用户名（可选）"
+              value={draft.username ?? ""}
+              onValueChange={username => setProxy({ username })}
+            />
+            {showPassword && (
+              <Input
+                label="密码（可选）"
+                type="password"
+                value={draft.password ?? ""}
+                onValueChange={password => setProxy({ password })}
+              />
+            )}
+          </div>
+        </>
+      )}
+
+      <div className="flex justify-end gap-2">
+        <Button variant="light" isDisabled={!isDirty} onPress={() => setDraft(value)}>
+          撤销修改
+        </Button>
+        <Button color="primary" isDisabled={!isDirty || !isValid} onPress={apply}>
+          应用代理设置
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const ProxySettings: React.FC<ProxySettingsProps> = ({ control }) => {
   return (
     <Form className="space-y-6">
       <Controller
         control={control}
         name="proxySettings"
-        render={({ field }) => {
-          const value = field.value ?? {
-            type: "none" as ProxyType,
-            host: "",
-            port: undefined,
-            username: "",
-            password: "",
-          };
-
-          const setProxy = (patch: Partial<ProxySettings>) => {
-            field.onChange({
-              ...value,
-              ...patch,
-            });
-          };
-
-          const showPassword = value.type === "http" || value.type === "socks5";
-
-          return (
-            <div className="space-y-4">
-              <div className="w-[240px]">
-                <Select
-                  disallowEmptySelection
-                  aria-label="代理类型"
-                  selectedKeys={new Set([value.type])}
-                  onSelectionChange={keys => {
-                    const next = Array.from(keys)[0] as ProxyType | undefined;
-                    setProxy({
-                      type: next ?? "none",
-                    });
-                  }}
-                >
-                  {PROXY_TYPE_OPTIONS.map(option => (
-                    <SelectItem key={option.key}>{option.label}</SelectItem>
-                  ))}
-                </Select>
-              </div>
-
-              {(value.type === "http" || value.type === "socks4" || value.type === "socks5") && (
-                <>
-                  <div className="space-y-1">
-                    <div className="grid grid-cols-2 gap-4 text-sm text-zinc-500">
-                      <span>主机</span>
-                      <span>端口</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="主机" value={value.host ?? ""} onValueChange={v => setProxy({ host: v })} />
-                      <Input
-                        placeholder="端口"
-                        inputMode="numeric"
-                        value={value.port ? String(value.port) : ""}
-                        onValueChange={v => {
-                          const trimmed = v.trim();
-                          const num = Number(trimmed);
-                          setProxy({ port: Number.isFinite(num) && num > 0 ? num : undefined });
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="grid grid-cols-2 gap-4 text-sm text-zinc-500">
-                      <span>用户名</span>
-                      {showPassword && <span>密码</span>}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input
-                        placeholder="用户名"
-                        value={value.username ?? ""}
-                        onValueChange={v => setProxy({ username: v })}
-                      />
-                      {showPassword && (
-                        <Input
-                          placeholder="密码"
-                          type="password"
-                          value={value.password ?? ""}
-                          onValueChange={v => setProxy({ password: v })}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        }}
+        render={({ field }) => <ProxyEditor value={field.value ?? EMPTY_PROXY} onApply={field.onChange} />}
       />
     </Form>
   );

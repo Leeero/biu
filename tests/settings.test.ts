@@ -39,6 +39,23 @@ describe("settings store", () => {
     expect(useSettings.getState().themeMode).toBe("dark");
   });
 
+  test("无损读取旧浅色主题、自定义主色与自定义圆角配置", async () => {
+    const { useSettings } = await loadSettingsStore({
+      ...defaultAppSettings,
+      themeMode: "light",
+      primaryColor: "#2477ff",
+      backgroundColor: "#f6f7fb",
+      borderRadius: 24,
+    });
+
+    expect(useSettings.getState().getSettings()).toMatchObject({
+      themeMode: "light",
+      primaryColor: "#2477ff",
+      backgroundColor: "#f6f7fb",
+      borderRadius: 24,
+    });
+  });
+
   test("persists updates through the Electron settings store", async () => {
     const { electron, useSettings } = await loadSettingsStore(defaultAppSettings);
     useSettings.getState().update({ themeMode: "dark", sideMenuWidth: 240 });

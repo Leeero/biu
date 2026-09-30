@@ -11,10 +11,14 @@ import {
 import clx from "classnames";
 import { useShallow } from "zustand/react/shallow";
 
+import { AppShell } from "@/app/shell";
 import { getPlayModeList } from "@/common/constants/audio";
 import { createBroadcastChannel, toggleMiniMode } from "@/common/utils/mini-player";
 import { formatDuration } from "@/common/utils/time";
 import Image from "@/components/image";
+import { SystemIntegrationView } from "@/features/player/system-integration-view";
+import PlayBar from "@/layout/playbar";
+import TopBar from "@/layout/topbar";
 import { usePlayProgress } from "@/store/play-progress";
 
 import { createMiniPlayerActions } from "./actions";
@@ -44,7 +48,7 @@ const CoverView = memo(() => {
   );
 });
 
-const MiniPlayer = () => {
+const CompactMiniPlayer = () => {
   const { isSingle, isPlaying, title, artist, duration, playMode } = usePlayState(
     useShallow(state => ({
       isSingle: state.isSingle,
@@ -202,6 +206,26 @@ const MiniPlayer = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const SYSTEM_SEGMENTS = [
+  { key: "mini", label: "迷你播放器", href: "#mini" },
+  { key: "tray", label: "托盘", href: "#tray" },
+  { key: "shortcuts", label: "全局快捷键", href: "#shortcuts" },
+];
+
+/**
+ * `/mini-player` 同时承载两种窗口形态：主窗口中的系统集成页，以及 Electron 创建的
+ * 360×140 独立播放窗。用实际视口宽度分流，避免为视觉页牺牲真正的迷你窗口能力。
+ */
+const MiniPlayer = () => {
+  if (window.innerWidth <= 600) return <CompactMiniPlayer />;
+
+  return (
+    <AppShell topbar={<TopBar segments={SYSTEM_SEGMENTS} activeSegmentKey="mini" />} player={<PlayBar />}>
+      <SystemIntegrationView />
+    </AppShell>
   );
 };
 

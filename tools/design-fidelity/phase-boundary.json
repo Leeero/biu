@@ -1,9 +1,18 @@
 {
-  "phase": "P4",
+  "phase": "P7",
   "baselineRef": "e6226e7",
   "baselineNote": "基线 = P3-S4 提交 e6226e7（feat(discover): 屏 08 发现音乐 · 列表态过 --target app 比对）。**该 hash 于 2026-09-28 重指过**：原为 `11e51c4`，因推送受 PAT `workflow` scope 限制而用 filter-branch 摘除 `.github/workflows/pr-test-build.yml` 的改动，**37 个提交的 hash 全部改写**，`11e51c4` 随之变为 `e6226e7`（同一提交、同一改动内容，仅 hash 不同）。不改的话基线会只挂在备份分支 `backup-before-workflow-strip` 上 —— 那个分支一旦删除，`git cat-file -e` 就会失败、护栏直接废掉。**P3 至此收口**：方案 §6 的 P3 出口标准是「四屏（01 / 02 / 06 / 07+08）各出保真报告 PASS + 能力对齐表完整」，五屏均已 PASS。P3-S4 期间新增了 --biu-type-section-title 与 --biu-type-note 两组四原子（各 5 条）—— 新增令牌不在基线集合内，不构成偏差；阶段内的**有效值变更**是 --biu-type-lead-size 由 22px 改为 20px（spec-lock 1.3.24 订正的字阶第 10 处分歧）及其简写侧 --biu-type-lead-leading / --biu-type-lead，已随本次基线推进归档到 history。P4（屏 03 稍后播放 / 04 本地音乐 / 05 下载管理）以 e6226e7 为起点。",
   "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。任何被业务代码消费的偏差（有效值变更 / 两侧无法求值的表达式改写 / 令牌消失）都必须额外标 visualImpact: true 显式确认「这会掉像素」；未登记的偏差同样让退出码为 1。",
-  "intendedChanges": {},
+  "intendedChanges": {
+    "--biu-layout-immersive-art-w": {
+      "visualImpact": true,
+      "reason": "P5 屏 10 沉浸播放器按最终设计稿把封面由 639px 订正为 649px；spec-lock 1.3.31 的 immersiveGeometry 与页面实现均使用 649 × 365，12 屏总视觉回归中屏 10 PASS（L3 11.91）。"
+    },
+    "--biu-layout-immersive-art-h": {
+      "visualImpact": true,
+      "reason": "P5 屏 10 沉浸播放器按最终设计稿把封面由 359px 订正为 365px；与宽度变更属于同一项有意视觉调整，已由沉浸态结构带和全屏亮度闸门共同验证。"
+    }
+  },
   "history": [
     {
       "phase": "P3-S4",

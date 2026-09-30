@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { countDownloadStatuses } from "@/features/downloads/model";
 import { useLibraryFixtureData } from "@/features/library/fixture";
@@ -32,6 +32,8 @@ const TRACK_SOURCES = new Set<PlaylistTrackSource>(["favorite-folder", "season",
 
 const Library = () => {
   const fixture = useLibraryFixtureData();
+  const [searchParams] = useSearchParams();
+  const libraryTab = searchParams.get("tab") === "collected" ? "collected" : "created";
   const user = useUser(state => state.user);
   const createdFavorites = useFavoritesStore(state => state.createdFavorites);
   const collectedFavorites = useFavoritesStore(state => state.collectedFavorites);
@@ -205,8 +207,8 @@ const Library = () => {
             }
             overviewLines={overviewLines}
             qualityPillText={`音质偏好 · ${QUALITY_LABELS[audioQuality] ?? audioQuality}`}
-            createdTiles={createdTiles}
-            collectedTiles={collectedTiles}
+            createdTiles={libraryTab === "created" ? createdTiles : []}
+            collectedTiles={libraryTab === "collected" ? collectedTiles : []}
             demoActionKeys={[]}
             onTilePress={tile => navigate(tile.href)}
             onTileAction={(tile, key) => void onTileAction(tile, key)}
@@ -214,10 +216,6 @@ const Library = () => {
             onShuffleAll={() => void playTiles(createdTiles, true)}
             bulkPending={bulkPending}
           />
-          <AnnotationBand anchor="low">
-            悬停或选中瓦片：玻璃操作带直接露出 5 个主操作（播放 / 下一首 / 入队 / 收藏 /
-            下载音频），其余进入右键菜单——每个 Track 的 8 项能力都有落点。
-          </AnnotationBand>
         </>
       )}
     </>

@@ -119,7 +119,7 @@ export interface DiscoverViewProps {
    * `mt-6`。不要照画板坐标反推一个「精确值」出来 —— 那是从一个观测不到的
    * 位置倒推的。
    */
-  note: string;
+  note?: string;
   /** 专辑网格之后的内容（真实路径的分区推荐列表与状态位）。 */
   children?: ReactNode;
 }
@@ -229,6 +229,6 @@ export const DiscoverView = ({
 
     {children}
 
-    <AnnotationBand anchor="inline">{note}</AnnotationBand>
+    {note ? <AnnotationBand anchor="inline">{note}</AnnotationBand> : null}
   </div>
 );

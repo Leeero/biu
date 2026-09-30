@@ -116,6 +116,7 @@ interface Action {
   addList: (items: PlayItem[]) => void;
   delPage: (id: string) => void;
   del: (id: string) => void;
+  reorder: (from: number, to: number) => void;
   clear: () => void;
   next: () => Promise<void>;
   prev: () => Promise<void>;
@@ -934,6 +935,13 @@ export const usePlayList = create<State & Action>()(
 
           set(state => {
             remove(state.list, item => isSame(item, removedItem));
+          });
+        },
+        reorder: (from, to) => {
+          set(state => {
+            if (from < 0 || to < 0 || from >= state.list.length || to >= state.list.length || from === to) return;
+            const [item] = state.list.splice(from, 1);
+            state.list.splice(to, 0, item);
           });
         },
         clear: () => {

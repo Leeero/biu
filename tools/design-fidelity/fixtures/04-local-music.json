@@ -1,0 +1,65 @@
+{
+  "no": "04",
+  "name": "本地音乐",
+  "route": "/local-music",
+  "header": {
+    "title": "本地音乐",
+    "lead": "3 个目录 · 1,284 个文件 · 8 种可扫描格式（mp3 / flac / wav / m4a / aac / ogg / wma / aiff）"
+  },
+  "filterPills": ["全部播放", "随机播放", "重新扫描", "从应用删除文件 · 二次确认"],
+  "cards": [
+    {
+      "id": "fixture-local-1",
+      "format": "flac",
+      "title": "夜航（Live 版）",
+      "meta": "04:15 · 38.4 MB · 创建于 2024-08-12",
+      "badge": "D 盘 · Lossless"
+    },
+    {
+      "id": "fixture-local-2",
+      "format": "wav",
+      "title": "器乐练习 07",
+      "meta": "06:02 · 62.1 MB · 创建于 2024-06-30",
+      "badge": "D 盘 · Lossless"
+    },
+    {
+      "id": "fixture-local-3",
+      "format": "mp3",
+      "title": "深夜电台 0921",
+      "meta": "03:48 · 8.7 MB · 创建于 2024-09-21",
+      "badge": "E 盘 · Live 录音"
+    },
+    {
+      "id": "fixture-local-4",
+      "format": "aiff",
+      "title": "城市回声（母带）",
+      "meta": "05:30 · 55.9 MB · 创建于 2023-11-04",
+      "badge": "D 盘 · Lossless"
+    },
+    {
+      "id": "fixture-local-5",
+      "format": "m4a",
+      "title": "雨声采样 30min",
+      "meta": "30:00 · 28.8 MB · 创建于 2024-03-17",
+      "badge": "E 盘 · Live 录音"
+    },
+    {
+      "id": "fixture-local-6",
+      "format": "wma",
+      "title": "旧磁带转录 14",
+      "meta": "04:41 · 11.2 MB · 创建于 2022-05-09",
+      "badge": "E 盘 · Live 录音"
+    }
+  ],
+  "note": "本地音乐只产出 title / 格式 / 大小 / 时长 / 创建时间（LocalMusicItem 没有 artist、album、cover 字段），PRD 4.7 也明确不做封面匹配——所以本地音乐的载体是「格式 + 文件名 + 目录」这套真实元数据。",
+  "nowPlaying": {
+    "title": "雨声采样 30min",
+    "sub": "本地文件 · E 盘 · Field 目录",
+    "source": "local",
+    "badgeText": "本地 · M4A",
+    "elapsedSeconds": 52,
+    "durationSeconds": 250,
+    "queueCount": 12,
+    "playing": false
+  }
+}

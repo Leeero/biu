@@ -66,6 +66,12 @@
   --biu-danger-soft: var(--c-danger-soft);
   --biu-danger-line: var(--c-danger-line);
 
+  /* 桌面端滚动条：常态克制、悬停可见、拖拽时给出明确反馈。原生滚动容器与
+     OverlayScrollbars 共用这三个角色，避免页面、弹层和歌词区各自成套。 */
+  --biu-scrollbar-thumb: var(--c-veil-20);
+  --biu-scrollbar-thumb-hover: var(--c-veil-28);
+  --biu-scrollbar-thumb-active: var(--c-line-strong);
+
   /* ---- 5b. 白色叠加梯度补档（P2） ------------------------------------- */
 
   /* 与 palette.css §8 一一对应，命名同样按实际不透明度。
@@ -112,24 +118,17 @@
   /* 应用底板：两层极弱环境光叠在底板色上 */
   --biu-app-bg:
     radial-gradient(120% 90% at 12% 0%, var(--c-app-sheen-a), transparent 58%),
-    radial-gradient(110% 80% at 92% 100%, var(--c-app-sheen-b), transparent 62%),
-    var(--c-app-bg);
+    radial-gradient(110% 80% at 92% 100%, var(--c-app-sheen-b), transparent 62%), var(--c-app-bg);
 
   /* 顶栏：合成渐变，不是纯色 */
-  --biu-topbar-bg: linear-gradient(
-    to bottom,
-    var(--c-topbar-top) 0%,
-    var(--c-topbar) 46%,
-    var(--c-topbar-bottom) 100%
-  );
+  --biu-topbar-bg: linear-gradient(to bottom, var(--c-topbar-top) 0%, var(--c-topbar) 46%, var(--c-topbar-bottom) 100%);
 
   /* 沉浸态背景：左缘竖向紫雾 + 顶部横向冷蓝雾，右上/右下为纯暗底。
      参数与来历见 palette.css §7，不得凭直觉改写。 */
   --biu-immersive-bg:
     radial-gradient(20% 22% at 0% 0%, var(--c-immersive-haze-a), transparent 64%),
     radial-gradient(21% 73% at 0% 43%, var(--c-immersive-haze-b), transparent 77%),
-    radial-gradient(97% 54% at 33% 6%, var(--c-immersive-haze-c), transparent 84%),
-    var(--c-immersive-base);
+    radial-gradient(97% 54% at 33% 6%, var(--c-immersive-haze-c), transparent 84%), var(--c-immersive-base);
 
   /* —— 遗留：品牌与状态色（P1 已收敛到 C+ 色板，P7 删除） —— */
 
@@ -159,8 +158,7 @@
   --biu-color-text-primary: 250 250 250;
   --biu-color-text-secondary: 161 161 170;
   --biu-color-text-tertiary: 113 113 122;
-  --biu-shadow-card:
-    0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 24%), 0 12px 32px rgb(var(--c-shadow-umbra-rgb) / 22%);
+  --biu-shadow-card: 0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 24%), 0 12px 32px rgb(var(--c-shadow-umbra-rgb) / 22%);
   --biu-shadow-floating: 0 18px 54px rgb(var(--c-shadow-umbra-rgb) / 42%);
 }
 

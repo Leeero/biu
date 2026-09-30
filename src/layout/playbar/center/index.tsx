@@ -21,12 +21,12 @@ const Control = () => {
   const { controlsDisabled } = useNowPlaying();
 
   return (
-    <div className="flex items-center">
+    <div className="flex w-full min-w-0 items-center">
       <MusicPlayControl />
       <MusicPlayProgress
         isDisabled={controlsDisabled}
-        className="ml-[var(--biu-playbar-progress-ml)]"
-        barClassName="w-[min(var(--biu-playbar-progress-w),26.5vw)] flex-none"
+        className="ml-[clamp(24px,3vw,var(--biu-playbar-progress-ml))] min-w-0 flex-1"
+        barClassName="min-w-[120px] max-w-[var(--biu-playbar-progress-w)] flex-1"
       />
     </div>
   );

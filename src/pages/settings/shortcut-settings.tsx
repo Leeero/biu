@@ -102,37 +102,41 @@ const ShortcutSettingsPage = () => {
         </AsyncButton>
       </div>
 
-      <div className="grid grid-cols-[1fr_200px_200px] gap-4 text-sm font-medium text-zinc-500">
-        <div>功能说明</div>
-        <div>应用内快捷键</div>
-        <div>全局快捷键</div>
-      </div>
+      <div className="overflow-x-auto pb-2">
+        <div className="min-w-[620px]">
+          <div className="grid grid-cols-[1fr_200px_200px] gap-4 text-sm font-medium text-zinc-500">
+            <div>功能说明</div>
+            <div>应用内快捷键</div>
+            <div>全局快捷键</div>
+          </div>
 
-      <div className="space-y-4">
-        {shortcuts.map(item => {
-          const globalShortcut = globalShortcuts.find(g => g.id === item.id) as ShortcutItem;
+          <div className="mt-4 space-y-4">
+            {shortcuts.map(item => {
+              const globalShortcut = globalShortcuts.find(g => g.id === item.id) as ShortcutItem;
 
-          return (
-            <div key={item.id} className="grid grid-cols-[1fr_200px_200px] items-start gap-4">
-              <div className="text-medium">{item.name}</div>
-              <ShortcutKeyInput
-                value={item.shortcut}
-                onChange={v => handleChangeShortcut(item.id, v)}
-                isInvalid={item.isConflict}
-                errorMessage={item.error}
-              />
-              {Boolean(globalShortcut) && (
-                <ShortcutKeyInput
-                  value={globalShortcut.shortcut}
-                  onChange={v => handleChangeGlobalShortcut(globalShortcut.id, v)}
-                  isDisabled={!enableGlobalShortcuts}
-                  isInvalid={globalShortcut.isConflict}
-                  errorMessage="与系统或其他应用快捷键冲突"
-                />
-              )}
-            </div>
-          );
-        })}
+              return (
+                <div key={item.id} className="grid grid-cols-[1fr_200px_200px] items-start gap-4">
+                  <div className="text-medium">{item.name}</div>
+                  <ShortcutKeyInput
+                    value={item.shortcut}
+                    onChange={v => handleChangeShortcut(item.id, v)}
+                    isInvalid={item.isConflict}
+                    errorMessage={item.error}
+                  />
+                  {Boolean(globalShortcut) && (
+                    <ShortcutKeyInput
+                      value={globalShortcut.shortcut}
+                      onChange={v => handleChangeGlobalShortcut(globalShortcut.id, v)}
+                      isDisabled={!enableGlobalShortcuts}
+                      isInvalid={globalShortcut.isConflict}
+                      errorMessage="与系统或其他应用快捷键冲突"
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
       <div className="text-end">
         <Checkbox color="primary" isSelected={enableGlobalShortcuts} onValueChange={handleToggleEnableGlobalShortcut}>

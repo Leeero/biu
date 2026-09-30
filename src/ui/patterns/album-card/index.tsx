@@ -100,7 +100,7 @@ export const AlbumCard = ({
         反推的产物。行盒 28 与三个竖直量（上边距 30、metaGap 2、footGap 36）的锚点
         是「标题盒顶 672」，与盒内字号无关，故一字未改。
       */}
-      <h3 className="m-0 text-[length:var(--biu-type-small-size)] leading-7 font-semibold tracking-[-0.3px] text-[rgb(var(--biu-text-primary))]">
+      <h3 className="m-0 line-clamp-2 text-[length:var(--biu-type-small-size)] leading-7 font-semibold tracking-[-0.3px] text-[rgb(var(--biu-text-primary))]">
         {title}
       </h3>
       {meta !== undefined && meta !== null && (

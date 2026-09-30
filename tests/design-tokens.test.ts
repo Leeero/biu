@@ -610,19 +610,10 @@ describe("几何与真值一致", () => {
     expect(midOrigin - gutter - clusterW - leftMax, "左侧余量与右侧不对称").toBe(gutter);
   });
 
-  /**
-   * 上面那条恒等式只证明「预算算得对」，不证明**实现落在了那个位置**。
-   * 这一条读源码钉住两件事：
-   *   1. 簇的锚点是「中段原点 − gutter」（不是右段、也不是左段自身宽度）；
-   *   2. 那 5 枚**不得再回到右段** —— 1.3.9 正是把它们留在右段，右段左缘被推到
-   *      x1080.8 而压住了中段的尾随时间（x1088.5–1172），且当时没有任何探针覆盖
-   *      x1080–1194，所以全绿通过。
-   */
-  test("过渡控件簇锚在中段原点左侧，右段只留药丸", () => {
+  test("播放器使用三栏网格隔离曲目信息、控制区与队列", () => {
     const playbarSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/index.tsx"), "utf8");
-    expect(playbarSrc, "簇的锚点不再是「中段原点 − gutter」").toContain(
-      "right-[calc(50%_+_var(--biu-playbar-mid-offset)_+_var(--biu-playbar-deferred-gutter))]",
-    );
+    expect(playbarSrc).toContain("grid-cols-[minmax(280px,430px)_minmax(0,1fr)_auto]");
+    expect(playbarSrc, "中间控制区必须允许收缩，不能覆盖左右栏").toContain("flex min-w-0 items-center");
 
     const deferredSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/deferred/index.tsx"), "utf8");
     expect(deferredSrc, "簇没有用登记过的间隔令牌").toContain("gap-[var(--biu-playbar-deferred-gap)]");

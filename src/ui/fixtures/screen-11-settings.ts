@@ -1,0 +1,62 @@
+export const SETTINGS_FIXTURE_NAME = "11-settings";
+
+export const SCREEN_11_SETTINGS_FIXTURE = {
+  title: "设置",
+  lead: "六组设置收敛为一个入口：常规 / 播放 / 下载与本地 / 快捷键 / 高级 / 关于。",
+  pills: ["深色", "密度 · 标准", "导入 / 导出设置", "检查更新 · v2.0.4"],
+  panel: ["主题 · 深色 · 密度 · 标准", "音质 · 自动（最高可用）"],
+  sectionTitle: "常规 · 界面与启动",
+  rows: [
+    {
+      title: "常规",
+      subtitle: "主题 · 字体 · 页面密度 · 关闭窗口行为 · 开机启动",
+      value: "深色 · 标准",
+      count: "5 项",
+      icon: "gear",
+      tab: "general",
+    },
+    {
+      title: "播放",
+      subtitle: "音质偏好 · 默认播放模式 · 随机保持分P顺序 · 播放历史上报",
+      value: "自动（最高可用）",
+      count: "4 项",
+      icon: "music",
+      tab: "playback",
+    },
+    {
+      title: "下载与本地",
+      subtitle: "下载目录 · 本地音乐目录 · FFmpeg 路径（高级）",
+      value: "~/Music/Biu",
+      count: "3 项",
+      icon: "folder",
+      tab: "download",
+    },
+    {
+      title: "快捷键",
+      subtitle: "应用内与全局快捷键 · 启用开关 · 冲突检测",
+      value: "2 处冲突",
+      count: "11 项",
+      icon: "sparkle",
+      tab: "shortcut",
+      danger: true,
+    },
+    {
+      title: "高级 · 关于",
+      subtitle: "网络代理 · 设置导入导出 · 版本与更新",
+      value: "v2.0.4",
+      count: "6 项",
+      icon: "external",
+      tab: "advanced",
+    },
+  ],
+  note: "设置收敛为六个 Tab（settings/index.tsx）：常规 / 播放 / 下载与本地 / 快捷键 / 高级 / 关于。FFmpeg 路径与网络代理下沉到「高级」；旧主题字段仅用于配置兼容，不再暴露自定义主色与圆角入口；快捷键保存 isConflict 冲突标记。",
+  nowPlaying: {
+    title: "《雨落长街》· 全专上线",
+    sub: "卧室音乐计划 · 新碟 Banner",
+    quality: "lossless",
+    elapsedSeconds: 82,
+    durationSeconds: 228,
+    queueCount: 12,
+    playing: false,
+  },
+} as const;

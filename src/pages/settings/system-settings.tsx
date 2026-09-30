@@ -35,7 +35,7 @@ export const SystemSettingsTab = ({
         <>
           <h2>外观与显示</h2>
           {/* 显示模式 */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">数据显示样式</div>
               <div className="text-sm text-zinc-500">选择媒体内容的显示样式</div>
@@ -46,6 +46,7 @@ export const SystemSettingsTab = ({
               render={({ field }) => (
                 <Tabs
                   aria-label="数据展示"
+                  fullWidth
                   classNames={{
                     cursor: "rounded-medium",
                   }}
@@ -89,12 +90,12 @@ export const SystemSettingsTab = ({
               borderRadius）仍然保留并被 store 读写，旧设置文件因此可无损读取，
               只是不再产生作用。见 docs/design/biu-cplus-refactor-plan.md §13.1。 */}
           {/* 字体选择 */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">字体</div>
               <div className="text-sm text-zinc-500">选择界面显示的字体</div>
             </div>
-            <div className="w-[180px]">
+            <div className="w-[180px] max-sm:w-full">
               <Controller
                 control={control}
                 name="fontFamily"
@@ -138,7 +139,7 @@ export const SystemSettingsTab = ({
         <>
           <h2>播放偏好</h2>
           {/* 音质选择 */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">音质偏好</div>
               <div className="text-sm text-zinc-500">
@@ -149,7 +150,7 @@ export const SystemSettingsTab = ({
                 {audioQuality === "low" && "60-80 kbps"}
               </div>
             </div>
-            <div className="w-[180px]">
+            <div className="w-[180px] max-sm:w-full">
               <Controller
                 control={control}
                 name="audioQuality"
@@ -174,7 +175,7 @@ export const SystemSettingsTab = ({
             </div>
           </div>
           {/* 播放记录上报 */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">上报本机播放记录</div>
               <div className="text-sm text-zinc-500">将播放进度同步到Bilibili服务器</div>
@@ -192,12 +193,12 @@ export const SystemSettingsTab = ({
       {section === "download" && (
         <>
           <h2>下载与本地工具</h2>
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">下载目录</div>
               <div className="text-sm text-zinc-500">选择音视频保存的位置</div>
             </div>
-            <div className="w-[360px]">
+            <div className="w-[360px] max-sm:w-full">
               <Controller
                 control={control}
                 name="downloadPath"
@@ -220,12 +221,12 @@ export const SystemSettingsTab = ({
           </div>
 
           {/* FFmpeg 路径配置 */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">FFmpeg 路径</div>
               <div className="text-sm text-zinc-500">手动指定 FFmpeg 可执行文件路径</div>
             </div>
-            <div className="w-[360px]">
+            <div className="w-[360px] max-sm:w-full">
               <Controller
                 control={control}
                 name="ffmpegPath"
@@ -252,7 +253,7 @@ export const SystemSettingsTab = ({
         <>
           <h2 className="pt-2">搜索与应用行为</h2>
           {/* 显示搜索历史 */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">显示搜索历史</div>
               <div className="text-sm text-zinc-500">在搜索框中显示搜索历史记录</div>
@@ -267,7 +268,7 @@ export const SystemSettingsTab = ({
           </div>
 
           {/* 窗口关闭选项 */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
             <div className="mr-6 space-y-1">
               <div className="text-medium font-medium">窗口关闭</div>
               <div className="text-sm text-zinc-500">选择窗口关闭时的行为</div>
@@ -290,7 +291,7 @@ export const SystemSettingsTab = ({
               <div className="text-medium font-medium">开机自启动</div>
               <div className="text-sm text-zinc-500">系统登录后自动启动应用</div>
             </div>
-            <div className="flex w-[360px] justify-end">
+            <div className="flex w-[360px] justify-end max-sm:w-full">
               <Controller
                 control={control}
                 name="autoStart"

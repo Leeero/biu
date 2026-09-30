@@ -71,7 +71,7 @@ const MusicPlayProgress = memo(({ isDisabled, className, barClassName, trackClas
           thumb: "size-3 bg-[rgb(var(--biu-accent))] after:hidden",
         }}
       />
-      <span className="ml-[var(--biu-playbar-time-gap)] flex-none text-[length:var(--biu-type-label-size)] whitespace-nowrap text-[rgb(var(--biu-text-secondary))] tabular-nums">
+      <span className="ml-[clamp(14px,2vw,var(--biu-playbar-time-gap))] min-w-[88px] flex-none text-right text-[length:var(--biu-type-label-size)] whitespace-nowrap text-[rgb(var(--biu-text-secondary))] tabular-nums">
         {currentTime ? formatDuration(currentTime) : "-:--"} / {duration ? formatDuration(duration) : "-:--"}
       </span>
     </div>

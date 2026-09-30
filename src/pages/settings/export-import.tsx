@@ -49,7 +49,6 @@ const ImportExport = () => {
 
       updateSettings(merged);
       addToast({ title: "已导入配置", description: "设置已应用", color: "success" });
-      window.location.reload();
     } catch {
       addToast({ title: "导入失败", description: "文件解析错误或格式不正确", color: "danger" });
     }

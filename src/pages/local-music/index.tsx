@@ -1,276 +1,168 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 
-import { Button, Select, SelectItem } from "@heroui/react";
-import { RiDeleteBinLine, RiFolderAddLine, RiRefreshLine, RiPlayFill, RiPlayListAddLine } from "@remixicon/react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-
-import Empty from "@/components/empty";
-import IconButton from "@/components/icon-button";
-import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
-import SearchButton from "@/components/search-button";
-import { createLocalTrackEntries, filterLocalMusic, getLocalDirectoryName } from "@/features/local-music/model";
+import { useLocalMusicFixtureData } from "@/features/local-music/fixture";
+import { LocalMusicView } from "@/features/local-music/local-music-view";
+import { adaptLocalMusicCard, createLocalTrackEntries, filterLocalMusic } from "@/features/local-music/model";
 import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
-import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
+import { executeTrackAction } from "@/features/track/actions";
 import { useModalStore } from "@/store/modal";
-import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
-import { PageHeader } from "@/ui/patterns/page-header";
-
-import LocalMusicItemRow from "./item";
-
-const rowHeight = 42;
+import { PageState } from "@/ui/states/page-state";
 
 const LocalMusicPage = () => {
-  const localDirs = useSettings(s => s.localMusicDirs);
-  const updateSettings = useSettings(s => s.update);
-  const { onOpenConfirmModal } = useModalStore();
-  const [list, setList] = useState<LocalMusicItem[]>([]);
-  const [selectedDir, setSelectedDir] = useState<string>("all");
-  const [keyword, setKeyword] = useState<string>("");
-  const scrollRef = useRef<ScrollRefObject | null>(null);
-  const playId = usePlayList(s => s.playId);
-  const playList = usePlayList(s => s.list);
+  const fixture = useLocalMusicFixtureData();
+  const [searchParams] = useSearchParams();
+  const localDirs = useSettings(state => state.localMusicDirs);
+  const updateSettings = useSettings(state => state.update);
+  const [items, setItems] = useState<LocalMusicItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [selectedId, setSelectedId] = useState<string>();
 
-  const playItem = useMemo(() => playList.find(item => item.id === playId), [playId, playList]);
+  const directoryIndex = searchParams.get("dir") ?? "all";
+  const selectedDir = directoryIndex === "all" ? "all" : localDirs[Number(directoryIndex)] || "all";
+  const keyword = searchParams.get("key") ?? "";
+
+  const scan = useCallback(async () => {
+    if (fixture) return;
+    if (!localDirs.length) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(false);
+    try {
+      setItems(await window.electron.scanLocalMusic(localDirs));
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [fixture, localDirs]);
 
   useEffect(() => {
-    const init = async () => {
-      if (localDirs?.length) {
-        const data = await window.electron.scanLocalMusic(localDirs);
-        setList(data);
-      } else {
-        setList([]);
-      }
-    };
-    init();
-  }, [localDirs]);
+    void scan();
+  }, [scan]);
 
-  const filtered = useMemo(() => filterLocalMusic(list, selectedDir, keyword), [list, selectedDir, keyword]);
+  const filtered = useMemo(() => filterLocalMusic(items, selectedDir, keyword), [items, keyword, selectedDir]);
   const entries = useMemo(() => createLocalTrackEntries(filtered), [filtered]);
+  const cards = useMemo(() => filtered.map(adaptLocalMusicCard), [filtered]);
 
-  const rowVirtualizer = useVirtualizer({
-    count: filtered.length,
-    getScrollElement: () => scrollRef.current?.osInstance()?.elements().viewport as HTMLElement | null,
-    estimateSize: () => rowHeight,
-    overscan: 10,
-  });
+  const addDirectory = useCallback(async () => {
+    const directory = await window.electron.selectDirectory("选择本地音乐目录");
+    if (!directory) return;
+    updateSettings({ localMusicDirs: Array.from(new Set([...localDirs, directory])) });
+  }, [localDirs, updateSettings]);
 
-  const playAll = async () => {
-    await executePlaylistBulkAction(
-      "play-all",
-      entries.map(entry => entry.track),
+  const playAll = useCallback(
+    (shuffle: boolean) => {
+      const tracks = entries.map(entry => entry.track);
+      void executePlaylistBulkAction("play-all", shuffle ? [...tracks].sort(() => Math.random() - 0.5) : tracks);
+    },
+    [entries],
+  );
+
+  const deleteEntry = useCallback(
+    (id?: string) => {
+      const entry = entries.find(candidate => candidate.id === id);
+      if (!entry) return;
+      useModalStore.getState().onOpenConfirmModal({
+        title: `删除“${entry.track.title}”`,
+        description: "该操作会删除本地文件且不可恢复，请谨慎操作",
+        confirmText: "删除",
+        type: "danger",
+        onConfirm: async () => {
+          const deleted = await window.electron.deleteLocalMusicFile(entry.source.path);
+          if (deleted) {
+            setItems(previous => previous.filter(item => item.path !== entry.source.path));
+            setSelectedId(undefined);
+          }
+          return deleted;
+        },
+      });
+    },
+    [entries],
+  );
+
+  const handleCardAction = useCallback(
+    (id: string, action: string) => {
+      const entry = entries.find(candidate => candidate.id === id);
+      if (!entry) return;
+      setSelectedId(id);
+      if (action === "delete") {
+        deleteEntry(id);
+      } else if (action === "open-file") {
+        void window.electron.showFileInFolder(entry.source.path);
+      } else if (action === "play" || action === "play-next" || action === "add-to-playlist") {
+        void executeTrackAction(action, entry.track);
+      }
+    },
+    [deleteEntry, entries],
+  );
+
+  if (fixture) {
+    return (
+      <LocalMusicView
+        title={fixture.header.title}
+        lead={fixture.header.lead}
+        cards={fixture.cards}
+        note={fixture.note}
+        selectedId={fixture.cards[0].id}
+        onPlayAll={() => undefined}
+        onShuffle={() => undefined}
+        onRescan={() => undefined}
+        onDelete={() => undefined}
+        onCardPress={() => undefined}
+        onCardAction={() => undefined}
+      />
     );
-  };
+  }
 
-  const addAllToPlaylist = () => {
-    void executePlaylistBulkAction(
-      "add-all",
-      entries.map(entry => entry.track),
+  if (loading) return <PageState kind="loading" className="min-h-[420px]" />;
+  if (loadError) return <PageState kind="error" actionLabel="重新扫描" onAction={() => void scan()} />;
+  if (!localDirs.length) {
+    return (
+      <PageState
+        kind="empty"
+        title="尚未添加本地音乐目录"
+        description="选择目录后即可扫描并播放本地音乐"
+        actionLabel="添加目录"
+        onAction={() => void addDirectory()}
+      />
     );
-  };
-
-  const addDirectory = async () => {
-    const dir = await window.electron.selectDirectory();
-    if (!dir) return;
-    const next = Array.from(new Set([...(localDirs || []), dir]));
-    updateSettings({ localMusicDirs: next });
-    setSelectedDir("all");
-  };
-
-  const removeSelectedDirectory = () => {
-    if (selectedDir === "all") return;
-    onOpenConfirmModal({
-      title: "移除目录",
-      description: "仅移除列表中的目录，不会删除本地文件",
-      onConfirm: async () => {
-        const next = (localDirs || []).filter(d => d !== selectedDir);
-        updateSettings({ localMusicDirs: next });
-        setSelectedDir("all");
-        return true;
-      },
-      confirmText: "移除",
-      type: "warning",
-    });
-  };
-
-  const rescan = async () => {
-    if (!localDirs?.length) {
-      setList([]);
-      return;
-    }
-    const data = await window.electron.scanLocalMusic(localDirs);
-    setList(data);
-  };
-
-  const openFile = async (filePath: string) => {
-    await window.electron.showFileInFolder(filePath);
-  };
-
-  const deleteFile = (filePath: string) => {
-    onOpenConfirmModal({
-      title: "删除文件",
-      description: "该操作会删除本地文件且不可恢复，请谨慎操作",
-      onConfirm: async () => {
-        const ok = await window.electron.deleteLocalMusicFile(filePath);
-        if (ok) {
-          setList(prev => prev.filter(i => i.path !== filePath));
-          return true;
-        }
-        return false;
-      },
-      confirmText: "删除",
-      type: "danger",
-    });
-  };
-
-  const handleItemAction = (key: string, entry: (typeof entries)[number]) => {
-    if (key === "open") {
-      void openFile(entry.source.path);
-      return;
-    }
-    if (key === "delete") {
-      deleteFile(entry.source.path);
-      return;
-    }
-    void executeTrackAction(key as TrackActionKey, entry.track);
-  };
+  }
+  if (!cards.length) {
+    return (
+      <PageState
+        kind="empty"
+        title="当前筛选下没有本地音乐"
+        description="可以切换目录、修改搜索词或重新扫描"
+        actionLabel="重新扫描"
+        onAction={() => void scan()}
+      />
+    );
+  }
 
   return (
-    <ScrollContainer ref={scrollRef} enableBackToTop className="h-full w-full">
-      <main className="w-full py-5">
-        <PageHeader
-          title="本地音乐"
-          description={
-            localDirs?.length
-              ? `已扫描 ${localDirs.length} 个目录 · 当前显示 ${filtered.length} 首`
-              : "添加本地目录后即可扫描并播放音乐"
-          }
-          actions={
-            <Button size="sm" variant="flat" startContent={<RiFolderAddLine size={18} />} onPress={addDirectory}>
-              添加目录
-            </Button>
-          }
-        />
-        {Boolean(localDirs?.length) && (
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              {Boolean(list.length) && (
-                <Button
-                  color="primary"
-                  className="dark:text-black"
-                  startContent={<RiPlayFill size={18} />}
-                  onPress={playAll}
-                >
-                  播放全部
-                </Button>
-              )}
-
-              {Boolean(filtered.length) && (
-                <IconButton
-                  size="md"
-                  variant="flat"
-                  color="default"
-                  tooltip="添加到播放列表"
-                  onPress={addAllToPlaylist}
-                >
-                  <RiPlayListAddLine size={18} />
-                </IconButton>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <SearchButton
-                onSearch={val => {
-                  setKeyword(val);
-                }}
-              />
-              <Select
-                className="w-[200px]"
-                disallowEmptySelection
-                listboxProps={{
-                  color: "primary",
-                  hideSelectedIcon: true,
-                }}
-                items={[
-                  { key: "all", label: "全部目录" },
-                  ...(localDirs || []).map(dir => ({ key: dir, label: getLocalDirectoryName(dir) })),
-                ]}
-                selectedKeys={[selectedDir]}
-                onSelectionChange={keys => {
-                  const v = Array.from(keys as Set<string>)[0];
-                  setSelectedDir(v);
-                }}
-              >
-                {item => <SelectItem key={item.key}>{item.label as string}</SelectItem>}
-              </Select>
-              <IconButton variant="flat" size="md" color="default" tooltip="刷新" onPress={rescan}>
-                <RiRefreshLine size={18} />
-              </IconButton>
-              <IconButton
-                tooltip="移除当前目录"
-                size="md"
-                variant="flat"
-                color="default"
-                isDisabled={selectedDir === "all"}
-                onPress={removeSelectedDirectory}
-              >
-                <RiDeleteBinLine size={18} />
-              </IconButton>
-            </div>
-          </div>
-        )}
-        {Boolean(localDirs?.length) && (
-          <div className="text-foreground-500 grid w-full grid-cols-[40px_minmax(0,1fr)_100px_100px_100px_100px_40px] items-center gap-4 rounded-md px-2 py-1 text-xs">
-            <div className="text-center">#</div>
-            <div>标题</div>
-            <div className="text-right">大小</div>
-            <div className="text-right">格式</div>
-            <div className="text-right">时长</div>
-            <div className="text-right">创建时间</div>
-            <div className="text-right" />
-          </div>
-        )}
-        {filtered.length === 0 ? (
-          <Empty title={localDirs?.length ? "当前筛选下没有本地音乐" : "尚未添加本地音乐目录"} />
-        ) : (
-          <div className="relative">
-            <div
-              style={{
-                height: rowVirtualizer.getTotalSize(),
-                position: "relative",
-                width: "100%",
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map(vItem => {
-                const entry = entries[vItem.index];
-                const song = entry.source;
-
-                return (
-                  <div
-                    key={vItem.key}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: rowHeight,
-                      transform: `translateY(${vItem.start}px)`,
-                    }}
-                  >
-                    <LocalMusicItemRow
-                      data={song}
-                      isPlaying={playItem?.id === song.id}
-                      index={vItem.index + 1}
-                      onPlay={() => void executeTrackAction("play", entry.track)}
-                      onAction={key => handleItemAction(key, entry)}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </main>
-    </ScrollContainer>
+    <LocalMusicView
+      title="本地音乐"
+      lead={`${localDirs.length} 个目录 · ${items.length} 个文件 · 支持常见音频格式`}
+      cards={cards}
+      selectedId={selectedId}
+      onPlayAll={() => playAll(false)}
+      onShuffle={() => playAll(true)}
+      onRescan={() => void scan()}
+      onDelete={() => deleteEntry(selectedId)}
+      onCardPress={id => {
+        setSelectedId(id);
+        const entry = entries.find(candidate => candidate.id === id);
+        if (entry) void executeTrackAction("play", entry.track);
+      }}
+      onCardAction={handleCardAction}
+    />
   );
 };
+
 export default LocalMusicPage;

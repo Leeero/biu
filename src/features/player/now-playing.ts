@@ -12,9 +12,14 @@ import {
   SCREEN_02_PLAYLIST_DETAIL_FIXTURE,
 } from "@/ui/fixtures/screen-02-playlist-detail";
 import { SCREEN_03_WATCH_LATER_FIXTURE, WATCH_LATER_FIXTURE_NAME } from "@/ui/fixtures/screen-03-watch-later";
+import { LOCAL_MUSIC_FIXTURE_NAME, SCREEN_04_LOCAL_MUSIC_FIXTURE } from "@/ui/fixtures/screen-04-local-music";
+import { DOWNLOADS_FIXTURE_NAME, SCREEN_05_DOWNLOADS_FIXTURE } from "@/ui/fixtures/screen-05-downloads";
 import { SEARCH_FIXTURE_NAME, SCREEN_06_SEARCH_FIXTURE } from "@/ui/fixtures/screen-06-search";
 import { DISCOVER_CARD_FIXTURE_NAME, SCREEN_07_DISCOVER_CARD_FIXTURE } from "@/ui/fixtures/screen-07-discover-card";
 import { DISCOVER_LIST_FIXTURE_NAME, SCREEN_08_DISCOVER_LIST_FIXTURE } from "@/ui/fixtures/screen-08-discover-list";
+import { QUEUE_FIXTURE_NAME, SCREEN_09_QUEUE_FIXTURE } from "@/ui/fixtures/screen-09-queue";
+import { SETTINGS_FIXTURE_NAME, SCREEN_11_SETTINGS_FIXTURE } from "@/ui/fixtures/screen-11-settings";
+import { MINI_PLAYER_FIXTURE_NAME, SCREEN_12_MINI_PLAYER_FIXTURE } from "@/ui/fixtures/screen-12-mini-player";
 
 /**
  * 「正在播放」视图模型。
@@ -42,6 +47,11 @@ export const NOW_PLAYING_FIXTURES: Record<string, FixtureNowPlaying> = {
   [DISCOVER_CARD_FIXTURE_NAME]: SCREEN_07_DISCOVER_CARD_FIXTURE.nowPlaying,
   [DISCOVER_LIST_FIXTURE_NAME]: SCREEN_08_DISCOVER_LIST_FIXTURE.nowPlaying,
   [WATCH_LATER_FIXTURE_NAME]: SCREEN_03_WATCH_LATER_FIXTURE.nowPlaying,
+  [LOCAL_MUSIC_FIXTURE_NAME]: SCREEN_04_LOCAL_MUSIC_FIXTURE.nowPlaying,
+  [DOWNLOADS_FIXTURE_NAME]: SCREEN_05_DOWNLOADS_FIXTURE.nowPlaying,
+  [QUEUE_FIXTURE_NAME]: SCREEN_09_QUEUE_FIXTURE.nowPlaying,
+  [MINI_PLAYER_FIXTURE_NAME]: SCREEN_12_MINI_PLAYER_FIXTURE.nowPlaying,
+  [SETTINGS_FIXTURE_NAME]: SCREEN_11_SETTINGS_FIXTURE.nowPlaying,
 };
 
 export const useNowPlayingFixture = (): FixtureNowPlaying | null => {
@@ -97,11 +107,11 @@ export const useNowPlaying = (): NowPlaying => {
       ownerClickable: false,
       ownerMid: undefined,
       hasMultiPart: false,
-      sourceIsLocal: false,
+      sourceIsLocal: fixture.source === "local",
       // 封面:**不给地址**, 由 Artwork 回落到 playbarCover 占位 —— 见 placeholder-art.ts。
       cover: undefined,
       controlsDisabled: false,
-      badgeText: AUDIO_QUALITY_LABEL[fixture.quality],
+      badgeText: fixture.badgeText ?? (fixture.quality ? AUDIO_QUALITY_LABEL[fixture.quality] : null),
       queueCount: fixture.queueCount,
       currentTime: fixture.elapsedSeconds,
       duration: fixture.durationSeconds,

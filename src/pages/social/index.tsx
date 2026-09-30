@@ -1,7 +1,5 @@
 import { useSearchParams } from "react-router";
 
-import { Tab, Tabs } from "@heroui/react";
-
 import { getSocialTab } from "@/features/social/model";
 import DynamicFeed from "@/pages/dynamic-feed";
 import FollowList from "@/pages/follow-list";
@@ -10,7 +8,7 @@ import { PageHeader } from "@/ui/patterns/page-header";
 import { PageState } from "@/ui/states/page-state";
 
 const SocialPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const user = useUser(state => state.user);
   const selectedTab = getSocialTab(searchParams.get("tab"));
 
@@ -20,22 +18,7 @@ const SocialPage = () => {
 
   return (
     <main className="flex h-full min-h-0 w-full flex-col">
-      <div className="pt-5">
-        <PageHeader title="关注" description="查看关注的创作者和他们发布的最新音乐内容" className="mb-2" />
-        <Tabs
-          aria-label="关注栏目"
-          selectedKey={selectedTab}
-          onSelectionChange={key => {
-            const tab = getSocialTab(String(key));
-            setSearchParams(tab === "following" ? {} : { tab });
-          }}
-          variant="underlined"
-          classNames={{ tabList: "gap-6", cursor: "bg-primary", panel: "hidden" }}
-        >
-          <Tab key="following" title="关注的创作者" />
-          <Tab key="updates" title="最新动态" />
-        </Tabs>
-      </div>
+      <PageHeader title="我的关注" lead="查看关注的创作者与他们发布的最新音乐内容；分组和关注关系仍与 B 站账号同步。" />
       <div className="min-h-0 flex-1">{selectedTab === "updates" ? <DynamicFeed /> : <FollowList />}</div>
     </main>
   );

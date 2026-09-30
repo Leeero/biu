@@ -2,13 +2,102 @@
   "$schema": "https://biu.local/schemas/cplus-spec-lock.json",
   "meta": {
     "name": "Biu 2.0 · C+ 满幅剧场 · 能力可读版",
-    "version": "1.3.26",
-    "frozenAt": "2026-09-28",
+    "version": "1.3.34",
+    "frozenAt": "2026-09-29",
     "sourcePdf": "Biu 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
+      {
+        "version": "1.3.34",
+        "at": "2026-09-29",
+        "phase": "P6/P7",
+        "changes": [
+          "**剩余页面收口。**发现音乐真实路径迁移到 C+ DiscoverView / DiscoverListView，并接通音乐分区 1003 与 new/music 两种真实数据源；流行 / 鬼畜旧分区及其旧三 Tab 呈现删除。",
+          "**延展页统一。**`/history` 改用 C+ 页头、配置面板、筛选条与曲目表；`/follow` 和 `/user/:id` 的子视图改由顶栏查询路由驱动，复用统一壳层与注解带。",
+          "**清理。**删除发现音乐旧网格 / 列表 / 菜单 / 新歌自取组件，以及历史页旧网格 / 列表 / 行 / 表头 / 菜单组件；保留全部真实服务、分页、关系管理和播放下载能力。",
+          "**回归。**全量单测、生产构建、令牌字面值护栏与已冻结 12 屏视觉闸门共同作为收口出口。"
+        ]
+      },
+      {
+        "version": "1.3.33",
+        "at": "2026-09-29",
+        "phase": "P6",
+        "changes": [
+          "**屏 11 收口。**`/settings` 默认入口改为 C+ 设置总览，五行覆盖常规、播放、下载与本地、快捷键、高级与关于六组能力；原六 Tab 详细设置保留在查询参数路由中，已有表单与副作用不丢失。",
+          "**主题收敛与兼容。**默认总览固定展示深色主题，不再暴露浅色、跟随系统、自定义主色与圆角入口；旧 `themeMode` / `primaryColor` / `backgroundColor` / `borderRadius` 仍可无损读取，新增旧配置升级回归。",
+          "**壳层接线。**`/settings` 顶栏分段接入常规 / 播放 / 高级查询路由，页面复用 PageHeader、FilterBar、InfoPanel、Section、TrackTable、AnnotationBand 与标准 PlayBar。",
+          "**验收。**`--target app` PASS：L1/L2 全部达标，list / right / note 内容带覆盖率均为 100%，L3 平均亮度差 7.34（上限 12）。P6 进入延展屏阶段。"
+        ]
+      },
+      {
+        "version": "1.3.32",
+        "at": "2026-09-29",
+        "phase": "P5",
+        "changes": [
+          "**屏 12 收口。**`/mini-player` 改为双形态路由：宽窗口渲染标准壳层的迷你播放器与系统集成页，360×140 Electron 小窗继续使用原 BroadcastChannel 实时播放界面。",
+          "**能力与状态。**系统集成页接通展开迷你窗、上一首、播放暂停、关闭主窗口保持播放、快捷键设置入口；展示真实托盘菜单能力与全局快捷键冲突态，夹具播放栏接入只读 nowPlaying 视图。",
+          "**视觉结构。**三行 mini 列表、迷你播放窗 / 托盘 / 快捷键三卡与 footer 注解带落地，复用 PageHeader、FilterBar、TrackTable、AnnotationBand、AppShell 与 PlayBar。",
+          "**验收。**`--target app` PASS：L1/L2 全部达标，list / right / note 内容带覆盖率 78% / 100% / 80%，L3 平均亮度差 10.02（上限 12）。P5 三屏全部收口。"
+        ]
+      },
+      {
+        "version": "1.3.31",
+        "at": "2026-09-29",
+        "phase": "P5",
+        "changes": [
+          "**屏 10 收口。**旧全屏播放器弹层提升为 `/now-playing` 沉浸态路由，页面自带透明顶栏、封面 / 歌词 / 视频三视图、16:9 封面、信息与歌词面板，以及内嵌进度和传输控制；播放栏封面入口改为路由导航。",
+          "**状态与能力接线。**页面直接消费既有播放队列与进度 store，保留播放 / 暂停、上一首、下一首、seek、播放模式和队列导航；路由切换不重建播放状态。",
+          "**旧实现退役。**删除 full-screen-player 组件、设置面板、分P列表、全屏弹层 slice 与已失去消费方的设置 store。沉浸封面几何收敛为 649 × 365。",
+          "**验收。**`--target app` PASS：L1 底部控制带、L2 结构与内容带全部达标，L3 平均亮度差 11.96（上限 12）。"
+        ]
+      },
+      {
+        "version": "1.3.30",
+        "at": "2026-09-29",
+        "phase": "P5",
+        "changes": [
+          "**屏 09 收口。**播放队列由 HeroUI 抽屉提升为 `/queue` 独立路由页，夹具与真实 Zustand 播放队列共用 `QueueView`；旧抽屉组件、弹层 slice 与播放栏第二队列入口删除。",
+          "**真实能力接线。**顶栏全部 / 音乐视频 / 本地文件筛选、来源身份去重、播放模式、随机时保持分P顺序、二次确认清空、单项播放 / 下一首 / 置顶 / 收藏 / 移除全部接回既有 store 与弹层能力；store 新增保持 playId 不变的队列重排动作。",
+          "**播放栏与闸门。**全屏旧播放器中的队列入口改为直接导航 `/queue`；新增屏 09 nowPlaying 与第 10 页 playbarDetail 实测。",
+          "**验收。**`--target app` PASS：L1/L2 全绿，list / right / note 内容带均 100%，L3 平均亮度差 7.06（上限 12）。"
+        ]
+      },
+      {
+        "version": "1.3.29",
+        "at": "2026-09-29",
+        "phase": "P4",
+        "changes": [
+          "**屏 05 收口。**下载管理夹具与真实 IPC 队列共用 `DownloadsView`；页面切换为标准 C+ 页头、五枚操作药丸、download 列模板和四态内联进度展示，旧 HeroUI 表格及分散的 actions / progress / status-desc 实现删除。",
+          "**真实能力接线。**顶栏全部 / 音频 / 视频筛选进入 ROUTE_SEGMENTS；打开目录、暂停全部、重试全部失败、清空已完成、二次确认清空，以及单任务定位 / 暂停 / 继续 / 重试 / 删除全部继续走既有 Electron IPC。",
+          "**播放栏与视觉闸门。**新增屏 05 nowPlaying 登记和设计稿第 6 页 playbarDetail 实测，避免夹具满态而栏内无人判定。",
+          "**验收。**`--target app` PASS：L1/L2 全绿，list / right / note 内容带均 100%，L3 平均亮度差 7.30（上限 12）。"
+        ]
+      },
+      {
+        "version": "1.3.28",
+        "at": "2026-09-29",
+        "phase": "P4",
+        "changes": [
+          "**屏 04 收口。**新增逐字夹具与 `LocalMusicView`，六张格式卡只消费扫描器真实拥有的 title / format / size / duration / createdTime / dir，不伪造 artist、album 或 cover。",
+          "**真实能力接线。**扫描结果继续经 `adaptLocalMusicToTrack` 进入统一播放与批量动作；保留全部播放、随机播放、重新扫描、空态添加目录、卡片播放，以及选中卡片后二次确认删除物理文件。旧虚拟列表行与操作菜单删除。",
+          "**动态顶栏。**`/local-music` 从 DEFERRED_SEGMENTS 移入 ROUTE_SEGMENTS；夹具保留设计稿的 D/E 盘标签，真实路径由 `composeLocalMusicSegments` 注入用户目录名，query-only href 保留关键词参数。",
+          "**播放栏夹具。**FixtureNowPlaying 增加可选的 local source 与 badgeText，使本屏复现本地文件副行和「本地 · M4A」徽标，不借在线音质语义。",
+          "**验收。**`--target app` PASS：L1/L2 全绿，list / right / note 内容带均 100%，L3 平均亮度差 8.48（上限 12）。"
+        ]
+      },
+      {
+        "version": "1.3.27",
+        "at": "2026-09-29",
+        "phase": "P4",
+        "changes": [
+          "**屏 03 收口。**`src/pages/later` 已装配 `LaterView`，夹具与真实数据路径汇入同一呈现层；旧 `grid-list / list / search / menu` 四个实现删除。",
+          "**能力接线。**新增 `adaptWatchLaterToTrack` 与纯视图模型：保留 aid / bvid / cid，播放、下一首、入队、收藏、下载音频统一走 Track Action API；播放全部与随机播放走 Playlist Bulk Action。真实路径继续支持 ps=20 分页、关键词及 add_time_start / add_time_end 秒级时间范围筛选。",
+          "**路由接线。**`/later` 顶栏分段「全部 / 近 7 天 / 近 30 天」从 DEFERRED_SEGMENTS 移入 ROUTE_SEGMENTS，query-only href 保留 fixture 与关键词参数。顶栏搜索在本路由提交为 `?key=`，不再错误跳去全局搜索结果页。",
+          "**验收。**`--target app` PASS：L1 硬锚点 4/4，L2 结构带与播放栏探针全绿，list / right / note 内容带均 100%，L3 平均亮度差 8.11（上限 12）。"
+        ]
+      },
       {
         "version": "1.3.26",
         "at": "2026-09-28",
@@ -1034,7 +1123,7 @@
       "innerPadding": "6px"
     },
     "immersive": {
-      "art": "639 × 359（设计稿索引原文；原型实现 649 × 365，P5 收敛）",
+      "art": "649 × 365（P5 按最终视觉页收敛）",
       "gridGap": "47px",
       "progressY": 700,
       "timesY": 720,
@@ -1292,6 +1381,22 @@
         "enabled": true,
         "measured": "[(792, 1172)]",
         "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      },
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "屏 01 夹具提供标准正在播放内容。四枚探针按设计稿第 2 页实测登记；栏体几何与标准播放栏同源。"
       }
     },
     {
@@ -1390,6 +1495,22 @@
         "enabled": true,
         "measured": "[(792, 1172)]",
         "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      },
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "屏 04 夹具提供本地曲目的正在播放内容。四枚探针按设计稿第 5 页实测登记；栏体几何与标准播放栏同源，副行与徽标由 local fixture 驱动为本地语义。"
       }
     },
     {
@@ -1412,6 +1533,22 @@
         "enabled": true,
         "measured": "[(792, 1172)]",
         "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      },
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "屏 05 夹具提供标准正在播放内容。四枚探针按设计稿第 6 页逐项实测登记；封面、播放键与队列药丸和标准播放栏同带，playbarGap 保持设计空带。"
       }
     },
     {
@@ -1658,6 +1795,22 @@
         "enabled": true,
         "measured": "[(792, 1172)]",
         "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      },
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "屏 09 夹具提供标准正在播放内容。四枚探针按设计稿第 10 页实测登记；栏内几何与标准播放栏同源，队列药丸显示 27。"
       }
     },
     {
@@ -1699,6 +1852,22 @@
         "enabled": true,
         "measured": "[(792, 1172)]",
         "reason": "该屏设计稿的播放栏是标准态：y=856 行 / x700–1200 / 阈值 30 实测单条实心横带 [(792, 1172)]（即像素 792–1171，宽 380），与第 02/03/04/05/06/09/13 页同值。启用横向判定以看守进度条宽度与中段起点。"
+      },
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "屏 11 夹具提供标准正在播放内容。四枚探针按设计稿第 12 页实测登记，标准播放栏的封面、白色播放键、队列药丸与进度后空带均受闸门看守。"
       }
     },
     {
@@ -1718,9 +1887,25 @@
       "variants": ["note--footer", "tracklist--mini"],
       "hasRowPitch": false,
       "playbarProgress": {
-        "enabled": false,
-        "measured": "[]",
-        "reason": "**不启用**：`/mini-player` 属 P7，壳层尚未重建 —— 渲染实测顶栏 159（标准 71）、播放栏 105（标准 88）、内容左留白 0（标准 64），播放栏不是标准形态，同一窗口内取不到实心横带（`[]`）。此时判它既非「实现的错」也非「设计的错」，只是该屏还没轮到。"
+        "enabled": true,
+        "measured": "[(792, 1172)]",
+        "reason": "1.3.32 起宽窗口系统集成页已使用标准 AppShell 与 PlayBar；设计侧 y=856 / x700–1200 / 阈值 30 的实心横带为 [(792, 1172)]，与其它标准壳层页一致，恢复横向进度条闸门。"
+      },
+      "playbarDetail": {
+        "probes": ["playbarCover", "playbarPlay", "playbarPill", "playbarGap"],
+        "windows": {
+          "playbarCover": "(24, 140, 818, 894, 20)",
+          "playbarPlay": "(640, 710, 818, 894, 200)",
+          "playbarPill": "(1310, 1400, 818, 894, 20)",
+          "playbarGap": "(1176, 1194, 818, 894, 20)"
+        },
+        "measured": {
+          "playbarCover": "[[828, 883]]",
+          "playbarPlay": "[[832, 879]]",
+          "playbarPill": "[[838, 873]]",
+          "playbarGap": "[]"
+        },
+        "reason": "屏 12 夹具提供标准正在播放内容。四枚探针按设计稿第 13 页实测登记，标准播放栏的封面、白色播放键、队列药丸与进度后空带均受闸门看守。"
       }
     }
   ],
@@ -1765,11 +1950,14 @@
       "/local-music": ["全部目录", "D 盘 · Lossless", "E 盘 · Live 录音"],
       "/download-list": ["全部", "音频", "视频"],
       "/search": ["音乐视频 · 9", "创作者 · 2"],
-      "/": ["音乐分区", "单一模块"],
+      "/": ["我的歌单", "我收藏的", "发现音乐"],
       "/queue": ["全部", "音乐视频", "本地文件"],
       "/settings": ["常规", "播放", "高级"],
       "/mini-player": ["迷你播放器", "托盘", "全局快捷键"],
-      "/now-playing": ["封面", "歌词", "视频"]
+      "/now-playing": ["封面", "歌词", "视频"],
+      "/history": ["全部", "近 7 天", "近 30 天"],
+      "/follow": ["关注的创作者", "最新动态"],
+      "/user/:id": ["音乐内容", "播放列表", "动态"]
     },
     "labelSources": {
       "/collection/:id": "尾巴「 · 11 / · 21 / · 31」是 **CollectionType 类型码**（11 收藏夹 / 21 视频合集 / 31 视频系列），是**标签自身的一部分**，属静态值 —— **不是集合数量**。取证见 meta.revisions 1.3.8（三条证据：页导语「仅数据类型不同」、三个数字与枚举逐一相等、激活项与该屏 collectionType 同源）。",
@@ -1785,7 +1973,7 @@
     },
     "topbarNote": {
       "text": "已下线: 流行 / 鬼畜",
-      "routes": ["/"],
+      "routes": [],
       "placement": "**分段容器内部**、分段之后的末项（1.3.18 订正）。设计稿第 8 页顶栏实测：容器亮度区一直延伸到 x425，note 文字（x310–420）**在容器内**；x430 起立刻回落到顶栏底 22.1。原型把它排在 `.tabgroup` 之外（兄弟节点）、且是无底裸文字 —— 两处都与设计稿不符。",
       "fillRule": "**无独立底色**，与未选中分段同处 `--biu-veil-9` 容器底（1.3.18 订正 1.3.16 的「自带底的片」）。按 25% 暗分位剥离墨迹后实测：「单一模块」区 48.1、「已下线…」区 45.2 / 46.2、容器其余处 47.9 —— 三者同档，差值是文字密度（4 字对 9 字）而非多一层底。1.3.16 记的「片上底色 50–65 对容器 27–45」是墨迹污染的读数。",
       "containerToken": "--biu-veil-9",
@@ -1831,9 +2019,9 @@
   "immersiveGeometry": {
     "artLeft": 64,
     "artTop": 60,
-    "artDesignSize": "639 × 359",
+    "artDesignSize": "649 × 365",
     "prototypeSize": "649 × 365",
-    "knownResidual": "沉浸态封面宽高在自动测量中与背景辉光区间重叠，无法可靠自动取数，因此只锚定左缘与上缘。原型实现宽 649，设计稿索引原文为 639，差 10px（1.6%），已登记为 P5 待收敛项。",
+    "knownResidual": "沉浸态封面宽高在自动测量中与背景辉光区间重叠，无法稳定自动取数，因此 L1 只强制锚定可可靠观测的左缘与上缘；页面几何已在 P5 按最终视觉页收敛为 649 × 365。",
     "progressY": 700,
     "bottomTop": 752
   },

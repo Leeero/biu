@@ -72,6 +72,49 @@ body,
   overflow: hidden;
 }
 
+/* --------------------------------------------------------------------------
+   桌面端滚动条
+
+   Electron 在不同系统上会混用 Chromium 原生滚动条与 OverlayScrollbars。
+   两套实现统一为 10px 命中区 + 4px 常态滑块：鼠标容易抓取，但视觉上不像网页
+   默认的粗灰轨道。轨道始终透明，只有滑块在 hover / active 时增强对比。
+   ----------------------------------------------------------------------- */
+
+* {
+  scrollbar-color: var(--biu-scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  min-height: 36px;
+  border: 3px solid transparent;
+  border-radius: var(--biu-radius-pill);
+  background: var(--biu-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  border-width: 2px;
+  background: var(--biu-scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  border-width: 2px;
+  background: var(--biu-scrollbar-thumb-active);
+  background-clip: padding-box;
+}
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -87,11 +130,21 @@ body,
   color: var(--biu-color-brand);
 }
 
-.os-scrollbar {
+.os-theme-biu {
   --os-size: 10px;
-  --os-handle-border-radius: 2px;
-  --os-handle-bg: hsl(var(--heroui-default-300) / 90%);
-  --os-handle-bg-hover: hsl(var(--heroui-default-400) / 100%);
-
-  padding: 0;
+  --os-padding-perpendicular: 3px;
+  --os-padding-axis: 2px;
+  --os-track-border-radius: var(--biu-radius-pill);
+  --os-track-bg: transparent;
+  --os-track-bg-hover: transparent;
+  --os-track-bg-active: transparent;
+  --os-handle-border-radius: var(--biu-radius-pill);
+  --os-handle-bg: var(--biu-scrollbar-thumb);
+  --os-handle-bg-hover: var(--biu-scrollbar-thumb-hover);
+  --os-handle-bg-active: var(--biu-scrollbar-thumb-active);
+  --os-handle-min-size: 36px;
+  --os-handle-perpendicular-size: 100%;
+  --os-handle-perpendicular-size-hover: 100%;
+  --os-handle-perpendicular-size-active: 100%;
+  --os-handle-interactive-area-offset: 3px;
 }

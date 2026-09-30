@@ -5,7 +5,7 @@ import { twMerge } from "tailwind-merge";
 import { Badge, type BadgeVariant } from "@/ui/primitives/badge";
 
 /** 本地音频格式。取值即领域里的扩展名，决定文件名颜色。 */
-export type AudioFormat = "flac" | "wav" | "aiff" | "m4a" | "mp3" | "wma";
+export type AudioFormat = "flac" | "wav" | "aiff" | "m4a" | "mp3" | "wma" | "aac" | "ogg";
 
 /**
  * 格式 → 文字色。每个格式一个色板条目（`--biu-fmt-*`），
@@ -20,6 +20,8 @@ const FORMAT_COLOR: Record<AudioFormat, string> = {
   m4a: "text-[rgb(var(--biu-fmt-m4a))]",
   mp3: "text-[rgb(var(--biu-fmt-mp3))]",
   wma: "text-[rgb(var(--biu-fmt-wma))]",
+  aac: "text-[rgb(var(--biu-fmt-m4a))]",
+  ogg: "text-[rgb(var(--biu-fmt-wav))]",
 };
 
 interface FormatCardProps {

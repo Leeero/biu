@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 
-import { Spinner, Tab, Tabs } from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import { useRequest } from "ahooks";
 
 import { UserRelation } from "@/common/constants/relation";
@@ -23,6 +23,7 @@ import SpaceInfo from "./space-info";
  */
 const UserProfile = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const user = useUser(s => s.user);
   const isSelf = String(user?.mid) === id;
   const scrollRef = useRef<ScrollRefObject>(null);
@@ -114,6 +115,8 @@ const UserProfile = () => {
       ),
     },
   ].filter(item => !item.hidden);
+  const requestedTab = searchParams.get("tab") ?? "video";
+  const activeTab = tabs.find(item => item.key === requestedTab) ?? tabs[0];
 
   if (loading) {
     return (
@@ -132,27 +135,7 @@ const UserProfile = () => {
         refreshRelation={refreshRelation}
       />
       {relationWithMe !== UserRelation.Blocked && (
-        <div className="mx-auto w-full max-w-[1440px] px-6 py-5 lg:px-8">
-          <Tabs
-            radius="md"
-            classNames={{
-              tabList: "gap-6 border-b border-divider px-0",
-              cursor: "w-full bg-primary",
-              tab: "h-11 px-1",
-              tabContent:
-                "text-default-500 group-data-[selected=true]:text-foreground group-data-[selected=true]:font-medium",
-              panel: "px-0 py-6",
-            }}
-            aria-label="创作者内容栏目"
-            variant="underlined"
-          >
-            {tabs.map(item => (
-              <Tab key={item.key} title={item.label}>
-                {item.content}
-              </Tab>
-            ))}
-          </Tabs>
-        </div>
+        <div className="mx-auto w-full max-w-[1440px] px-6 py-5 lg:px-8">{activeTab?.content}</div>
       )}
     </ScrollContainer>
   );

@@ -1,75 +1,106 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 
-import {
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  Radio,
-  RadioGroup,
-  TableRow,
-  Tooltip,
-} from "@heroui/react";
-import { RiDeleteBinLine, RiExternalLinkLine, RiFolderLine } from "@remixicon/react";
 import { filesize } from "filesize";
 
 import { formatMillisecond } from "@/common/utils/time";
 import { openBiliVideoLink } from "@/common/utils/url";
-import Empty from "@/components/empty";
-import Image from "@/components/image";
-import ScrollContainer from "@/components/scroll-container";
-import { countDownloadStatuses, createDownloadTaskViews, type DownloadFilter } from "@/features/downloads/model";
+import { DownloadsView, downloadColumns } from "@/features/downloads/downloads-view";
+import { useDownloadsFixtureData } from "@/features/downloads/fixture";
+import {
+  countDownloadStatuses,
+  createDownloadTaskViews,
+  getDownloadTaskCapabilities,
+  type DownloadFilter,
+} from "@/features/downloads/model";
 import { useModalStore } from "@/store/modal";
 import { useSettings } from "@/store/settings";
-import { PageHeader } from "@/ui/patterns/page-header";
+import { PageState } from "@/ui/states/page-state";
 
-import DownloadActions from "./actions";
-import DownloadProgress from "./progress";
+const STATUS_LABEL: Record<MediaDownloadStatus, string> = {
+  waiting: "等待中",
+  downloading: "下载中",
+  downloadPaused: "下载暂停",
+  merging: "合并分块中",
+  mergePaused: "合并暂停",
+  converting: "转换中",
+  convertPaused: "转换暂停",
+  completed: "已完成 · 可定位文件",
+  failed: "任务出错 · 可重试",
+};
+
+const getProgress = (task: MediaDownloadTask) => {
+  if (["completed", "failed", "waiting"].includes(task.status)) return undefined;
+  if (task.status === "merging" || task.status === "mergePaused") return task.mergeProgress ?? 0;
+  if (task.status === "converting" || task.status === "convertPaused") return task.convertProgress ?? 0;
+  return task.downloadProgress ?? 0;
+};
+
+const getStatusLabel = (task: MediaDownloadTask) => {
+  const progress = getProgress(task);
+  return progress === undefined ? STATUS_LABEL[task.status] : `${STATUS_LABEL[task.status]} · ${Math.round(progress)}%`;
+};
+
+const getQuality = (task: MediaDownloadTask) => {
+  if (task.outputFileType === "video") return task.videoResolution || "视频";
+  if (task.audioCodecs === "flac") return "无损";
+  if (task.audioCodecs?.includes("ec-3")) return "杜比";
+  return "自动";
+};
 
 const DownloadList = () => {
-  const downloadPath = useSettings(s => s.downloadPath);
-  const [downloadList, setDownloadList] = useState<MediaDownloadTask[]>([]);
-  const [fileType, setFileType] = useState<DownloadFilter>("all");
-  const onOpenConfirmModal = useModalStore(state => state.onOpenConfirmModal);
-  const taskViews = useMemo(() => createDownloadTaskViews(downloadList, fileType), [downloadList, fileType]);
-  const statusCounts = useMemo(() => countDownloadStatuses(downloadList), [downloadList]);
+  const fixture = useDownloadsFixtureData();
+  const [params] = useSearchParams();
+  const downloadPath = useSettings(state => state.downloadPath);
+  const [tasks, setTasks] = useState<MediaDownloadTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const filter = (params.get("type") ?? "all") as DownloadFilter;
+
+  const load = useCallback(async () => {
+    if (fixture) return;
+    setLoading(true);
+    setFailed(false);
+    try {
+      setTasks(await window.electron.getMediaDownloadTaskList());
+    } catch {
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [fixture]);
 
   useEffect(() => {
-    const initList = async () => {
-      const list = await window.electron.getMediaDownloadTaskList();
-      if (list.length) {
-        setDownloadList(list);
-      }
-    };
-
-    initList();
-
-    const removeListener = window.electron.syncMediaDownloadTaskList(payload => {
-      if (payload?.type === "full") {
-        setDownloadList(payload.data as MediaDownloadTask[]);
-      } else if (payload?.type === "update") {
-        setDownloadList(prev => {
-          const updateTasks = payload.data;
-          return prev.map(item => {
-            const updateTask = updateTasks.find(t => t.id === item.id);
-            return updateTask ? { ...item, ...updateTask } : item;
-          });
-        });
+    void load();
+    if (fixture) return;
+    return window.electron.syncMediaDownloadTaskList(payload => {
+      if (payload?.type === "full") setTasks(payload.data as MediaDownloadTask[]);
+      if (payload?.type === "update") {
+        setTasks(previous => previous.map(task => payload.data.find(item => item.id === task.id) ?? task));
       }
     });
+  }, [fixture, load]);
 
-    return () => {
-      removeListener();
-    };
-  }, []);
+  const views = useMemo(() => createDownloadTaskViews(tasks, filter), [filter, tasks]);
+  const counts = useMemo(() => countDownloadStatuses(tasks), [tasks]);
+  const rows = useMemo(
+    () =>
+      views.map(({ source }, index) => ({
+        id: source.id,
+        index: index + 1,
+        title: source.title,
+        subtitle: `${getQuality(source)} · ${source.outputFileType === "audio" ? "音频" : "视频"} · ${source.audioCodecs?.toUpperCase() || (source.outputFileType === "video" ? "MP4" : "音频")} · ${source.createdTime ? formatMillisecond(source.createdTime) : "时间未知"}`,
+        status: getStatusLabel(source),
+        progress: getProgress(source),
+        size: source.totalBytes ? filesize(source.totalBytes) : "—",
+        art: source.cover,
+        artKey: source.id,
+      })),
+    [views],
+  );
 
-  const clearDownloadList = () => {
-    onOpenConfirmModal({
+  const confirmClear = useCallback(() => {
+    useModalStore.getState().onOpenConfirmModal({
       title: "确认清空全部下载记录？",
       description: "进行中的任务也会被移除，该操作无法撤销",
       confirmText: "清空",
@@ -79,157 +110,115 @@ const DownloadList = () => {
         return true;
       },
     });
-  };
+  }, []);
 
-  const openDownloadDir = async () => {
-    await window.electron.openDirectory(downloadPath);
-  };
+  const runTaskAction = useCallback(
+    async (id: string, action: string) => {
+      const task = tasks.find(item => item.id === id);
+      if (!task) return;
+      const capability = getDownloadTaskCapabilities(task);
+      if (action === "open" && capability.canOpen && task.savePath)
+        await window.electron.showFileInFolder(task.savePath);
+      if (action === "pause" && capability.canPause) await window.electron.pauseMediaDownloadTask(id);
+      if (action === "resume" && capability.canResume) await window.electron.resumeMediaDownloadTask(id);
+      if (action === "retry" && capability.canRetry) await window.electron.retryMediaDownloadTask(id);
+      if (action !== "delete" || !capability.canDelete) return;
+      if (!capability.confirmBeforeDelete) {
+        await window.electron.cancelMediaDownloadTask(id);
+        return;
+      }
+      useModalStore.getState().onOpenConfirmModal({
+        title: "确认删除当前任务？",
+        description: "当前任务尚未完成，删除后无法恢复",
+        confirmText: "删除",
+        type: "danger",
+        onConfirm: async () => {
+          await window.electron.cancelMediaDownloadTask(id);
+          return true;
+        },
+      });
+    },
+    [tasks],
+  );
 
-  const getFileQuality = (item: MediaDownloadTask) => {
-    if (item.outputFileType === "video") {
-      return item.videoResolution
-        ? `${item.videoResolution}${item.videoFrameRate ? `@${item.videoFrameRate}` : ""}`
-        : "";
-    }
+  if (fixture) {
+    return (
+      <DownloadsView
+        title={fixture.header.title}
+        lead={fixture.header.lead}
+        pills={fixture.filterPills.map((pill, index) => ({ key: String(index), ...pill, variant: pill.kind }))}
+        sectionTitle={fixture.section.title}
+        columns={downloadColumns(fixture.section.head)}
+        rows={fixture.tasks}
+        note={fixture.note}
+        onPillPress={() => undefined}
+        onRowPress={() => undefined}
+        onRowAction={() => undefined}
+      />
+    );
+  }
 
-    if (item.audioCodecs === "flac") {
-      return "flac";
-    }
+  if (loading) return <PageState kind="loading" className="min-h-[420px]" />;
+  if (failed) return <PageState kind="error" actionLabel="重新加载" onAction={() => void load()} />;
 
-    if (item.audioCodecs?.includes("ec-3")) {
-      return "杜比音频";
-    }
-
-    if (item.audioBandwidth) {
-      return `${Math.round(item.audioBandwidth / 1000)} kbps`;
-    }
-
-    return "";
-  };
+  const running = counts.downloading + counts.processing;
+  const pills = [
+    { key: "open-dir", label: `打开下载目录${downloadPath ? ` · ${downloadPath}` : ""}`, variant: "primary" as const },
+    {
+      key: "pause-all",
+      label: "暂停全部",
+      variant: "secondary" as const,
+      disabled: !tasks.some(task => task.status === "downloading"),
+    },
+    {
+      key: "retry-all",
+      label: "重试全部失败",
+      variant: "neutral" as const,
+      disabled: !tasks.some(task => task.status === "failed"),
+    },
+    {
+      key: "clear-completed",
+      label: "清空已完成",
+      variant: "neutral" as const,
+      disabled: !tasks.some(task => task.status === "completed"),
+    },
+    { key: "clear", label: "清空记录 · 二次确认", variant: "danger" as const, disabled: !tasks.length },
+  ];
 
   return (
-    <ScrollContainer enableBackToTop className="h-full w-full">
-      <main className="mx-auto w-full max-w-[1440px] px-6 py-5">
-        <PageHeader
-          title="下载管理"
-          description={`${downloadList.length} 个任务 · ${statusCounts.downloading + statusCounts.processing} 个进行中 · ${statusCounts.completed} 个已完成`}
-          actions={
-            <Button
-              className="max-w-[320px]"
-              variant="flat"
-              size="sm"
-              onPress={openDownloadDir}
-              startContent={<RiFolderLine size={18} />}
-            >
-              <span className="truncate">{downloadPath || "打开下载目录"}</span>
-            </Button>
-          }
-        />
-        <Card
-          radius="lg"
-          shadow="none"
-          className="border border-[rgb(var(--biu-color-border)/0.08)] bg-[rgb(var(--biu-color-surface-raised))]"
-        >
-          <CardBody>
-            <div className="w-full overflow-x-auto">
-              <Table
-                fullWidth
-                radius="md"
-                aria-label="下载列表"
-                removeWrapper
-                topContent={
-                  <div className="flex justify-between">
-                    <RadioGroup
-                      orientation="horizontal"
-                      value={fileType}
-                      onValueChange={value => setFileType(value as DownloadFilter)}
-                      classNames={{
-                        wrapper: "gap-4",
-                      }}
-                    >
-                      <Radio value="all">全部</Radio>
-                      <Radio value="audio">音频</Radio>
-                      <Radio value="video">视频</Radio>
-                    </RadioGroup>
-                    {Boolean(downloadList.length) && (
-                      <Tooltip content="清空记录" closeDelay={0}>
-                        <Button size="sm" isIconOnly onPress={clearDownloadList}>
-                          <RiDeleteBinLine size={18} />
-                        </Button>
-                      </Tooltip>
-                    )}
-                  </div>
-                }
-                classNames={{
-                  th: "first:rounded-s-medium last:rounded-e-medium",
-                }}
-              >
-                <TableHeader className="rounded-medium">
-                  <TableColumn width={350}>文件</TableColumn>
-                  <TableColumn align="center">状态</TableColumn>
-                  <TableColumn width={120} align="center">
-                    大小
-                  </TableColumn>
-                  <TableColumn width={120} align="center">
-                    下载时间
-                  </TableColumn>
-                  <TableColumn width={120} align="center">
-                    操作
-                  </TableColumn>
-                </TableHeader>
-                <TableBody
-                  items={taskViews}
-                  emptyContent={<Empty title={downloadList.length ? "当前筛选下没有任务" : "暂无下载任务"} />}
-                >
-                  {view => {
-                    const item = view.source;
-                    const quality = getFileQuality(item);
-
-                    return (
-                      <TableRow key={view.task.id}>
-                        <TableCell className="max-w-[280px] truncate">
-                          <div className="flex items-center space-x-2">
-                            <Image radius="md" src={item.cover} width={48} height={48} className="mr-2 object-cover" />
-                            <div className="flex min-w-0 flex-1 flex-col items-start space-y-1 overflow-hidden">
-                              <div
-                                className="group flex max-w-full min-w-0 cursor-pointer items-center space-x-1 hover:underline"
-                                onClick={() =>
-                                  openBiliVideoLink({
-                                    type: item.sid ? "audio" : "mv",
-                                    bvid: item.bvid,
-                                    sid: item.sid,
-                                  })
-                                }
-                              >
-                                <span className="min-w-0 flex-auto truncate">{item.title}</span>
-                                <RiExternalLinkLine className="w-0 flex-none group-hover:w-[16px]" />
-                              </div>
-                              {Boolean(quality) && (
-                                <Chip size="sm" radius="sm" variant="flat">
-                                  {quality}
-                                </Chip>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <DownloadProgress data={item} />
-                        </TableCell>
-                        <TableCell>{item.totalBytes ? filesize(item.totalBytes) : "-"}</TableCell>
-                        <TableCell>{item.createdTime ? formatMillisecond(item.createdTime) : "-"}</TableCell>
-                        <TableCell>
-                          <DownloadActions data={item} />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  }}
-                </TableBody>
-              </Table>
-            </div>
-          </CardBody>
-        </Card>
-      </main>
-    </ScrollContainer>
+    <DownloadsView
+      title="下载管理"
+      lead="查看下载进度并管理正在进行或已完成的任务。"
+      pills={pills}
+      sectionTitle={`${tasks.length} 个任务 · ${running} 个进行中`}
+      columns={downloadColumns(["#", "文件", "状态", "大小"])}
+      rows={rows}
+      onPillPress={key => {
+        if (key === "open-dir") void window.electron.openDirectory(downloadPath);
+        if (key === "pause-all")
+          void Promise.all(
+            tasks
+              .filter(task => task.status === "downloading")
+              .map(task => window.electron.pauseMediaDownloadTask(task.id)),
+          );
+        if (key === "retry-all")
+          void Promise.all(
+            tasks.filter(task => task.status === "failed").map(task => window.electron.retryMediaDownloadTask(task.id)),
+          );
+        if (key === "clear-completed")
+          void Promise.all(
+            tasks
+              .filter(task => task.status === "completed")
+              .map(task => window.electron.cancelMediaDownloadTask(task.id)),
+          );
+        if (key === "clear") confirmClear();
+      }}
+      onRowPress={id => {
+        const task = tasks.find(item => item.id === id);
+        if (task) openBiliVideoLink({ type: task.sid ? "audio" : "mv", bvid: task.bvid, sid: task.sid });
+      }}
+      onRowAction={(id, action) => void runTaskAction(id, action)}
+    />
   );
 };
 

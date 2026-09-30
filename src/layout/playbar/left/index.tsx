@@ -41,7 +41,7 @@ const LeftControl = () => {
   const { title, sub, ownerClickable, ownerMid, hasMultiPart, sourceIsLocal, cover, badgeText } = useNowPlaying();
 
   return (
-    <div className="flex h-full items-center gap-[var(--biu-playbar-meta-gap)]">
+    <div className="flex h-full min-w-0 items-center gap-[var(--biu-playbar-meta-gap)] overflow-hidden">
       <button
         type="button"
         aria-label="打开全屏播放器"
@@ -62,10 +62,10 @@ const LeftControl = () => {
         </span>
       </button>
 
-      <div className="flex max-w-[var(--biu-playbar-meta-max-w)] min-w-0 flex-col items-start gap-[var(--biu-playbar-title-gap)]">
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-[var(--biu-playbar-title-gap)] overflow-hidden">
         <span
           title={title}
-          className="w-full truncate text-[length:var(--biu-type-list-title-size)] font-semibold text-[rgb(var(--biu-text-primary))]"
+          className="block w-full max-w-full truncate text-[length:var(--biu-type-list-title-size)] font-semibold text-[rgb(var(--biu-text-primary))]"
         >
           {title}
         </span>
@@ -98,7 +98,7 @@ const LeftControl = () => {
         「是否会渲染」的判据，属独立改动；该 21px 无视觉后果（见 spec-lock
         `geometry.playbar.left.rule`），本轮不改。
       */}
-      <div className="flex flex-none items-center gap-0.5">
+      <div className="hidden flex-none items-center gap-0.5 min-[1600px]:flex">
         {hasMultiPart && <PageListDrawer />}
         {Boolean(user?.isLogin) && !sourceIsLocal && <MusicFavButton />}
         {!sourceIsLocal && <MusicMoreMenu />}

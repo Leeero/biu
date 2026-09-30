@@ -1,8 +1,9 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 
-import ScrollContainer from "@/components/scroll-container";
+import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
 import { FilterBar } from "@/ui/patterns/filter-bar";
 import { InfoPanel } from "@/ui/patterns/info-panel";
+import { InlineProgress } from "@/ui/patterns/inline-progress";
 import { PageHeader } from "@/ui/patterns/page-header";
 import { Section } from "@/ui/patterns/section";
 import {
@@ -38,6 +39,8 @@ export interface LaterTrackRow {
   cell: string;
   /** 第四列「进度」：62% / 未看 / 时长。 */
   progress: string;
+  /** 仍在观看中的量化进度；未看不画条，已看完为 100。 */
+  progressPercent?: number;
   /** 真实封面地址（真实路径）。夹具不用它，走 placeholder。 */
   art?: string;
   /** 稳定占位键（真实路径用领域 ID）。 */
@@ -62,6 +65,8 @@ export interface LaterViewProps {
   demoActionRowIds: string[];
   onPillPress: (pill: LaterViewPill) => void;
   onRowAction: (row: LaterTrackRow, actionKey: string) => void;
+  scrollRef?: RefObject<ScrollRefObject | null>;
+  onReachEnd?: () => void;
 }
 
 /**
@@ -109,8 +114,10 @@ export const LaterView = ({
   demoActionRowIds,
   onPillPress,
   onRowAction,
+  scrollRef,
+  onReachEnd,
 }: LaterViewProps) => (
-  <ScrollContainer enableBackToTop className="h-full w-full">
+  <ScrollContainer enableBackToTop ref={scrollRef} onReachEnd={onReachEnd} className="h-full w-full">
     <div className="w-full">
       <PageHeader
         title={title}
@@ -143,7 +150,19 @@ export const LaterView = ({
                 <TrackText title={row.title} subtitle={row.subtitle} />
               </TrackMain>
               <TrackCell>{row.cell}</TrackCell>
-              <TrackCell align="end">{row.progress}</TrackCell>
+              <TrackCell align="end">
+                {row.progressPercent === undefined ? (
+                  row.progress
+                ) : (
+                  <InlineProgress
+                    label={row.progress}
+                    percent={row.progressPercent}
+                    orientation="inline"
+                    barWidth="96px"
+                    className="justify-end"
+                  />
+                )}
+              </TrackCell>
               {demoActionRowIds.includes(row.id) && (
                 <TrackTableActions
                   actions={rowActions.map(action => ({

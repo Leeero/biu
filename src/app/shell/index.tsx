@@ -65,7 +65,11 @@ export const AppShell = ({ chrome = "default", topbar, player, children }: AppSh
           layout.contentInset && "px-[var(--biu-layout-gutter)] pt-[var(--biu-layout-content-pt)]",
         )}
       >
-        {children}
+        {layout.contentInset ? (
+          <div className="mx-auto h-full w-full max-w-[var(--biu-content-max-width)]">{children}</div>
+        ) : (
+          children
+        )}
       </main>
 
       {layout.hasPlayer && (

@@ -28,7 +28,10 @@ export interface FixtureNowPlaying {
    * dolby 杜比 30250 / hd 高清 30280）。设计稿第 01/02 页是无损，第 06 页（屏 06）
    * 是高清 —— 三档都是 `audioQualitySort` 里的既有码值。
    */
-  quality: FixtureQualityKind;
+  quality?: FixtureQualityKind;
+  /** 本地文件夹具不展示在线音质，而展示本地格式徽标。 */
+  source?: "local";
+  badgeText?: string;
   /** 已播秒数。82 ⇒ 设计稿的「01:22」。 */
   elapsedSeconds: number;
   /** 总时长秒数。228 ⇒ 设计稿的「03:48」。 */

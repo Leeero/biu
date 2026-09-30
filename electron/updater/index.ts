@@ -66,6 +66,11 @@ function setupAutoUpdater({ getMainWindow }: { getMainWindow: () => BrowserWindo
     });
   });
 
+  // 开发环境由 HMR 提供代码更新，不应在每次 `pnpm dev` 启动时访问 GitHub
+  // Releases。保留上面的配置与事件监听，使设置页的“手动检查更新”仍可显式
+  // 调用 IPC；这里只禁止无用户操作的启动检查和每小时轮询。
+  if (isDev) return;
+
   void checkForUpdatesSafely();
   checkForUpdatesInterval = setInterval(
     () => {

@@ -16,13 +16,11 @@ import { type MenuItemProps } from "@/components/menu/menu-item";
 /**
  * 一级导航。
  *
- * 决策 3 移除侧栏后，这张表从「侧栏菜单项」变成「头像菜单的导航组」——
- * 名字保留 `DefaultMenuList` 是因为设置页的「系统默认菜单」编辑器
- * （`pages/settings/menu-settings.tsx`）按这个形状读写 `hiddenMenuKeys`，
- * 改名会让一个不相关的功能跟着改动。形状不变，语义已变。
+ * 这张表仍是设置页「系统默认菜单」编辑器的数据源；实际的常驻一级导航契约
+ * 由 `layout/route-shell.ts` 提供。名字与形状暂时保留，避免菜单显隐设置迁移时
+ * 破坏已有用户配置。
  *
- * `needLogin` 表示未登录时不展示；`hiddenMenuKeys` 里出现该 href 时同样不展示。
- * 过滤逻辑见 `layout/topbar/avatar-menu.tsx`。
+ * `needLogin` 与 `hiddenMenuKeys` 仅用于设置页的菜单配置兼容。
  */
 export const DefaultMenuList: (MenuItemProps & { needLogin?: boolean })[] = [
   {

@@ -56,21 +56,24 @@ export interface TopbarSegment {
  * 的死角——这正是重构方案 §3.3 的兜底要求。
  */
 export const DEFAULT_NAV_SEGMENTS: TopbarSegment[] = [
-  { label: "我的音乐库", href: "/library" },
   { label: "发现音乐", href: "/" },
-  { label: "B站历史", href: "/history" },
-  { label: "我的关注", href: "/follow" },
-  { label: "设置", href: "/settings" },
+  { label: "我的音乐", href: "/library" },
+  { label: "稍后播放", href: "/later" },
+  { label: "本地音乐", href: "/local-music" },
+  { label: "下载管理", href: "/download-list" },
+];
+
+/** 用户资产与发现的主入口。接口来源只属于发现页内部的内容切换，不能占用全局导航。 */
+const LIBRARY_SEGMENTS: TopbarSegment[] = [
+  { key: "created", label: "我的歌单", href: "/library?tab=created" },
+  { key: "collected", label: "我收藏的", href: "/library?tab=collected" },
 ];
 
 /**
  * 壳层状态的路由契约。未列出的路由一律 `default`。
  *
- * ⚠️ 已知落差（P5 处理）：`/mini-player` 在 `routes.tsx` 里是 `<Layout />` **之外**的
- * 顶层路由，而 `resolveRouteShell` 只被 `<Layout />` 调用——所以这一条 `bare` 现在
- * **取不到**，迷你播放器窗口实际由 `pages/mini-player` 自己独立排版。保留它是为了
- * 声明目标形态：P5 重做迷你播放器时把它纳入 `<Layout />`，由 `AppShell chrome="bare"`
- * 提供「只给容器、不给顶栏与播放栏」的布局。走查已验证：本页此刻无 `#main-content`。
+ * `/mini-player` 是双形态顶层路由：360×140 Electron 小窗自行排版；宽窗口的系统集成页
+ * 在页面内部组合标准 AppShell。这里保留 `bare`，用于声明独立小窗不继承主窗口常驻层。
  */
 export const SHELL_CHROME_BY_ROUTE: Readonly<Record<string, ShellChrome>> = {
   "/now-playing": "immersive",
@@ -132,6 +135,42 @@ const collectionTypeSegment = (type: CollectionType, label: string): TopbarSegme
  * `cplus-spec-lock.json` 的 `topbarSegments` 全部路由，因此不会漏掉任何一屏。
  */
 export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
+  "/library": {
+    segments: LIBRARY_SEGMENTS,
+    activeKey: search => (search.get("tab") === "collected" ? "collected" : "created"),
+  },
+  "/queue": {
+    segments: [
+      { key: "all", label: "全部", href: "?source=all" },
+      { key: "online", label: "音乐视频", href: "?source=online" },
+      { key: "local", label: "本地文件", href: "?source=local" },
+    ],
+    activeKey: search => search.get("source") ?? "all",
+  },
+  "/download-list": {
+    segments: [
+      { key: "all", label: "全部", href: "?type=all" },
+      { key: "audio", label: "音频", href: "?type=audio" },
+      { key: "video", label: "视频", href: "?type=video" },
+    ],
+    activeKey: search => search.get("type") ?? "all",
+  },
+  "/local-music": {
+    segments: [
+      { key: "all", label: "全部目录", href: "?dir=all" },
+      { key: "0", label: "D 盘 · Lossless", href: "?dir=0" },
+      { key: "1", label: "E 盘 · Live 录音", href: "?dir=1" },
+    ],
+    activeKey: search => search.get("dir") ?? "all",
+  },
+  "/later": {
+    segments: [
+      { key: "all", label: "全部", href: "?range=all" },
+      { key: "7d", label: "近 7 天", href: "?range=7d" },
+      { key: "30d", label: "近 30 天", href: "?range=30d" },
+    ],
+    activeKey: search => search.get("range") ?? "all",
+  },
   "/collection/:id": {
     segments: [
       collectionTypeSegment(CollectionType.Favorite, "收藏夹 · 11"),
@@ -152,31 +191,71 @@ export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
     // 设计稿里「音乐视频」是激活段，缺省 video。
     activeKey: search => search.get("view") ?? "video",
   },
+  "/settings": {
+    segments: [
+      { key: "general", label: "常规", href: "?tab=general" },
+      { key: "playback", label: "播放", href: "?tab=playback" },
+      { key: "advanced", label: "高级", href: "?tab=advanced" },
+    ],
+    activeKey: search => {
+      const tab = search.get("tab");
+      if (tab === "playback") return "playback";
+      if (tab === "advanced" || tab === "about" || tab === "download" || tab === "shortcut") return "advanced";
+      return "general";
+    },
+  },
+  "/history": {
+    segments: [
+      { key: "all", label: "全部", href: "?range=all" },
+      { key: "7d", label: "近 7 天", href: "?range=7d" },
+      { key: "30d", label: "近 30 天", href: "?range=30d" },
+    ],
+    activeKey: search => search.get("range") ?? "all",
+  },
+  "/follow": {
+    segments: [
+      { key: "following", label: "关注的创作者", href: "?tab=following" },
+      { key: "updates", label: "最新动态", href: "?tab=updates" },
+    ],
+    activeKey: search => search.get("tab") ?? "following",
+  },
+  "/user/:id": {
+    segments: [
+      { key: "video", label: "音乐内容", href: "?tab=video" },
+      { key: "union", label: "播放列表", href: "?tab=union" },
+      { key: "dynamic", label: "动态", href: "?tab=dynamic" },
+    ],
+    activeKey: search => search.get("tab") ?? "video",
+  },
 };
 
 /** 待声明的分段组：路由 pattern → 承接阶段与原因。只减不增。 */
 export const DEFERRED_SEGMENTS: Readonly<Record<string, { phase: string; reason: string }>> = {
-  "/": {
-    phase: "P3",
-    reason:
-      "两段是**数据源**切换（音乐分区 = rid 1003 的分区推荐 / 单一模块 = new/music），" +
-      "不是卡片与列表 —— 那个是筛选条第 5 枚「显示模式」的档。标签本身是静态的（真值 " +
-      "`topbarSegments.byRoute[\"/\"]` 两条，无 `labelSources` 条目），卡的是 `/` 的真实数据" +
-      "路径尚未收敛为这两个子视图：`pages/music-recommend` 眼下仍是「音乐 / 流行 / 鬼畜」三个" +
-      "旧 Tab，而屏 08 的注解带记的结论恰恰是「流行与鬼畜从信息架构中移除」。先声明会造出一个" +
-      "点了没反应的控件。两个夹具分支（屏 07 / 08）已落地，不受影响。",
-  },
-  "/library": { phase: "P3", reason: "我的歌单 / 我收藏的 / 发现音乐三个子视图随第 01 屏落地" },
-  "/later": { phase: "P4", reason: "时间范围筛选随第 03 屏落地" },
-  "/local-music": { phase: "P4", reason: "标签内嵌本地目录名，需真实目录列表后才能在壳层声明" },
-  "/download-list": { phase: "P4", reason: "类型筛选随第 05 屏落地" },
-  "/settings": { phase: "P6", reason: "常规 / 播放 / 高级需与设置页自身的分区导航合并，避免两处开关互相打架" },
-  "/queue": { phase: "P5", reason: "队列筛选随第 09 屏落地" },
   "/now-playing": { phase: "P5", reason: "封面 / 歌词 / 视频是沉浸态页面自己的顶部控件，不由壳层顶栏渲染" },
   "/mini-player": {
     phase: "P5",
-    reason: "`bare` 壳层根本不渲染顶栏；迷你播放器 / 托盘 / 全局快捷键是独立迷你窗口自身的模式切换",
+    reason: "双形态路由由页面按窗口宽度分流；宽窗口顶栏由系统集成页拥有，小窗保持 bare",
   },
+};
+
+/**
+ * 把屏 04 的设计态目录标签替换为真实目录。夹具模式保留设计稿逐字标签；真实路径
+ * 只在这里生成动态分段，避免页面和顶栏各维护一份目录选择器。
+ */
+export const composeLocalMusicSegments = (
+  declared: TopbarSegment[],
+  directories: string[],
+  fixture: boolean,
+): TopbarSegment[] => {
+  if (fixture) return declared;
+  return [
+    { key: "all", label: "全部目录", href: "?dir=all" },
+    ...directories.map((directory, index) => {
+      const trimmed = directory.replace(/[\\/]+$/, "");
+      const label = trimmed.split(/[\\/]/).pop() || trimmed;
+      return { key: String(index), label, href: `?dir=${index}` };
+    }),
+  ];
 };
 
 /** 去掉尾部斜杠；空串归一为 `/`。 */
@@ -229,9 +308,7 @@ export const resolveSearchPlaceholder = (pathname: string): string => {
  *
  * 与搜索占位一样，这里只声明「哪个路由有什么说明」；怎么画是组件的事。
  */
-export const TOPBAR_NOTE_BY_ROUTE: Readonly<Record<string, string>> = {
-  "/": "已下线: 流行 / 鬼畜",
-};
+export const TOPBAR_NOTE_BY_ROUTE: Readonly<Record<string, string>> = {};
 
 /** 解析某个路径的顶栏说明。未登记的路由没有说明（`undefined`）。 */
 export const resolveTopbarNote = (pathname: string): string | undefined =>
@@ -239,9 +316,14 @@ export const resolveTopbarNote = (pathname: string): string | undefined =>
 
 export interface RouteShell {
   chrome: ShellChrome;
+  /** 始终可见的一级导航。 */
   segments: TopbarSegment[];
-  /** 当前激活分段的 key。分段组回落到一级导航且都不匹配时为空串。 */
+  /** 当前激活的一级入口。 */
   activeSegmentKey: string;
+  /** 当前页面内部的二级导航；没有子视图时为空。 */
+  contextSegments: TopbarSegment[];
+  /** 当前激活的二级入口。 */
+  activeContextKey: string;
   /** 分段组右侧的弱化说明。未登记的路由没有它。 */
   topbarNote?: string;
 }
@@ -290,13 +372,27 @@ const resolveDefaultActiveKey = (segments: TopbarSegment[], pathname: string): s
 export const resolveRouteShell = (pathname: string, search = ""): RouteShell => {
   const chrome = SHELL_CHROME_BY_ROUTE[pathname] ?? "default";
   const topbarNote = resolveTopbarNote(pathname);
+  const primaryPath =
+    pathname === "/" || pathname === "/search"
+      ? "/"
+      : pathname.startsWith("/library") || pathname.startsWith("/collection/")
+        ? "/library"
+        : pathname === "/later"
+          ? "/later"
+          : pathname === "/local-music"
+            ? "/local-music"
+            : pathname === "/download-list"
+              ? "/download-list"
+              : "";
 
   const declared = Object.entries(ROUTE_SEGMENTS).find(([pattern]) => matchesPattern(pathname, pattern));
   if (!declared) {
     return {
       chrome,
       segments: DEFAULT_NAV_SEGMENTS,
-      activeSegmentKey: resolveDefaultActiveKey(DEFAULT_NAV_SEGMENTS, pathname),
+      activeSegmentKey: resolveDefaultActiveKey(DEFAULT_NAV_SEGMENTS, primaryPath),
+      contextSegments: [],
+      activeContextKey: "",
       topbarNote,
     };
   }
@@ -304,8 +400,10 @@ export const resolveRouteShell = (pathname: string, search = ""): RouteShell => 
   const spec = declared[1];
   return {
     chrome,
-    segments: spec.segments,
-    activeSegmentKey: spec.activeKey?.(new URLSearchParams(search)) ?? resolveDefaultActiveKey(spec.segments, pathname),
+    segments: DEFAULT_NAV_SEGMENTS,
+    activeSegmentKey: resolveDefaultActiveKey(DEFAULT_NAV_SEGMENTS, primaryPath),
+    contextSegments: spec.segments,
+    activeContextKey: spec.activeKey?.(new URLSearchParams(search)) ?? resolveDefaultActiveKey(spec.segments, pathname),
     topbarNote,
   };
 };

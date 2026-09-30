@@ -2,7 +2,6 @@ import MusicDownloadButton from "@/components/music-download-button";
 import MusicPlayMode from "@/components/music-play-mode";
 import MusicRate from "@/components/music-rate";
 import MusicVolume from "@/components/music-volume";
-import OpenPlaylistDrawerButton from "@/components/open-playlist-drawer-button";
 import { useNowPlaying } from "@/features/player/now-playing";
 
 /**
@@ -56,9 +55,6 @@ const DeferredControl = () => {
     >
       <MusicPlayMode />
       {!sourceIsLocal && <MusicDownloadButton />}
-      {/* 过渡期的两个队列入口：药丸（`/queue` 路由，目标形态）与抽屉（兜底）。
-          P5 删除抽屉后只留前者，见 spec-lock `geometry.playbar.right.segmentDeferral`。 */}
-      <OpenPlaylistDrawerButton />
       <MusicVolume />
       <MusicRate />
     </div>

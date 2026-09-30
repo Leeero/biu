@@ -22,8 +22,8 @@ const MenuSettings: React.FC<MenuSettingsProps> = ({ control }) => {
         <p className="text-default-500 mt-1 text-sm">选择需要固定显示在侧边栏中的入口与收藏列表</p>
       </div>
       <div className="w-full space-y-8">
-        <div className="flex w-full items-start space-x-[100px]">
-          <div className="text-medium font-medium">系统默认菜单</div>
+        <div className="flex w-full items-start gap-6 max-sm:flex-col">
+          <div className="text-medium w-36 shrink-0 font-medium">系统默认菜单</div>
           <div className="max-w-[480px]">
             <Controller
               control={control}
@@ -60,8 +60,8 @@ const MenuSettings: React.FC<MenuSettingsProps> = ({ control }) => {
 
         {user?.isLogin && (
           <>
-            <div className="flex w-full items-start space-x-[100px]">
-              <div className="text-medium font-medium">个人创建菜单</div>
+            <div className="flex w-full items-start gap-6 max-sm:flex-col">
+              <div className="text-medium w-36 shrink-0 font-medium">个人创建菜单</div>
               <div className="max-w-[480px]">
                 <Controller
                   control={control}
@@ -97,8 +97,8 @@ const MenuSettings: React.FC<MenuSettingsProps> = ({ control }) => {
                 />
               </div>
             </div>
-            <div className="flex w-full items-start space-x-[100px]">
-              <div className="text-medium font-medium">个人收藏菜单</div>
+            <div className="flex w-full items-start gap-6 max-sm:flex-col">
+              <div className="text-medium w-36 shrink-0 font-medium">个人收藏菜单</div>
               <div className="max-w-[480px]">
                 <Controller
                   control={control}

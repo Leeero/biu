@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router";
 
-import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 
 interface PlayerActionDependencies {
@@ -30,6 +30,7 @@ export const createPlayerActions = (dependencies: PlayerActionDependencies) => (
 });
 
 export const usePlayerActions = () => {
+  const navigate = useNavigate();
   const togglePlay = usePlayList(state => state.togglePlay);
   const previous = usePlayList(state => state.prev);
   const next = usePlayList(state => state.next);
@@ -38,8 +39,6 @@ export const usePlayerActions = () => {
   const removeQueueItem = usePlayList(state => state.delPage);
   const clearQueue = usePlayList(state => state.clear);
   const togglePlayMode = usePlayList(state => state.togglePlayMode);
-  const setQueueOpen = useModalStore(state => state.setPlayListDrawerOpen);
-  const openNowPlaying = useModalStore(state => state.openFullScreenPlayer);
 
   return useMemo(
     () =>
@@ -52,20 +51,9 @@ export const usePlayerActions = () => {
         removeQueueItem,
         clearQueue,
         togglePlayMode,
-        openQueue: () => setQueueOpen(true),
-        openNowPlaying,
+        openQueue: () => navigate("/queue"),
+        openNowPlaying: () => navigate("/now-playing"),
       }),
-    [
-      clearQueue,
-      next,
-      openNowPlaying,
-      playQueueItem,
-      previous,
-      removeQueueItem,
-      seek,
-      setQueueOpen,
-      togglePlay,
-      togglePlayMode,
-    ],
+    [clearQueue, next, playQueueItem, previous, removeQueueItem, seek, navigate, togglePlay, togglePlayMode],
   );
 };

@@ -236,11 +236,9 @@
   --biu-layout-dialog-w: 560px;
   --biu-layout-dialog-h: 153px;
 
-  /* 沉浸态（无顶栏、无播放栏）。
-     art-w 以设计稿索引原文 639 为准；原型实现为 649，差 10px（1.6%），
-     已登记为已知残差，P5 收敛。 */
-  --biu-layout-immersive-art-w: 639px;
-  --biu-layout-immersive-art-h: 359px;
+  /* 沉浸态（无顶栏、无播放栏）。P5 按最终视觉页收敛到 649 × 365。 */
+  --biu-layout-immersive-art-w: 649px;
+  --biu-layout-immersive-art-h: 365px;
   --biu-layout-immersive-gap: 47px;
   --biu-layout-immersive-progress-y: 700px;
   --biu-layout-immersive-times-y: 720px;
@@ -415,8 +413,9 @@
   --biu-topbar-height: var(--biu-layout-topbar-h);
   --biu-player-height: var(--biu-layout-player-h);
 
-  /* 满幅剧场：内容不再居中收窄（决策 1）。`none` 是 max-width 的合法值。 */
-  --biu-content-max-width: none;
+  /* 内容区域在常规桌面宽度保持满幅；超宽窗口收束阅读与卡片密度。
+     顶栏和播放栏仍延展至窗口边缘，避免把应用误做成居中的网页。 */
+  --biu-content-max-width: 1920px;
 }
 
 /* ============================================================================
@@ -425,7 +424,7 @@
    P1 已完成重指：
      · --biu-topbar-height  → var(--biu-layout-topbar-h)  64 → 71
      · --biu-player-height  → var(--biu-layout-player-h)  84 → 88
-     · --biu-content-max-width → none                     1440 → 满幅
+     · --biu-content-max-width → 1920px                   超宽窗口收束
      · --biu-sidebar-width  → 删除（侧栏移除，决策 3）
    这三处（含删除项）都是**壳层几何**，其验收即 P1 出口标准的 L1 硬锚点。
    别名暂留是为了让尚未重写的页面继续可运行；P7 随业务代码迁移完成后删除。

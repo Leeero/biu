@@ -1,0 +1,68 @@
+import type { FixtureNowPlaying } from "./now-playing";
+
+export const QUEUE_FIXTURE_NAME = "09-queue";
+
+export const SCREEN_09_QUEUE_FIXTURE = {
+  header: {
+    title: "播放队列",
+    lead: "按来源去重（local:id / mv:bvid / audio:sid），支持拖拽排序与多分 P。",
+  },
+  filterPills: [
+    { kind: "primary", label: "播放全部" },
+    { kind: "secondary", label: "顺序播放 ▾" },
+    { kind: "neutral", label: "随机时保持分P顺序 · 开" },
+    { kind: "neutral", label: "清空队列" },
+    { kind: "accent", label: "去重后 24 首 · 已折叠 3" },
+  ],
+  section: { title: "队列 · 27 首 · 去重后 24", head: ["#", "标题", "来源 · 状态", "时长"] },
+  tracks: [
+    {
+      id: "fixture-queue-1",
+      index: 1,
+      title: "「神呀，接住她的眼泪吧」— 这首歌完整版来啦",
+      subtitle: "音乐区 UP · 来自发现音乐",
+      status: "正在播放 · 单曲循环",
+      duration: "04:02",
+      artIndex: 7,
+      current: true,
+    },
+    {
+      id: "fixture-queue-2",
+      index: 2,
+      title: "【猎 Hunter】｜「荒野求生的小曲」",
+      subtitle: "猎 Hunter · 下一首播放",
+      status: "队列 · 音乐视频",
+      duration: "03:18",
+      artIndex: 9,
+    },
+    {
+      id: "fixture-queue-3",
+      index: 3,
+      title: "我有两颗搞丸！！！",
+      subtitle: "搞丸君 · 队列",
+      status: "队列 · 音乐视频",
+      duration: "02:47",
+      artIndex: 10,
+    },
+    {
+      id: "fixture-queue-4",
+      index: 4,
+      title: "录歌 和好朋友在学校的最后一个晚上",
+      subtitle: "阿岚同学 · 队列 · 多分P 1/2",
+      status: "队列 · 音乐视频 · 折叠重复",
+      duration: "05:11",
+      artIndex: 3,
+      demoActions: true,
+    },
+  ],
+  note: "队列身份去重：local:id / mv:bvid / audio:sid（getQueueIdentity）。行内可直接「下一首播放」、按分P 拆分、置顶或移除；随机播放时可开启「保持分P 顺序」。",
+  nowPlaying: {
+    title: "《雨落长街》· 全专上线",
+    sub: "卧室音乐计划 · 新碟 banner",
+    quality: "lossless",
+    elapsedSeconds: 82,
+    durationSeconds: 228,
+    queueCount: 27,
+    playing: false,
+  } satisfies FixtureNowPlaying,
+} as const;

@@ -14,6 +14,7 @@ const ScrollContainer = ({
   children,
   resetOnChange,
   enableBackToTop,
+  onReachEnd,
   ...props
 }: OverlayScrollbarsComponentProps & {
   ref?: React.RefObject<ScrollRefObject | null>;
@@ -21,6 +22,8 @@ const ScrollContainer = ({
   resetOnChange?: unknown;
   /** 是否监听滚动并显示返回顶部按钮 */
   enableBackToTop?: boolean;
+  /** 滚动到距底部 160px 内时触发；调用方自行负责 loading/hasMore 去重。 */
+  onReachEnd?: () => void;
 }) => {
   const internalRef = useRef<ScrollRefObject | null>(null);
   const scrollRef = ref ?? internalRef;
@@ -52,17 +55,20 @@ const ScrollContainer = ({
     <OverlayScrollbarsComponent
       ref={scrollRef}
       options={{
-        scrollbars: { autoHide: "leave", autoHideDelay: 800, theme: "os-theme-light" },
+        scrollbars: { autoHide: "leave", autoHideDelay: 600, theme: "os-theme-biu" },
         overflow: { x: "hidden" },
         ...options,
       }}
       events={{
         scroll: instance => {
+          const viewport = instance.elements().viewport as HTMLElement | null;
+          if (viewport && viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <= 160) {
+            onReachEnd?.();
+          }
           if (!enableBackToTop) {
             setShowBackToTop(false);
             return;
           }
-          const viewport = instance.elements().viewport as HTMLElement | null;
           setShowBackToTop((viewport?.scrollTop ?? 0) > 400);
         },
       }}

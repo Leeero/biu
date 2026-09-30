@@ -10,6 +10,7 @@ interface SegmentNavProps {
   activeKey: string;
   /** 分段组右侧的弱化说明（如 `/` 的「已下线: 流行 / 鬼畜」）。 */
   note?: string;
+  className?: string;
 }
 
 /**
@@ -37,7 +38,7 @@ interface SegmentNavProps {
  * `window-no-drag` 必须由本层给出：整条顶栏是可拖动窗口区域，分段组要挡住拖动
  * 才能被点到。组件层不该知道 Electron 的窗口拖动，那是壳层的事。
  */
-const SegmentNav = ({ segments, activeKey, note }: SegmentNavProps) => {
+const SegmentNav = ({ segments, activeKey, note, className }: SegmentNavProps) => {
   const location = useLocation();
 
   /**
@@ -73,7 +74,13 @@ const SegmentNav = ({ segments, activeKey, note }: SegmentNavProps) => {
   }));
 
   return (
-    <SegmentedControl label="顶栏分段导航" activeKey={activeKey} items={items} note={note} className="window-no-drag" />
+    <SegmentedControl
+      label="顶栏分段导航"
+      activeKey={activeKey}
+      items={items}
+      note={note}
+      className={`window-no-drag ${className ?? ""}`}
+    />
   );
 };
 

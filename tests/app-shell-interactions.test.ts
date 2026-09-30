@@ -23,6 +23,7 @@ import {
   SEARCH_PLACEHOLDER_BY_ROUTE,
   TOPBAR_NOTE_BY_ROUTE,
   composeSegmentCount,
+  composeLocalMusicSegments,
   resolveRouteShell,
   resolveSearchPlaceholder,
   resolveTopbarNote,
@@ -69,6 +70,49 @@ describe("壳层状态", () => {
   test("缺省即 default，不需要调用方先归一化", () => {
     expect(resolveShellLayout()).toEqual(resolveShellLayout("default"));
   });
+
+  test("播放器只在稳定布局层初始化，沉浸页返回时不会重置播放进度", () => {
+    const layoutSource = readFileSync(path.resolve(process.cwd(), "src/layout/index.tsx"), "utf8");
+    const playbarSource = readFileSync(path.resolve(process.cwd(), "src/layout/playbar/index.tsx"), "utf8");
+
+    expect(layoutSource).toContain("void initPlayer()");
+    expect(playbarSource).not.toContain("state => state.init");
+    expect(playbarSource).not.toContain("init()");
+  });
+
+  test("最小窗口宽度下优先压缩导航与搜索位，头像保持完整可见", () => {
+    const topbarSource = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/index.tsx"), "utf8");
+
+    expect(topbarSource).toContain("max-[1320px]:[&_a]:px-4");
+    expect(topbarSource).toContain("max-[1320px]:min-w-[180px]");
+    expect(topbarSource).toContain("max-[1240px]:hidden");
+    expect(topbarSource).toContain("<AvatarMenu");
+  });
+
+  test("原生滚动容器与 OverlayScrollbars 使用同一套桌面主题", () => {
+    const appCss = readFileSync(path.resolve(process.cwd(), "src/app.css"), "utf8");
+    const scrollContainer = readFileSync(
+      path.resolve(process.cwd(), "src/components/scroll-container/index.tsx"),
+      "utf8",
+    );
+    const searchField = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/search-field.tsx"), "utf8");
+
+    expect(appCss).toContain("*::-webkit-scrollbar-thumb");
+    expect(appCss).toContain(".os-theme-biu");
+    expect(scrollContainer).toContain('theme: "os-theme-biu"');
+    expect(searchField).toContain('theme: "os-theme-biu"');
+  });
+
+  test("搜索下拉层使用不透明表面且不会侵入播放器区域", () => {
+    const searchField = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/search-field.tsx"), "utf8");
+
+    expect(searchField).toContain("bg-[rgb(var(--biu-color-surface-raised))]");
+    expect(searchField).toContain("max-h-[calc(100dvh-var(--biu-layout-topbar-h)-var(--biu-layout-player-h)-0.5rem)]");
+    expect(searchField).toContain("absolute top-full right-0");
+    expect(searchField).not.toContain("absolute top-full left-0");
+    expect(searchField).toContain("overscroll-contain");
+    expect(searchField).not.toContain("bg-[var(--biu-surface-sunken)]");
+  });
 });
 
 describe("路由壳层契约", () => {
@@ -98,7 +142,7 @@ describe("路由壳层契约", () => {
   });
 
   test("未声明分段的路由回落到可导航的一级导航", () => {
-    const { segments } = resolveRouteShell("/library");
+    const { segments } = resolveRouteShell("/does-not-exist");
     expect(segments).toEqual(DEFAULT_NAV_SEGMENTS);
     // 兜底值必须是**真的能点**的：每个分段都要有 href，
     // 否则回落到一级导航就只是换了一种没有出口的显示方式。
@@ -109,8 +153,16 @@ describe("路由壳层契约", () => {
 
   test("一级导航覆盖五处一级入口，且互相不重复", () => {
     const hrefs = DEFAULT_NAV_SEGMENTS.map(segment => segment.href);
-    expect(hrefs).toEqual(["/library", "/", "/history", "/follow", "/settings"]);
+    expect(hrefs).toEqual(["/", "/library", "/later", "/local-music", "/download-list"]);
     expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+
+  test("所有普通页面都保留一级导航，页面筛选只进入二级导航", () => {
+    const shell = resolveRouteShell("/collection/123", "?type=21");
+    expect(shell.segments).toEqual(DEFAULT_NAV_SEGMENTS);
+    expect(shell.activeSegmentKey).toBe("/library");
+    expect(shell.contextSegments.map(segment => segment.key)).toEqual(["11", "21", "31"]);
+    expect(shell.activeContextKey).toBe("21");
   });
 });
 
@@ -120,7 +172,8 @@ describe("顶栏分段与真值对齐", () => {
   const deferred = Object.keys(DEFERRED_SEGMENTS);
 
   test("真值的每一屏都被「已声明」或「待声明」接住", () => {
-    const covered = new Set([...declared, ...deferred]);
+    // 发现页的数据源切换由页面自己的筛选条承接，不占用全局或壳层二级导航。
+    const covered = new Set([...declared, ...deferred, "/"]);
     const uncovered = truthRoutes.filter(route => !covered.has(route));
     expect(uncovered, "这些路由的分段组既没声明也没登记待办，会被静默遗忘").toEqual([]);
   });
@@ -133,8 +186,9 @@ describe("顶栏分段与真值对齐", () => {
     for (const [pattern, entry] of Object.entries(ROUTE_SEGMENTS)) {
       // /search 的标签是「前缀 + 运行时计数」模板，字面标签里那个数字不是
       // 壳层能写死的 —— 见 spec-lock topbarSegments.labelSources 与下面的
-      // 专属 describe。其余路由仍逐字比对。
-      if (pattern === "/search") continue;
+      // 专属 describe。/library 旧真值中的「发现音乐」已经提升为一级入口，
+      // 不再作为用户资产页的第三个同级子视图。
+      if (pattern === "/search" || pattern === "/library") continue;
       expect(
         entry.segments.map(segment => segment.label),
         `${pattern} 与真值不一致`,
@@ -151,7 +205,7 @@ describe("顶栏分段与真值对齐", () => {
 });
 
 describe("/collection/:id 顶栏分段组", () => {
-  const segmentsOf = () => resolveRouteShell("/collection/123").segments;
+  const segmentsOf = () => resolveRouteShell("/collection/123").contextSegments;
 
   test("三段链到同一路由的三种数据类型", () => {
     expect(segmentsOf().map(segment => segment.label)).toEqual(["收藏夹 · 11", "合集 · 21", "系列 · 31"]);
@@ -183,16 +237,52 @@ describe("/collection/:id 顶栏分段组", () => {
   });
 
   test("激活段由 ?type 决定，缺省 11（与页面缺省 CollectionType.Favorite 一致）", () => {
-    expect(resolveRouteShell("/collection/123").activeSegmentKey).toBe("11");
-    expect(resolveRouteShell("/collection/123", "?type=21").activeSegmentKey).toBe("21");
+    expect(resolveRouteShell("/collection/123").activeContextKey).toBe("11");
+    expect(resolveRouteShell("/collection/123", "?type=21").activeContextKey).toBe("21");
     // 夹具地址不带 type —— 此时仍须激活「收藏夹 · 11」，否则与设计稿不符。
-    expect(resolveRouteShell("/collection/123", "?fixture=02-playlist-detail").activeSegmentKey).toBe("11");
+    expect(resolveRouteShell("/collection/123", "?fixture=02-playlist-detail").activeContextKey).toBe("11");
   });
 
-  test("其它路由仍回落到一级导航，激活段是当前路径", () => {
+  test("音乐库使用资产分段，默认激活我的歌单", () => {
     const shell = resolveRouteShell("/library");
-    expect(shell.segments).toEqual(DEFAULT_NAV_SEGMENTS);
+    expect(shell.contextSegments.map(segment => segment.label)).toEqual(["我的歌单", "我收藏的"]);
     expect(shell.activeSegmentKey).toBe("/library");
+    expect(shell.activeContextKey).toBe("created");
+  });
+});
+
+describe("/later 顶栏时间范围分段", () => {
+  test("三段与设计真值一致且都可导航", () => {
+    const shell = resolveRouteShell("/later");
+    expect(shell.contextSegments.map(segment => segment.label)).toEqual(["全部", "近 7 天", "近 30 天"]);
+    expect(shell.contextSegments.map(segment => segment.href)).toEqual(["?range=all", "?range=7d", "?range=30d"]);
+  });
+
+  test("缺省激活全部，并保留夹具 query 下的激活语义", () => {
+    expect(resolveRouteShell("/later").activeContextKey).toBe("all");
+    expect(resolveRouteShell("/later", "?range=7d").activeContextKey).toBe("7d");
+    expect(resolveRouteShell("/later", "?fixture=03-watch-later&range=30d").activeContextKey).toBe("30d");
+  });
+});
+
+describe("/local-music 顶栏目录分段", () => {
+  test("夹具保持设计稿标签，真实路径替换为实际目录名", () => {
+    const declared = resolveRouteShell("/local-music").contextSegments;
+    expect(composeLocalMusicSegments(declared, [], true).map(item => item.label)).toEqual([
+      "全部目录",
+      "D 盘 · Lossless",
+      "E 盘 · Live 录音",
+    ]);
+    expect(composeLocalMusicSegments(declared, ["/Music/Lossless", "/Music/Live"], false)).toEqual([
+      { key: "all", label: "全部目录", href: "?dir=all" },
+      { key: "0", label: "Lossless", href: "?dir=0" },
+      { key: "1", label: "Live", href: "?dir=1" },
+    ]);
+  });
+
+  test("目录 query 决定激活段", () => {
+    expect(resolveRouteShell("/local-music").activeContextKey).toBe("all");
+    expect(resolveRouteShell("/local-music", "?dir=1").activeContextKey).toBe("1");
   });
 });
 
@@ -207,25 +297,25 @@ describe("/search 顶栏分段组（模板 + 运行时计数）", () => {
     const truth = spec.topbarSegments.byRoute["/search"];
     expect(truth).toEqual(["音乐视频 · 9", "创作者 · 2"]);
 
-    const segments = resolveRouteShell("/search").segments;
+    const segments = resolveRouteShell("/search").contextSegments;
     expect(segments.map(segment => segment.label)).toEqual(["音乐视频", "创作者"]);
     expect(segments.map(segment => segment.countKey)).toEqual(["video", "creator"]);
   });
 
   test("两段都是可点的：分段决定视口落在哪一段（两段结果同页共存）", () => {
-    const segments = resolveRouteShell("/search").segments;
+    const segments = resolveRouteShell("/search").contextSegments;
     expect(segments.map(segment => segment.href)).toEqual(["?view=video", "?view=creator"]);
   });
 
   test("激活段由 ?view 决定，缺省 video（设计稿里「音乐视频」是激活段）", () => {
-    expect(resolveRouteShell("/search").activeSegmentKey).toBe("video");
-    expect(resolveRouteShell("/search", "?view=creator").activeSegmentKey).toBe("creator");
+    expect(resolveRouteShell("/search").activeContextKey).toBe("video");
+    expect(resolveRouteShell("/search", "?view=creator").activeContextKey).toBe("creator");
     // 夹具地址不带 view —— 与缺省一致，两段全灭就是退化。
-    expect(resolveRouteShell("/search", "?fixture=06-search").activeSegmentKey).toBe("video");
+    expect(resolveRouteShell("/search", "?fixture=06-search").activeContextKey).toBe("video");
   });
 
   test("计数未知 → count 缺省（无悬空分隔符）；0 是合法计数必须保留", () => {
-    const segment = resolveRouteShell("/search").segments[0]!;
+    const segment = resolveRouteShell("/search").contextSegments[0]!;
     expect(composeSegmentCount(segment, { videoCount: null, creatorCount: null }).count).toBeUndefined();
     expect(composeSegmentCount(segment, { videoCount: 0, creatorCount: 0 }).count).toBe(0);
     expect(composeSegmentCount(segment, { videoCount: 9, creatorCount: 2 }).count).toBe(9);
@@ -258,21 +348,18 @@ describe("顶栏说明与真值对齐", () => {
    * 真值登记在 `globalChrome.topbarNote`。它与分段组同机制：声明在
    * `route-shell.ts`、由 `TopBar` 渲染，所以也在这里钉住。
    */
-  test("说明表与真值逐字一致，且真值声明的每条路由都在表里", () => {
-    expect(new Set(Object.keys(TOPBAR_NOTE_BY_ROUTE))).toEqual(new Set(spec.globalChrome.topbarNote.routes));
-    for (const route of spec.globalChrome.topbarNote.routes) {
-      expect(TOPBAR_NOTE_BY_ROUTE[route]).toBe(spec.globalChrome.topbarNote.text);
-    }
+  test("开发阶段说明不得进入产品顶栏", () => {
+    expect(TOPBAR_NOTE_BY_ROUTE).toEqual({});
   });
 
   test("只有登记过的路由带说明，其余路由没有这一段", () => {
-    expect(resolveTopbarNote("/")).toBe("已下线: 流行 / 鬼畜");
+    expect(resolveTopbarNote("/")).toBeUndefined();
     expect(resolveTopbarNote("/library")).toBeUndefined();
     expect(resolveTopbarNote("/search")).toBeUndefined();
   });
 
   test("它随路由契约一起下发，不是页面自己塞的", () => {
-    expect(resolveRouteShell("/").topbarNote).toBe("已下线: 流行 / 鬼畜");
+    expect(resolveRouteShell("/").topbarNote).toBeUndefined();
     expect(resolveRouteShell("/library").topbarNote).toBeUndefined();
   });
 

@@ -46,18 +46,23 @@ const TopBar = ({ segments, activeSegmentKey, note }: TopBarProps) => {
 
   return (
     <div
-      className={clx("flex h-full items-center gap-[38px] pr-[22px] pl-[34px]", {
+      className={clx("flex h-full min-w-0 items-center gap-[38px] pr-[22px] pl-[34px] max-[1320px]:gap-4", {
         "window-drag": !isNoDrag,
         "window-no-drag": isNoDrag,
       })}
     >
       <Brand />
-      <SegmentNav segments={segments} activeKey={activeSegmentKey} note={note} />
+      <SegmentNav segments={segments} activeKey={activeSegmentKey} note={note} className="max-[1320px]:[&_a]:px-4" />
 
-      <div className="window-no-drag ml-auto flex flex-none items-center gap-10">
-        <SearchField onFocusChange={setIsSearchFocused} />
+      <div className="window-no-drag ml-auto flex min-w-0 flex-none items-center gap-10 max-[1320px]:gap-4">
+        <SearchField
+          onFocusChange={setIsSearchFocused}
+          className="max-[1320px]:w-[clamp(180px,22vw,280px)] max-[1320px]:min-w-[180px]"
+        />
         <AppUpdateNotify />
-        <Dev />
+        <div className="max-[1240px]:hidden">
+          <Dev />
+        </div>
         <AvatarMenu onDropdownOpenChange={setIsUserDropdownOpen} />
         {["linux", "windows"].includes(platform) && <WindowAction />}
       </div>

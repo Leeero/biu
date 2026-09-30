@@ -17,6 +17,7 @@ import { isSearchShortcut, isTypingTarget, normalizeSearchKeyword, shouldSubmitS
 
 interface SearchFieldProps {
   onFocusChange?: (focused: boolean) => void;
+  className?: string;
 }
 
 /**
@@ -34,7 +35,7 @@ interface SearchFieldProps {
  * HeroUI 的 `Input` 仍是交互与无障碍底座（方案 §4.3）：键盘、焦点环、
  * clearable 都由它保证，不自己重写。
  */
-const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange }) => {
+const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange, className }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useUser(s => s.user);
@@ -86,6 +87,13 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange }) => {
     }
     const normalizedKeyword = normalizeSearchKeyword(rawKeyword);
     addSearchHistory(normalizedKeyword);
+    if (location.pathname === "/later" || location.pathname === "/local-music") {
+      const params = new URLSearchParams(location.search);
+      params.set("key", normalizedKeyword);
+      navigate(`${location.pathname}?${params.toString()}`);
+      setOpen(false);
+      return;
+    }
     if (location.pathname !== "/search") {
       navigate("/search");
     }
@@ -104,6 +112,7 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange }) => {
   return (
     <TopBarSearch
       rootRef={containerRef}
+      className={className}
       inputRef={inputRef}
       value={value}
       // 占位**逐页不同**（设计稿第 03 / 04 页与其余页不同）：真值在 spec-lock
@@ -125,15 +134,22 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange }) => {
       onClick={() => setOpen(true)}
     >
       <div
+        data-testid="topbar-search-dropdown"
         className={classNames(
-          "absolute top-full left-0 z-100 mt-2 h-auto max-h-[80dvh] w-full min-w-[360px] overflow-hidden rounded-[var(--biu-radius-lg)] border border-[var(--biu-border)] bg-[var(--biu-surface-sunken)] shadow-[var(--biu-shadow-floating)] backdrop-blur-[var(--biu-blur-glass)]",
+          // 下拉层不能使用半透明的 surface-sunken：搜索结果卡片和播放栏会透过来，
+          // 看起来像是层级失效。这里使用不透明的 raised 表面，并把最大高度限制在
+          // 顶栏与播放栏之间；overscroll-contain 也避免滚动到边界后带动页面内容。
+          "absolute top-full right-0 isolate z-100 mt-2 h-auto max-h-[calc(100dvh-var(--biu-layout-topbar-h)-var(--biu-layout-player-h)-0.5rem)] w-full min-w-[360px] overflow-hidden overscroll-contain rounded-[var(--biu-radius-lg)] border border-[var(--biu-border)] bg-[rgb(var(--biu-color-surface-raised))] shadow-[var(--biu-shadow-floating)]",
           {
             hidden: !open,
-            "flex flex-col": open,
+            "flex min-h-0 flex-col": open,
           },
         )}
       >
-        <OverlayScrollbarsComponent className="h-full flex-1 p-2" options={{ scrollbars: { autoHide: "leave" } }}>
+        <OverlayScrollbarsComponent
+          className="h-full min-h-0 flex-1 p-2"
+          options={{ scrollbars: { autoHide: "leave", autoHideDelay: 600, theme: "os-theme-biu" } }}
+        >
           <Listbox
             aria-label="搜索建议"
             selectionMode="none"

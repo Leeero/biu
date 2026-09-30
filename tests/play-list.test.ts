@@ -302,6 +302,20 @@ describe("play-list store", () => {
     expect(usePlayList.getState().playId).toBeUndefined();
   });
 
+  test("reorder moves an existing queue item without changing playback identity", async () => {
+    const s = usePlayList.getState();
+    await s.init();
+    await s.playList([
+      { type: "audio", sid: 1, title: "a1" },
+      { type: "audio", sid: 2, title: "a2" },
+      { type: "audio", sid: 3, title: "a3" },
+    ]);
+    const playId = usePlayList.getState().playId;
+    s.reorder(2, 0);
+    expect(usePlayList.getState().list.map(item => item.sid)).toEqual([3, 1, 2]);
+    expect(usePlayList.getState().playId).toBe(playId);
+  });
+
   test("play handles data fetch failure gracefully", async () => {
     const s = usePlayList.getState();
     await s.init();

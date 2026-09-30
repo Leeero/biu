@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, test } from "vitest";
@@ -18,6 +19,14 @@ import {
 } from "../electron/security/validation";
 
 describe("Electron security validation", () => {
+  test("开发环境不会自动访问 GitHub 更新源", () => {
+    const updaterSource = readFileSync(path.resolve(process.cwd(), "electron/updater/index.ts"), "utf8");
+    const devGuard = updaterSource.indexOf("if (isDev) return;");
+    const startupCheck = updaterSource.indexOf("void checkForUpdatesSafely();");
+    expect(devGuard).toBeGreaterThan(-1);
+    expect(startupCheck).toBeGreaterThan(devGuard);
+  });
+
   test("only permits HTTPS external links", () => {
     expect(parseExternalUrl("https://www.bilibili.com/video/BV1")).toBe("https://www.bilibili.com/video/BV1");
     expect(() => parseExternalUrl("http://example.com")).toThrow();

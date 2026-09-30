@@ -33,7 +33,7 @@ const QueueButton = () => {
       aria-label={`播放队列，共 ${queueCount} 首`}
       variant="ghost"
       onClick={() => navigate("/queue")}
-      className="gap-[var(--biu-playbar-pill-gap)] px-[var(--biu-playbar-pill-pad)] tabular-nums"
+      className="min-w-[104px] gap-[var(--biu-playbar-pill-gap)] px-[var(--biu-playbar-pill-pad)] tabular-nums"
     >
       队列 · {queueCount}
     </Button>
