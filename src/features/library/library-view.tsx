@@ -8,6 +8,7 @@ import { MediaTile } from "@/ui/patterns/media-tile";
 import { PageHeader } from "@/ui/patterns/page-header";
 import { Section } from "@/ui/patterns/section";
 import { Button } from "@/ui/primitives/button";
+import { Icon } from "@/ui/primitives/icon";
 import { Pill } from "@/ui/primitives/pill";
 
 import type { LibraryTile } from "./model";
@@ -192,6 +193,14 @@ const LibrarySection = ({
             style={tile.coverGradient ? { backgroundImage: tile.coverGradient } : undefined}
           >
             {tile.cover && <img src={tile.cover} alt="" />}
+            {/* 封面整块可点进入详情。操作带按钮在其上（更高层），
+                stopPropagation 后不触发跳转 —— 与 MediaTile 的透明按钮同模式。 */}
+            <button
+              type="button"
+              aria-label={`查看 ${tile.title}`}
+              className="asset4188-card-art-hitbox"
+              onClick={() => onTilePress(tile)}
+            />
             <span className="asset4188-card-badge">{tile.badge}</span>
             <span className="asset4188-card-actions">
               {LIBRARY_TILE_ACTIONS.map(action => (
@@ -204,7 +213,10 @@ const LibrarySection = ({
                     onTileAction(tile, action.key);
                   }}
                 >
-                  {action.label.slice(0, 1)}
+                  {/* 完整动作名在 aria-label；视觉用词汇表图标。曾渲染
+                      `label.slice(0, 1)` 只露首字 —— 「下一首」与「下载音频」
+                      同显一个「下」，用户无法分辨悬浮按钮是什么。 */}
+                  <Icon name={action.icon} size={16} />
                 </button>
               ))}
             </span>

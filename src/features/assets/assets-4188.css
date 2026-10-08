@@ -155,6 +155,21 @@
   object-fit: cover;
 }
 
+/* 封面整块可点的透明命中层。垫在 badge / 操作带之下（操作带按钮更高，
+   stopPropagation 后不触发跳转）。 */
+.asset4188-card-art-hitbox {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
 .asset4188-card-badge {
   position: absolute;
   left: 8px;
@@ -164,6 +179,7 @@
   color: var(--biu-4188-text-primary);
   background: var(--biu-4188-image-chip);
   font-size: 10px;
+  pointer-events: none;
 }
 
 .asset4188-card-link {
@@ -201,6 +217,7 @@
   position: absolute;
   right: 10px;
   bottom: 10px;
+  z-index: 2;
   display: flex;
   gap: 4px;
   opacity: 0;
