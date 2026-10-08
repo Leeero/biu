@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "lockedAt": "2026-09-30",
+  "sourceRoot": "prototypes/biu-discover-option2",
+  "runtimeUrl": "http://127.0.0.1:4188/",
+  "truthRule": "source-files-first",
+  "files": {
+    "package.json": "057027d4850c983af6d0038b992123e032433ea040d394384b6cdfb0434397dd",
+    "src/App.jsx": "8fec057a3f098cb3060d092e7af5c58796f1e2e44a01e0ab2fa5a01d1355ab15",
+    "src/Pages.jsx": "9045a1d0af68a48f44daf270bfba259ec757d90b17630087cd924712a634491a",
+    "src/styles.css": "e25c611f4d8e8744cbf4b74a47fc0ee862880cc125db8c122cb17183c10678e3"
+  },
+  "assets": {
+    "public/assets/avatar.png": "6caeb2d4f828a4776f01e05e682618a9a0d6b0909ccad1180fe5668c45d127df",
+    "public/assets/hero-xiang-yun-duan.png": "08e88b4da8ba82ca09cbe2df334692447015443afacfb89043110d9a9df09d59",
+    "public/assets/covers/cover-ai-ni.png": "d7b788137434c04e70011ef580ba548fef98fc465de2677945b69366b84b8b08",
+    "public/assets/covers/cover-fengyue.png": "75f74c7f2e19643806bbd6b535f1078ebb4c9a0210e5611d33805fea17330447",
+    "public/assets/covers/cover-qiansixi.png": "c81ecacb0f4a52c701be6d28ffe0c3b7276a16f2226346aca0a0dab5c1d55ae8",
+    "public/assets/covers/cover-qingtian.png": "715a189721a5bd1ad4cbc94798d7ee2ae39de8008df8bf4f90c47c07b3cfa2a6",
+    "public/assets/covers/cover-redheels.png": "8b322a15228a0619e7aa62486f1a995434b4803a853e34b4eb5d35baf4ccdd76",
+    "public/assets/covers/cover-starsky.png": "d20bc1dcbc9a4fa9c531903f12498e14de01d5ff8a47ed6cebf385f58108f973",
+    "public/assets/covers/cover-xuanyun.png": "0cf90f9594dd5d560039f6d990bbf7de666483ffe8257adb3d0409d4a822f998",
+    "public/assets/covers/cover-zaishenbian.png": "98d2024653f47d1720428d31877dbb5477b121741c2cb0476d353f4d2033c883",
+    "public/assets/covers/cover-zhuzhuxia.png": "ebaa4bdc3fcd1bd54afe9018c181e45a8813a2db08370b422f15f382bec6c093"
+  },
+  "changePolicy": {
+    "onHashChange": "block visual implementation until affected screens are re-audited",
+    "requiredUpdates": [
+      "measurements.json",
+      "screen-matrix.md",
+      "evidence-index.md",
+      "deviation-log.md"
+    ]
+  }
+}
+

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-30",
+  "source": "computed styles from the source-driven 4188 runtime",
+  "global": {
+    "fontFamily": "Inter, Noto Sans SC, PingFang SC, system-ui, sans-serif",
+    "canvas": "#090b12",
+    "surface": "#111620",
+    "surfaceElevated": "#182131",
+    "surfaceHover": "#202a3a",
+    "border": "#2a3447",
+    "textPrimary": "#f5f7fb",
+    "textSecondary": "#9da8ba",
+    "textMuted": "#737f95",
+    "primary": "#796cff",
+    "playback": "#32c5d2",
+    "favorite": "#f071a8",
+    "success": "#45c98a",
+    "warning": "#f0b65f",
+    "error": "#ff657a",
+    "focus": "#a89fff",
+    "topbarHeight": 80,
+    "desktopSidebarWidth": 220,
+    "compactSidebarWidth": 78,
+    "desktopPlayerHeight": 100,
+    "mobilePlayerHeight": 124,
+    "queueWidthDesktop": 388,
+    "queueWidthOverlay": 380,
+    "searchHeight": 48,
+    "searchRadius": 24,
+    "pageTitleDesktop": { "size": 36, "weight": 700 },
+    "cardRadius": 14,
+    "heroRadius": 16
+  },
+  "viewports": {
+    "desktop1440x1024": {
+      "sidebar": { "x": 0, "y": 0, "width": 220, "height": 924 },
+      "topbar": { "x": 220, "y": 0, "width": 1220, "height": 80 },
+      "content": { "x": 220, "y": 80, "width": 832, "height": 844, "overflow": "auto" },
+      "queue": { "x": 1052, "y": 80, "width": 388, "height": 844 },
+      "player": { "x": 0, "y": 924, "width": 1440, "height": 100 },
+      "horizontalDocumentOverflow": false
+    },
+    "tablet1024x768": {
+      "sidebar": { "x": 0, "y": 0, "width": 220, "height": 668 },
+      "topbar": { "x": 220, "y": 0, "width": 804, "height": 80 },
+      "content": { "x": 220, "y": 80, "width": 804, "height": 588, "overflow": "auto" },
+      "queue": { "x": 644, "y": 80, "width": 380, "height": 588, "mode": "fixed-overlay" },
+      "player": { "x": 0, "y": 668, "width": 1024, "height": 100 },
+      "horizontalDocumentOverflow": false
+    },
+    "compact720x900": {
+      "sidebar": { "x": 0, "y": 0, "width": 78, "height": 800, "labels": "hidden" },
+      "topbar": { "x": 78, "y": 0, "width": 642, "height": 80 },
+      "content": { "x": 78, "y": 80, "width": 642, "height": 720, "overflow": "auto" },
+      "queue": { "x": 330, "y": 80, "width": 390, "height": 720, "mode": "fixed-overlay" },
+      "player": { "x": 0, "y": 800, "width": 720, "height": 100 },
+      "horizontalDocumentOverflow": false
+    },
+    "mobile390x844": {
+      "sidebar": { "display": "none" },
+      "topbar": { "x": 0, "y": 0, "width": 390, "height": 68 },
+      "content": { "x": 0, "y": 68, "width": 390, "height": 652, "overflow": "auto" },
+      "mobileNav": { "x": 0, "y": 668, "width": 390, "height": 52 },
+      "player": { "x": 0, "y": 720, "width": 390, "height": 124 },
+      "hero": { "x": 16, "y": 159, "width": 358, "height": 290 },
+      "horizontalDocumentOverflow": false
+    }
+  },
+  "breakpoints": {
+    "queueOverlay": 1380,
+    "compactSidebar": 900,
+    "mobileShell": 640
+  }
+}
+
