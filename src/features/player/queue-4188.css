@@ -1,0 +1,213 @@
+/* stylelint-disable no-descending-specificity -- 页头与行操作共享按钮元素，但属于独立组件区域。 */
+.queue4188-page {
+  padding: 8px 0 48px;
+}
+
+.queue4188-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 31px;
+}
+
+.queue4188-head > div > span {
+  color: var(--biu-4188-action);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.queue4188-head h1 {
+  margin: 6px 0 8px;
+  font-size: 36px;
+  letter-spacing: -1px;
+}
+
+.queue4188-head p {
+  margin: 0;
+  color: var(--biu-4188-text-secondary);
+  font-size: 14px;
+}
+
+.queue4188-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.queue4188-actions button,
+.queue4188-actions > span {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--biu-4188-border);
+  border-radius: var(--biu-4188-radius-pill);
+  color: var(--biu-4188-text-secondary);
+  background: var(--biu-4188-surface);
+  font-size: 12px;
+}
+
+.queue4188-actions button {
+  cursor: pointer;
+}
+
+.queue4188-actions button:hover,
+.queue4188-actions button.is-primary {
+  color: var(--biu-4188-text-primary);
+  border-color: var(--biu-4188-action);
+  background: var(--biu-4188-action-soft);
+}
+
+.queue4188-list {
+  border-top: 1px solid var(--biu-4188-border);
+}
+
+.queue4188-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 34px 56px minmax(180px, 1.4fr) minmax(150px, 1fr) 56px 106px;
+  align-items: center;
+  gap: 10px;
+  min-height: 78px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--biu-4188-border);
+  border-radius: 10px;
+  color: var(--biu-4188-text-secondary);
+  transition: background var(--biu-4188-duration-normal) var(--biu-4188-ease-standard);
+}
+
+.queue4188-row:hover {
+  background: var(--biu-4188-surface-hover);
+}
+
+.queue4188-row.is-current {
+  background: var(--biu-4188-playback-soft);
+  box-shadow: inset 3px 0 0 var(--biu-4188-playback);
+}
+
+.queue4188-row img,
+.queue4188-cover {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--biu-4188-surface-elevated);
+  object-fit: cover;
+}
+
+.queue4188-drag,
+.queue4188-row-actions button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: var(--biu-4188-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.queue4188-index {
+  font-size: 11px;
+  text-align: center;
+}
+
+.queue4188-row.is-current .queue4188-index {
+  color: var(--biu-4188-playback);
+}
+
+.queue4188-copy {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.queue4188-copy strong,
+.queue4188-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue4188-copy strong {
+  color: var(--biu-4188-text-primary);
+  font-size: 14px;
+}
+
+.queue4188-copy small,
+.queue4188-status,
+.queue4188-row time {
+  font-size: 11px;
+}
+
+.queue4188-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  opacity: 0;
+}
+
+.queue4188-row:hover .queue4188-row-actions,
+.queue4188-row:focus-within .queue4188-row-actions {
+  opacity: 1;
+}
+
+.queue4188-row-actions button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.queue4188-row-actions button:hover {
+  color: var(--biu-4188-text-primary);
+  background: var(--biu-4188-surface-pressed);
+}
+
+.queue4188-empty {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  min-height: 320px;
+  color: var(--biu-4188-text-muted);
+}
+
+.queue4188-empty strong {
+  color: var(--biu-4188-text-primary);
+}
+
+@media (width <= 900px) {
+  .queue4188-row {
+    grid-template-columns: 24px 28px 52px minmax(140px, 1fr) 50px 100px;
+  }
+
+  .queue4188-status {
+    display: none;
+  }
+}
+
+@media (width <= 640px) {
+  .queue4188-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .queue4188-row {
+    grid-template-columns: 22px 48px minmax(0, 1fr) 46px;
+    padding-inline: 4px;
+  }
+
+  .queue4188-drag,
+  .queue4188-status,
+  .queue4188-index,
+  .queue4188-row-actions {
+    display: none;
+  }
+
+  .queue4188-row img,
+  .queue4188-cover {
+    width: 48px;
+    height: 48px;
+  }
+}

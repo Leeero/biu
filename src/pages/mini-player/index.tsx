@@ -31,7 +31,7 @@ const CoverView = memo(() => {
   const cover = usePlayState(s => s.cover);
   if (!cover) return null;
   return (
-    <div className="relative m-2 h-24 w-24 flex-shrink-0 overflow-hidden rounded-[var(--biu-radius-lg)]">
+    <div className="mini4188-cover relative m-2 h-24 w-24 flex-shrink-0 overflow-hidden rounded-[var(--biu-radius-lg)]">
       <Image
         removeWrapper
         radius="lg"
@@ -100,10 +100,10 @@ const CompactMiniPlayer = () => {
   }, []);
 
   return (
-    <div className="window-drag flex h-screen w-screen flex-col overflow-hidden rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface)/0.96)] text-[rgb(var(--biu-color-text-primary))] select-none">
+    <div className="mini4188-window window-drag flex h-screen w-screen flex-col overflow-hidden rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface)/0.96)] text-[rgb(var(--biu-color-text-primary))] select-none">
       <div className="flex h-full items-center">
         <CoverView />
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5 py-2 pr-2">
+        <div className="mini4188-content flex min-w-0 flex-1 flex-col gap-1.5 py-2 pr-2">
           <div className="flex min-w-0 flex-col pr-8">
             {title ? (
               <>
@@ -114,7 +114,7 @@ const CompactMiniPlayer = () => {
               <span className="text-sm text-[rgb(var(--biu-color-text-tertiary))]">暂无播放内容</span>
             )}
           </div>
-          <div className="window-no-drag flex items-center gap-2">
+          <div className="mini4188-progress window-no-drag flex items-center gap-2">
             <span className="w-7 text-right text-[10px] text-[rgb(var(--biu-color-text-tertiary))] tabular-nums">
               {title ? formatDuration(currentTime) : "-:--"}
             </span>
@@ -141,14 +141,14 @@ const CompactMiniPlayer = () => {
               {title ? formatDuration(duration) : "-:--"}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-1">
+          <div className="mini4188-controls flex items-center justify-between gap-1">
             <Button
               isIconOnly
               size="sm"
               variant="light"
               disableAnimation
               onPress={actions.togglePlayMode}
-              className="window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
+              className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
               aria-label="播放模式"
             >
               {playModeIcon}
@@ -162,7 +162,7 @@ const CompactMiniPlayer = () => {
                 disableAnimation
                 onPress={actions.previous}
                 aria-label="上一首"
-                className="window-no-drag hover:text-primary h-7 w-7 min-w-7"
+                className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7"
               >
                 <RiSkipBackFill size={18} />
               </Button>
@@ -174,7 +174,7 @@ const CompactMiniPlayer = () => {
                 disableAnimation
                 onPress={actions.togglePlay}
                 aria-label={isPlaying ? "暂停" : "播放"}
-                className="window-no-drag text-primary h-8 w-8 min-w-8 hover:scale-105"
+                className="mini4188-control window-no-drag text-primary h-8 w-8 min-w-8 hover:scale-105"
               >
                 {isPlaying ? <RiPauseCircleFill size={28} /> : <RiPlayCircleFill size={28} />}
               </Button>
@@ -186,7 +186,7 @@ const CompactMiniPlayer = () => {
                 disableAnimation
                 onPress={actions.next}
                 aria-label="下一首"
-                className="window-no-drag hover:text-primary h-7 w-7 min-w-7"
+                className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7"
               >
                 <RiSkipForwardFill size={18} />
               </Button>
@@ -198,7 +198,7 @@ const CompactMiniPlayer = () => {
               disableAnimation
               onPress={toggleMiniMode}
               aria-label="返回完整播放器"
-              className="window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
+              className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
             >
               <RiExpandDiagonalLine size={16} />
             </Button>

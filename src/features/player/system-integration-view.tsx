@@ -45,7 +45,7 @@ export const SystemIntegrationView = () => {
   return (
     <>
       <PageHeader title={fixture.title} lead={fixture.lead}>
-        <FilterBar label="迷你播放器操作">
+        <FilterBar label="迷你播放器操作" className="system4188-actions">
           {fixture.pills.map((label, index) => (
             <Button
               key={label}
@@ -59,9 +59,9 @@ export const SystemIntegrationView = () => {
       </PageHeader>
 
       <Section title={fixture.sectionTitle} className="mt-5">
-        <TrackTable variant="mini" columns={columns}>
+        <TrackTable variant="mini" columns={columns} className="system4188-table">
           {fixture.rows.map((row, index) => (
-            <TrackTableRow key={row.title}>
+            <TrackTableRow key={row.title} className="system4188-row">
               <TrackIndex value={index + 1} />
               <TrackMain>
                 <TrackArt placeholder={row.placeholder} />
@@ -73,8 +73,8 @@ export const SystemIntegrationView = () => {
           ))}
         </TrackTable>
 
-        <div className="mt-[7px] flex gap-[31px]">
-          <article className="h-[164px] w-[380px] rounded-[var(--biu-radius-tile)] border border-[var(--biu-border-weak)] bg-[var(--biu-veil-5-5)] px-[22px] py-[19px]">
+        <div className="system4188-grid mt-[7px] flex gap-[31px]">
+          <article className="system4188-card h-[164px] w-[380px] rounded-[var(--biu-radius-tile)] border border-[var(--biu-border-weak)] bg-[var(--biu-veil-5-5)] px-[22px] py-[19px]">
             <div className="flex items-center gap-3">
               <span
                 aria-hidden="true"
@@ -96,7 +96,7 @@ export const SystemIntegrationView = () => {
                 type="button"
                 aria-label="上一首"
                 onClick={() => void previous()}
-                className="flex size-[26px] items-center justify-center rounded-full bg-[var(--biu-veil-14)]"
+                className="system4188-icon-button flex size-[26px] items-center justify-center rounded-full bg-[var(--biu-veil-14)]"
               >
                 <Icon name="prev" size={14} />
               </button>
@@ -104,7 +104,7 @@ export const SystemIntegrationView = () => {
                 type="button"
                 aria-label="播放或暂停"
                 onClick={togglePlay}
-                className="flex size-[26px] items-center justify-center rounded-full bg-[var(--biu-veil-14)]"
+                className="system4188-icon-button flex size-[26px] items-center justify-center rounded-full bg-[var(--biu-veil-14)]"
               >
                 <Icon name="play" size={14} />
               </button>
@@ -112,13 +112,13 @@ export const SystemIntegrationView = () => {
                 type="button"
                 aria-label="下一首"
                 onClick={() => void next()}
-                className="flex size-[26px] items-center justify-center rounded-full bg-[var(--biu-veil-14)]"
+                className="system4188-icon-button flex size-[26px] items-center justify-center rounded-full bg-[var(--biu-veil-14)]"
               >
                 <Icon name="next" size={14} />
               </button>
               <button
                 type="button"
-                className="ml-auto h-[26px] rounded-full bg-[var(--biu-veil-20)] px-4 text-[12px] text-[rgb(var(--biu-text-primary))]"
+                className="system4188-expand ml-auto h-[26px] rounded-full bg-[var(--biu-veil-20)] px-4 text-[12px] text-[rgb(var(--biu-text-primary))]"
                 onClick={() => void toggleMiniMode()}
               >
                 展开
@@ -127,7 +127,7 @@ export const SystemIntegrationView = () => {
             <div className="mt-2.5 text-[12px] text-[rgb(var(--biu-text-quaternary))]">{fixture.track.caption}</div>
           </article>
 
-          <article className="h-[164px] w-[257px] rounded-[var(--biu-radius-tile)] border border-[var(--biu-border-weak)] bg-[var(--biu-veil-5-5)] px-[22px] py-[19px]">
+          <article className="system4188-card h-[164px] w-[257px] rounded-[var(--biu-radius-tile)] border border-[var(--biu-border-weak)] bg-[var(--biu-veil-5-5)] px-[22px] py-[19px]">
             <h3 className="m-0 text-[13px] font-semibold">托盘菜单 · 5 项</h3>
             <div className="mt-[15px] text-[12px] leading-[22px] text-[rgb(var(--biu-text-secondary))]">
               {fixture.trayItems.map(item => (
@@ -136,7 +136,7 @@ export const SystemIntegrationView = () => {
             </div>
           </article>
 
-          <article className="h-[164px] min-w-0 flex-1 rounded-[var(--biu-radius-tile)] border border-[var(--biu-border-weak)] bg-[var(--biu-veil-5-5)] px-[22px] py-[19px]">
+          <article className="system4188-card h-[164px] min-w-0 flex-1 rounded-[var(--biu-radius-tile)] border border-[var(--biu-border-weak)] bg-[var(--biu-veil-5-5)] px-[22px] py-[19px]">
             <h3 className="m-0 text-[13px] font-semibold">全局快捷键 · 可在设置中整体禁用</h3>
             <div className="mt-2 text-[12px] leading-[24px] text-[rgb(var(--biu-text-secondary))]">
               {fixture.shortcutRows.map(([label, keys]) => (

@@ -87,6 +87,7 @@ export const useDiscoverFixtureData = (): DiscoverFixtureData | null => {
         // 具体色值只在 `placeholder-art.ts`（check-literals 放行的数据豁免文件），
         // 本文件**不复制它** —— 夹具只指名，不带值。
         artVariant: fixture.hero.artVariant,
+        artPlaceholder: PLACEHOLDER_RADIALS[fixture.hero.artVariant],
         /**
          * 播放键**要渲染**（设计稿第 8 页大卡右端有一枚 56 的圆片，
          * x1304–1359.5，`right` 内容带就是靠它与第 3 张专辑卡一起覆盖的）。

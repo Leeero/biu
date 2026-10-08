@@ -75,6 +75,7 @@ const fixtureProps = (): DiscoverViewProps => {
         variant: tag.variant,
       })),
       artVariant: fixture.hero.artVariant,
+      artPlaceholder: PLACEHOLDER_RADIALS[fixture.hero.artVariant],
       onPlay: () => {},
     },
     albumSectionTitle: fixture.albumSection.title,
@@ -138,56 +139,48 @@ describe("屏 07 呈现结构", () => {
     expect(container.querySelector('[style*="grid-template-columns"]')).toBeNull();
   });
 
-  test("导语与筛选条用屏级像素覆写，不走档位", async () => {
+  test("导语与筛选条统一走 4188 组件类", async () => {
     const container = await render(<DiscoverView {...fixtureProps()} />);
     const fixture = SCREEN_07_DISCOVER_CARD_FIXTURE;
 
     const lead = Array.from(container.querySelectorAll("p")).find(node => node.textContent === fixture.head.lead);
     expect(lead).toBeDefined();
-    expect((lead as HTMLElement).style.marginTop).toBe(`${DISCOVER_RHYTHM.leadMarginTop}px`);
+    expect(lead?.closest("header")?.className).toBe("discover4188-heading");
 
-    const bar = container.querySelector('[role="group"]');
+    const bar = container.querySelector('[aria-label="发现音乐筛选"]');
     expect(bar).not.toBeNull();
-    expect((bar as HTMLElement).style.marginTop).toBe(`${DISCOVER_RHYTHM.filterMarginTop}px`);
+    expect(bar?.className).toBe("discover4188-filters");
   });
 
-  test("两段的段间距同为 25、标题下距同为 3", async () => {
+  test("大卡和专辑区使用同一 4188 命名空间", async () => {
     const container = await render(<DiscoverView {...fixtureProps()} />);
 
     const sections = Array.from(container.querySelectorAll("section"));
     expect(sections).toHaveLength(2);
-
-    for (const section of sections) {
-      expect((section as HTMLElement).style.marginTop).toBe(`${DISCOVER_RHYTHM.sectionGap}px`);
-      const header = section.querySelector("header");
-      expect((header as HTMLElement).style.marginBottom).toBe(`${DISCOVER_RHYTHM.sectionHeadMarginBottom}px`);
-    }
+    expect(sections[0]?.className).toBe("discover4188-hero");
+    expect(sections[1]?.className).toBe("discover4188-section");
   });
 
-  test("大卡的三列与播放键都由令牌给出（不是写死的像素）", async () => {
+  test("大卡占位资产与播放动作都落在正式 4188 组件中", async () => {
     const container = await render(<DiscoverView {...fixtureProps()} />);
 
-    const hero = container.querySelector("article");
+    const hero = container.querySelector(".discover4188-hero") as HTMLElement | null;
     expect(hero).not.toBeNull();
-    expect(hero?.className).toContain("--biu-layout-hero-art-w");
-    expect(hero?.className).toContain("--biu-layout-hero-play-w");
-    expect(hero?.className).toContain("--biu-layout-hero-gap");
+    expect(hero?.style.getPropertyValue("--discover-art")).toBe(PLACEHOLDER_RADIALS.heroCard);
 
-    // 播放键是设计稿上可见的一枚 56 圆片 —— 夹具模式也必须渲染。
-    const play = container.querySelector('button[aria-label="播放"]') as HTMLElement | null;
+    const play = Array.from(container.querySelectorAll("button")).find(button =>
+      button.textContent?.includes("立即播放"),
+    );
     expect(play).not.toBeNull();
-    expect(play?.style.width).toBe("56px");
-    expect(play?.style.height).toBe("56px");
   });
 
   test("专辑卡是 3 张，封面尺寸走令牌，且**没有画幅说明**", async () => {
     const container = await render(<DiscoverView {...fixtureProps()} />);
     const fixture = SCREEN_07_DISCOVER_CARD_FIXTURE;
 
-    // article 共 4 个：大卡 1 + 专辑卡 3。
-    expect(container.querySelectorAll("article")).toHaveLength(1 + fixture.albums.length);
+    expect(container.querySelectorAll("article.discover4188-card")).toHaveLength(fixture.albums.length);
 
-    const covers = Array.from(container.querySelectorAll('div[class*="--biu-layout-album-art"]'));
+    const covers = Array.from(container.querySelectorAll(".discover4188-art-fallback"));
     expect(covers).toHaveLength(fixture.albums.length);
 
     // 设计稿第 8 页三张专辑封面左下角逐点为空 —— 原型的「1:1」是原型发挥。
@@ -199,15 +192,11 @@ describe("屏 07 呈现结构", () => {
     expect(container.textContent).not.toContain("1:1");
   });
 
-  test("注解带按页流排在内容之后，不是贴视口底的固定带", async () => {
+  test("产品预览不渲染开发注解正文", async () => {
     const container = await render(<DiscoverView {...fixtureProps()} />);
     const fixture = SCREEN_07_DISCOVER_CARD_FIXTURE;
 
-    const note = Array.from(container.querySelectorAll("p")).find(node => node.textContent === fixture.note);
-    expect(note).toBeDefined();
-    // inline 档给的是 `relative`；固定档会带 `absolute` 与内联 top。
-    expect(note?.className).not.toContain("absolute");
-    expect((note as HTMLElement).style.top).toBe("");
+    expect(container.textContent).not.toContain(fixture.note);
   });
 
   test("拿不到 banner 时首段整段不渲染（真实路径的缺数据态）", async () => {

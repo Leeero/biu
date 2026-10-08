@@ -48,13 +48,21 @@ const toListRow = (track: Track, index: number): DiscoverListTrackRow => ({
   art: track.cover,
   artKey: track.id,
 });
-const toAlbum = (track: Track, source: "region" | "module"): DiscoverAlbum => ({
+const toAlbum = (
+  track: Track,
+  source: "region" | "module",
+  currentId?: string,
+  onPlay?: () => void,
+): DiscoverAlbum => ({
   key: track.id,
   badge: "B站音乐",
   title: track.title,
   meta: track.creator?.name ?? "未知创作者",
   art: track.cover,
   artKey: track.id,
+  duration: typeof track.duration === "number" ? formatDuration(track.duration) : undefined,
+  current: track.id === currentId,
+  onPlay,
   tags: [{ key: "source", label: source === "region" ? "音乐分区" : "新歌", variant: "plain" }],
 });
 
@@ -68,6 +76,7 @@ const MusicRecommendLive = () => {
   const [featuredTrack, setFeaturedTrack] = useState<Track | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("请稍后重试");
+  const playId = usePlayList(state => state.playId);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -175,7 +184,7 @@ const MusicRecommendLive = () => {
     <ScrollContainer enableBackToTop className="h-full w-full">
       <DiscoverView
         title="发现音乐"
-        lead={source === "region" ? "浏览音乐分区最新内容。" : "浏览新碟与新歌推荐。"}
+        lead="来自 Bilibili 的音乐视频，与本地音乐，一起播放"
         filters={filters}
         heroSectionTitle="新碟速递"
         hero={
@@ -194,7 +203,7 @@ const MusicRecommendLive = () => {
             : null
         }
         albumSectionTitle={source === "region" ? "音乐分区推荐" : "新歌推荐"}
-        albums={tracks.slice(0, 9).map(track => toAlbum(track, source))}
+        albums={tracks.slice(0, 12).map(track => toAlbum(track, source, playId, () => void act(track, "play")))}
         note={undefined}
       />
     </ScrollContainer>
@@ -211,6 +220,7 @@ const FixtureDiscover = () => {
 };
 const FixtureDiscoverList = () => {
   const fixture = useDiscoverListFixtureData();
+  const [searchParams] = useSearchParams();
   return fixture ? (
     <>
       <DiscoverListView
@@ -225,7 +235,7 @@ const FixtureDiscoverList = () => {
         onPillPress={() => {}}
         onRowAction={() => {}}
       />
-      <AnnotationBand>{fixture.note}</AnnotationBand>
+      {searchParams.get("preview") !== "4188" && <AnnotationBand>{fixture.note}</AnnotationBand>}
     </>
   ) : null;
 };

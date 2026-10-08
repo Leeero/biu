@@ -4,8 +4,7 @@ import { useSearchParams } from "react-router";
 import { addToast } from "@heroui/react";
 
 import { getPlayModeList } from "@/common/constants/audio";
-import { formatDuration } from "@/common/utils/time";
-import { getUniqueQueueItems } from "@/features/player/queue";
+import { buildQueueViewModel } from "@/features/player/queue";
 import { useQueueFixtureData } from "@/features/player/queue-fixture";
 import { QueueView, queueColumns, type QueueRow } from "@/features/player/queue-view";
 import { useModalStore } from "@/store/modal";
@@ -21,31 +20,28 @@ const QueuePage = () => {
   const nextId = usePlayList(state => state.nextId);
   const playMode = usePlayList(state => state.playMode);
   const keepPages = usePlayList(state => state.shouldKeepPagesOrderInRandomPlayMode);
-  const unique = useMemo(() => getUniqueQueueItems(list), [list]);
+  const queue = useMemo(() => buildQueueViewModel(list, playId, nextId), [list, nextId, playId]);
   const filter = params.get("source") ?? "all";
   const filtered = useMemo(
     () =>
-      unique.filter(item =>
-        filter === "all" ? true : filter === "local" ? item.source === "local" : item.source !== "local",
+      queue.filter(row =>
+        filter === "all" ? true : filter === "local" ? row.item.source === "local" : row.item.source !== "local",
       ),
-    [filter, unique],
+    [filter, queue],
   );
   const rows = useMemo<QueueRow[]>(
     () =>
-      filtered.map((item, index) => ({
-        id: item.id,
+      filtered.map((row, index) => ({
+        id: row.id,
         index: index + 1,
-        title: item.pageTitle || item.title,
-        subtitle: `${item.source === "local" ? "本地音乐" : item.ownerName || "未知创作者"} · ${item.id === playId ? "正在播放" : item.id === nextId ? "下一首播放" : "队列"}${item.totalPage ? ` · 多分P ${item.pageIndex}/${item.totalPage}` : ""}`,
-        status:
-          item.id === playId
-            ? `正在播放 · ${MODE_LABEL.get(playMode)}`
-            : `队列 · ${item.source === "local" ? "本地文件" : "音乐视频"}`,
-        duration: item.duration ? formatDuration(item.duration) : "--:--",
-        art: item.pageCover || item.cover,
-        artKey: item.id,
+        title: row.title,
+        subtitle: `${row.artist} · ${row.isCurrent ? "正在播放" : row.isNext ? "下一首播放" : "队列"}${row.partLabel ? ` · ${row.partLabel}` : ""}`,
+        status: row.isCurrent ? `正在播放 · ${MODE_LABEL.get(playMode)}` : `队列 · ${row.sourceLabel}`,
+        duration: row.duration,
+        art: row.cover,
+        artKey: row.id,
       })),
-    [filtered, nextId, playId, playMode],
+    [filtered, playMode],
   );
 
   const confirmClear = () =>
@@ -99,7 +95,7 @@ const QueuePage = () => {
     { key: "mode", label: `${MODE_LABEL.get(playMode)} ▾`, kind: "secondary" as const, action: true },
     { key: "keep", label: `随机时保持分P顺序 · ${keepPages ? "开" : "关"}`, kind: "neutral" as const, action: true },
     { key: "clear", label: "清空队列", kind: "neutral" as const, action: true },
-    { key: "count", label: `共 ${unique.length} 首`, kind: "accent" as const },
+    { key: "count", label: `共 ${queue.length} 首`, kind: "accent" as const },
   ];
 
   return (
@@ -107,7 +103,7 @@ const QueuePage = () => {
       title="播放队列"
       lead="管理当前播放顺序，支持拖拽排序和分集展开。"
       pills={pills}
-      sectionTitle={`队列 · ${unique.length} 首`}
+      sectionTitle={`队列 · ${queue.length} 首`}
       columns={queueColumns(["#", "标题", "来源 · 状态", "时长"])}
       rows={rows}
       currentId={playId}
@@ -123,8 +119,8 @@ const QueuePage = () => {
       }}
       onRowAction={(row, key) => void handleAction(row, key)}
       onReorder={(from, to) => {
-        const source = filtered[from];
-        const target = filtered[to];
+        const source = filtered[from]?.item;
+        const target = filtered[to]?.item;
         if (source && target) usePlayList.getState().reorder(list.indexOf(source), list.indexOf(target));
       }}
     />
