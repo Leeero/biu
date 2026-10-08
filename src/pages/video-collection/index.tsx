@@ -84,10 +84,14 @@ const Folder = () => {
 
   const fixtureEnabled = searchParams.get("fixture") === "02-playlist-detail";
 
-  const collectionType = useMemo(
-    () => Number(searchParams.get("type") || CollectionType.Favorite) as CollectionType,
-    [searchParams],
-  );
+  // type 不在 21/31 内（缺省、0、历史脏链接）一律按收藏夹渲染 —— 三个分支
+  // 全不命中时页面只剩壳层、内容区整片空白，比报错更难排查。
+  const collectionType = useMemo(() => {
+    const raw = Number(searchParams.get("type"));
+    return raw === CollectionType.VideoCollections || raw === CollectionType.VideoSeries
+      ? (raw as CollectionType)
+      : CollectionType.Favorite;
+  }, [searchParams]);
 
   if (fixtureEnabled) {
     return <FixturePlaylistDetail preview4188={searchParams.get("preview") === "4188"} />;

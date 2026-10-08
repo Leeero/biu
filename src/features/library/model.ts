@@ -3,6 +3,17 @@ import type { FavoriteItem } from "@/store/favorite";
 
 import { CollectionType } from "@/common/constants/collection";
 
+/**
+ * 把接口返回的 type 收敛到详情页认识的三个类型码。
+ *
+ * `/x/v3/fav/folder/created/list` 的 `type` **不是** 11/21/31 枚举
+ * （普通收藏夹返回 0），而 `?? CollectionType.Favorite` 对 0 不兜底
+ * （0 不是 nullish）—— 曾因此生成 `?type=0` 的链接，详情页三个分支
+ * 全不命中，内容区整片空白。只放行 21/31，其余一律按收藏夹处理。
+ */
+const normalizeCollectionType = (type: number | undefined): CollectionType =>
+  type === CollectionType.VideoCollections || type === CollectionType.VideoSeries ? type : CollectionType.Favorite;
+
 export const adaptFavoriteItemToPlaylist = (item: FavoriteItem, isOwnedByCurrentUser: boolean): PlaylistSummary => ({
   id: `${item.type === CollectionType.VideoCollections ? "season" : "favorite-folder"}:${item.id}`,
   source: item.type === CollectionType.VideoCollections ? "season" : "favorite-folder",
@@ -12,7 +23,7 @@ export const adaptFavoriteItemToPlaylist = (item: FavoriteItem, isOwnedByCurrent
 });
 
 export const getFavoriteItemHref = (item: FavoriteItem) => {
-  const type = item.type ?? CollectionType.Favorite;
+  const type = normalizeCollectionType(item.type);
   const mid = item.mid ? `&mid=${item.mid}` : "";
   return `/collection/${item.id}?type=${type}${mid}`;
 };
@@ -66,9 +77,9 @@ const badgeOf = (type: number | undefined): { badge: string; source: LibraryTile
 };
 
 export const adaptFavoriteItemToTile = (item: FavoriteItem, isOwnedByCurrentUser: boolean): LibraryTile => {
-  const { badge, source } = badgeOf(item.type);
+  const type = normalizeCollectionType(item.type);
+  const { badge, source } = badgeOf(type);
   const mid = item.mid ? `&mid=${item.mid}` : "";
-  const type = item.type ?? CollectionType.Favorite;
 
   return {
     key: `${source}:${item.id}`,
