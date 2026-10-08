@@ -1,30 +1,20 @@
 import { useNavigate } from "react-router";
 
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, addToast, type DropdownItemProps } from "@heroui/react";
 import {
-  Avatar,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  addToast,
-  useDisclosure,
-  type DropdownItemProps,
-} from "@heroui/react";
-import {
+  RiArrowRightSLine,
   RiExternalLinkLine,
   RiFeedbackLine,
-  RiHistoryLine,
   RiLoginCircleLine,
   RiLogoutCircleLine,
   RiProfileLine,
   RiRefreshLine,
-  RiSettings3Line,
-  RiTeamLine,
 } from "@remixicon/react";
 import { twMerge } from "tailwind-merge";
 
 import { postPassportLoginExit } from "@/service/passport-login-exit";
 import { useFavoritesStore } from "@/store/favorite";
+import { openLoginModal } from "@/store/login-modal";
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 import { usePlayProgress } from "@/store/play-progress";
@@ -32,30 +22,24 @@ import { useSettings } from "@/store/settings";
 import { useToken } from "@/store/token";
 import { useUser } from "@/store/user";
 
-import Login from "./login";
-
-interface AvatarMenuProps {
-  onDropdownOpenChange?: (open: boolean) => void;
-}
-
 /**
- * 顶栏头像菜单。
+ * 侧栏账户区（4188 设计稿的账户入口）。
  *
- * 一级导航常驻在顶栏，头像只承接账户和应用级操作，避免用户先打开个人菜单
- * 才能在产品的核心区域间切换。个人资料、关注、历史属于账户上下文；设置、刷新、
- * 反馈与退出属于应用操作。
+ * 4188 设计稿中账户区只在侧栏底部，顶栏不设头像。这里把原顶栏头像菜单的
+ * 账户与应用操作（登录、个人资料、刷新数据、问题反馈、退出登录）并入侧栏
+ * 账户卡的弹出菜单；关注与动态、观看历史、设置等导航入口仍由侧栏导航项
+ * 承接，不在菜单中重复。
  *
- * 视觉上只改了触发件：按设计稿把头像固定为 40 × 40 正圆，其余交互
- * （登录弹窗、退出确认、刷新数据）沿用上一轮实现，不做行为改动。
+ * 登录弹窗**不在这里**：它挂在 `Layout`，由 `useLoginModal` 开关，这样各页
+ * 登录门禁的「去登录」按钮和这里的「登录」项走的是同一个弹窗。
  */
-const AvatarMenu = ({ onDropdownOpenChange }: AvatarMenuProps) => {
+const ProfileMenu = () => {
   const user = useUser(s => s.user);
   const clearUser = useUser(s => s.clear);
   const clearToken = useToken(s => s.clear);
   const navigate = useNavigate();
   const updateSettings = useSettings(s => s.update);
 
-  const { isOpen: isLoginModalOpen, onOpen: openLoginModal, onOpenChange: onLoginModalOpenChange } = useDisclosure();
   const onOpenConfirmModal = useModalStore(s => s.onOpenConfirmModal);
 
   const logout = async () => {
@@ -96,7 +80,7 @@ const AvatarMenu = ({ onDropdownOpenChange }: AvatarMenuProps) => {
     }
   };
 
-  const accountItems: (DropdownItemProps & { label: string; hidden?: boolean })[] = [
+  const items: (DropdownItemProps & { label: string; hidden?: boolean })[] = [
     {
       key: "login",
       label: "登录",
@@ -112,32 +96,10 @@ const AvatarMenu = ({ onDropdownOpenChange }: AvatarMenuProps) => {
       onPress: () => navigate(`/user/${user?.mid}`),
     },
     {
-      key: "following",
-      label: "关注与动态",
-      startContent: <RiTeamLine size={18} />,
-      hidden: !user?.isLogin,
-      onPress: () => navigate("/follow"),
-    },
-    {
-      key: "history",
-      label: "B站历史",
-      startContent: <RiHistoryLine size={18} />,
-      hidden: !user?.isLogin,
-      onPress: () => navigate("/history"),
-    },
-  ];
-
-  const appItems: (DropdownItemProps & { label: string })[] = [
-    {
-      key: "settings",
-      label: "设置",
-      startContent: <RiSettings3Line size={18} />,
-      onPress: () => navigate("/settings"),
-    },
-    {
       key: "refresh",
       label: "刷新数据",
       startContent: <RiRefreshLine size={18} />,
+      hidden: !user?.isLogin,
       onPress: async () => {
         try {
           await useUser.getState().updateUser();
@@ -183,7 +145,7 @@ const AvatarMenu = ({ onDropdownOpenChange }: AvatarMenuProps) => {
         });
       },
     },
-  ].filter(item => !(item as { hidden?: boolean }).hidden);
+  ].filter(item => !item.hidden);
 
   return (
     <>
@@ -191,23 +153,22 @@ const AvatarMenu = ({ onDropdownOpenChange }: AvatarMenuProps) => {
         shouldBlockScroll={false}
         triggerScaleOnOpen={false}
         radius="md"
+        placement="top-start"
         classNames={{
           content: "min-w-[180px]",
         }}
-        onOpenChange={onDropdownOpenChange}
       >
         <DropdownTrigger>
-          <Avatar
-            isBordered
-            showFallback
-            as="button"
-            type="button"
-            aria-label="账户与应用菜单"
-            className="h-10 w-10 flex-none cursor-pointer transition-transform hover:scale-105"
-            src={user?.face}
-          />
+          <button type="button" className="shell4188-profile" aria-label="账户菜单">
+            {user?.face ? <img src={user.face} alt="" /> : <span className="shell4188-avatar-fallback">B</span>}
+            <span className="shell4188-profile-copy">
+              <strong>{user?.isLogin ? user.uname : "未登录"}</strong>
+              <small>{user?.isLogin ? "Bilibili 账户" : "登录后同步内容"}</small>
+            </span>
+            <RiArrowRightSLine size={20} />
+          </button>
         </DropdownTrigger>
-        <DropdownMenu aria-label="账户与应用" variant="flat" items={[...accountItems, ...appItems]}>
+        <DropdownMenu aria-label="账户操作" variant="flat" items={items}>
           {({ key, label, className, ...rest }) => (
             <DropdownItem className={twMerge("rounded-medium", className)} key={key} {...rest}>
               {label}
@@ -215,9 +176,8 @@ const AvatarMenu = ({ onDropdownOpenChange }: AvatarMenuProps) => {
           )}
         </DropdownMenu>
       </Dropdown>
-      <Login isOpen={isLoginModalOpen} onOpenChange={onLoginModalOpenChange} />
     </>
   );
 };
 
-export default AvatarMenu;
+export default ProfileMenu;

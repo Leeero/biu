@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import {
   RiAddLine,
   RiAlbumLine,
-  RiArrowRightSLine,
   RiDownload2Line,
   RiFolderMusicLine,
   RiHeart3Line,
@@ -11,30 +10,49 @@ import {
   RiMusic2Line,
   RiSettings3Line,
   RiTimeLine,
+  type RemixiconComponentType,
 } from "@remixicon/react";
 import clx from "classnames";
 
+import { PRIMARY_NAV_ITEMS } from "@/layout/route-shell";
 import { useSettings } from "@/store/settings";
-import { useUser } from "@/store/user";
+
+import ProfileMenu from "./profile-menu";
 
 interface SidebarProps {
   pathname: string;
 }
 
-const PRIMARY = [
-  { label: "发现音乐", href: "/", icon: RiMusic2Line },
-  { label: "我的音乐", href: "/library", icon: RiHeart3Line },
-  { label: "稍后播放", href: "/later", icon: RiTimeLine },
-  { label: "本地音乐", href: "/local-music", icon: RiFolderMusicLine },
-  { label: "下载管理", href: "/download-list", icon: RiDownload2Line },
-] as const;
+interface NavItem {
+  label: string;
+  href: string;
+  icon: RemixiconComponentType;
+}
 
-const SECONDARY = [
+/**
+ * 一级入口的图标。一级入口本身（标签与地址）的唯一真源是
+ * `route-shell.ts` 的 `PRIMARY_NAV_ITEMS`，这里只补呈现层需要的图标。
+ * `tests/app-shell-interactions.test.ts` 会断言两者同源、且每个入口都有图标。
+ */
+const NAV_ICONS: Record<string, RemixiconComponentType> = {
+  "/": RiMusic2Line,
+  "/library": RiHeart3Line,
+  "/later": RiTimeLine,
+  "/local-music": RiFolderMusicLine,
+  "/download-list": RiDownload2Line,
+};
+
+const PRIMARY: NavItem[] = PRIMARY_NAV_ITEMS.map(item => ({
+  ...item,
+  icon: NAV_ICONS[item.href] ?? RiMusic2Line,
+}));
+
+const SECONDARY: NavItem[] = [
   { label: "播放队列", href: "/queue", icon: RiListCheck2 },
   { label: "观看历史", href: "/history", icon: RiAlbumLine },
   { label: "关注与动态", href: "/follow", icon: RiHeart3Line },
   { label: "设置", href: "/settings", icon: RiSettings3Line },
-] as const;
+];
 
 const isActive = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" || pathname === "/search" : pathname === href || pathname.startsWith(`${href}/`);
@@ -43,9 +61,8 @@ const Sidebar = ({ pathname }: SidebarProps) => {
   const navigate = useNavigate();
   const collapsed = useSettings(state => state.sideMenuCollapsed);
   const updateSettings = useSettings(state => state.update);
-  const user = useUser(state => state.user);
 
-  const renderItem = ({ label, href, icon: Icon }: (typeof PRIMARY)[number] | (typeof SECONDARY)[number]) => (
+  const renderItem = ({ label, href, icon: Icon }: NavItem) => (
     <button
       key={href}
       type="button"
@@ -69,27 +86,18 @@ const Sidebar = ({ pathname }: SidebarProps) => {
       >
         Biu
       </button>
-      <nav className="shell4188-nav-list">{PRIMARY.map(renderItem)}</nav>
-      <div className="shell4188-sidebar-rule" />
-      <div className="shell4188-sidebar-label">
-        <span>内容与应用</span>
-        <button type="button" aria-label="管理播放列表" onClick={() => navigate("/library")}>
-          <RiAddLine size={18} />
-        </button>
+      <div className="shell4188-sidebar-scroll">
+        <nav className="shell4188-nav-list">{PRIMARY.map(renderItem)}</nav>
+        <div className="shell4188-sidebar-rule" />
+        <div className="shell4188-sidebar-label">
+          <span>内容与应用</span>
+          <button type="button" aria-label="管理播放列表" onClick={() => navigate("/library")}>
+            <RiAddLine size={18} />
+          </button>
+        </div>
+        <nav className="shell4188-nav-list shell4188-nav-secondary">{SECONDARY.map(renderItem)}</nav>
       </div>
-      <nav className="shell4188-nav-list shell4188-nav-secondary">{SECONDARY.map(renderItem)}</nav>
-      <button
-        type="button"
-        className="shell4188-profile"
-        onClick={() => navigate(user?.isLogin ? `/user/${user.mid}` : "/settings")}
-      >
-        {user?.face ? <img src={user.face} alt="" /> : <span className="shell4188-avatar-fallback">B</span>}
-        <span className="shell4188-profile-copy">
-          <strong>{user?.isLogin ? user.uname : "未登录"}</strong>
-          <small>{user?.isLogin ? "Bilibili 账户" : "登录后同步内容"}</small>
-        </span>
-        <RiArrowRightSLine size={20} />
-      </button>
+      <ProfileMenu />
     </aside>
   );
 };

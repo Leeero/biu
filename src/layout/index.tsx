@@ -10,6 +10,7 @@ import Fallback from "@/components/error-fallback";
 import FavoritesSelectModal from "@/components/favorites-select-modal";
 import ReleaseNoteModal from "@/components/release-note-modal";
 import VideoPagesDownloadSelectModal from "@/components/video-pages-download-select-modal";
+import Login from "@/layout/login";
 import MobileNav from "@/layout/mobile-nav";
 import PlayBar from "@/layout/playbar";
 import QueueDrawer from "@/layout/queue-drawer";
@@ -17,6 +18,7 @@ import { composeLocalMusicSegments, composeSegmentCount, resolveRouteShell } fro
 import Sidebar from "@/layout/sidebar";
 import TopBar from "@/layout/topbar";
 import SegmentNav from "@/layout/topbar/segment-nav";
+import { useLoginModal } from "@/store/login-modal";
 import { usePlayList } from "@/store/play-list";
 import { useQueueDrawer } from "@/store/queue-drawer";
 import { useSearchSegments } from "@/store/search-segments";
@@ -24,18 +26,33 @@ import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 
 /**
+ * 全局登录弹窗宿主。
+ *
+ * 弹窗挂在这一层而不是账户菜单内部：门禁按钮（`/library`、`/follow`、`/history`）
+ * 与账户菜单的「登录」项共用 `useLoginModal`，两边打开的是同一个弹窗。
+ */
+const LoginHost = () => {
+  const open = useLoginModal(state => state.open);
+  const setOpen = useLoginModal(state => state.setOpen);
+
+  return <Login isOpen={open} onOpenChange={setOpen} />;
+};
+
+/**
  * 应用外层。
  *
  * 三件事，且只有三件事：
- *   1. 把当前路径翻译成壳层契约（`chrome` + 顶栏分段 + 激活分段），交给 `AppShell`。
+ *   1. 把当前路径翻译成壳层契约（`chrome` + 页面内二级导航 + 激活项），交给 `AppShell`。
  *      壳层状态是**受控**的——`/now-playing` 隐藏两栏、`/mini-player` 整窗接管，
  *      都由 `route-shell.ts` 决定，`AppShell` 自己不猜。`search` 只参与分段组的
  *      激活判定（`/collection/:id` 的三段靠 `?type=` 区分），不影响其余契约。
- *   2. 托住全局弹层（收藏夹选择、确认框、发布说明、下载选择）。
+ *   2. 托住全局弹层（收藏夹选择、确认框、发布说明、下载选择、登录）。
  *      它们不属于任何单个页面，也不属于壳层。
  *   3. 错误边界按路径重置，避免一个页面的渲染错误把整个应用钉死。
  *
- * 侧栏（`layout/side`）已在决策 3 中移除；一级导航改由顶栏分段组与头像菜单承载。
+ * 一级导航落在侧栏（`layout/sidebar`，数据源是 `route-shell.ts` 的
+ * `PRIMARY_NAV_ITEMS`），账户入口在侧栏底部的账户卡；顶栏只有返回 / 前进 / 搜索，
+ * 壳层不持有第二份导航声明。
  */
 const Layout = () => {
   const updateUser = useUser(state => state.updateUser);
@@ -43,8 +60,6 @@ const Layout = () => {
   const location = useLocation();
   const {
     chrome,
-    segments,
-    activeSegmentKey,
     contextSegments: declaredContextSegments,
     activeContextKey,
     topbarNote,
@@ -93,7 +108,7 @@ const Layout = () => {
       <AppShell
         chrome={chrome}
         sidebar={<Sidebar pathname={location.pathname} />}
-        topbar={<TopBar segments={segments} activeSegmentKey={activeSegmentKey} note={topbarNote} />}
+        topbar={<TopBar note={topbarNote} />}
         player={<PlayBar />}
         queueDrawer={<QueueDrawer />}
         mobileNav={<MobileNav pathname={location.pathname} />}
@@ -114,6 +129,7 @@ const Layout = () => {
       <ConfirmModal />
       <VideoPagesDownloadSelectModal />
       <ReleaseNoteModal />
+      <LoginHost />
     </ErrorBoundary>
   );
 };

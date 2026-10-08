@@ -5,9 +5,14 @@ import { CollectionType } from "@/common/constants/collection";
 /**
  * 路由 → 壳层契约。
  *
- * 三件事在这里定：某个路由用哪种壳层状态、顶栏分段组显示什么、搜索位提示什么。
- * 之所以放在一处而不是散在 `routes.tsx` 里：`AppShell`、`TopBar`、`SearchField`
- * 都要读它，而且它需要被单测与真值文件对照（见 `tests/app-shell-interactions.test.ts`）。
+ * 三件事在这里定：某个路由用哪种壳层状态、页面内二级导航（分段组）显示什么、
+ * 搜索位提示什么。之所以放在一处而不是散在 `routes.tsx` 里：`AppShell`、
+ * `Layout`、`SearchField` 都要读它，而且它需要被单测与真值文件对照
+ * （见 `tests/app-shell-interactions.test.ts`）。
+ *
+ * 顶栏**不**参与其中：4188 设计稿的顶栏只有返回 / 前进 / 搜索，一级导航落在
+ * 侧栏（`layout/sidebar`，数据源是下面的 `PRIMARY_NAV_ITEMS`），账户入口落在
+ * 侧栏底部的账户卡。壳层不持有第二份导航声明。
  */
 
 export interface TopbarSegment {
@@ -49,13 +54,19 @@ export interface TopbarSegment {
 }
 
 /**
- * 一级导航。既是顶栏分段组的**默认值**，也是「未声明分段的路由」的导航出口。
+ * 一级导航项。**唯一真源**——侧栏（`layout/sidebar`）按它渲染主导航。
  *
- * 决策 3 移除侧栏后，一级入口只剩两处：品牌（→ `/`）与头像菜单（其余）。
- * 分段组的默认值取一级导航，是为了保证任何路由都不会出现「没有任何导航出口」
- * 的死角——这正是重构方案 §3.3 的兜底要求。
+ * 它**不再**是顶栏的输入：顶栏只渲染返回 / 前进 / 搜索，一级入口的唯一位置是
+ * 侧栏。此前侧栏自己硬编码了一份同样的 5 项（`PRIMARY`），与这张表并存成了
+ * 双份事实源；现在侧栏从本表派生，图标（`NAV_ICONS`）属于侧栏的呈现细节，
+ * 不进这份契约。
  */
-export const DEFAULT_NAV_SEGMENTS: TopbarSegment[] = [
+export interface PrimaryNavItem {
+  label: string;
+  href: string;
+}
+
+export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   { label: "发现音乐", href: "/" },
   { label: "我的音乐", href: "/library" },
   { label: "稍后播放", href: "/later" },
@@ -180,7 +191,13 @@ export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
     // `type` 缺省 11：页面在无 `type` 时按 `CollectionType.Favorite` 渲染，
     // 所以激活判定必须把这个缺省一并算进去 —— 否则夹具地址（不带 `type`）
     // 会让三段全灭，而设计稿里「收藏夹 · 11」是**激活态**。
-    activeKey: search => search.get("type") ?? String(CollectionType.Favorite),
+    // 页面对 21/31 之外的值（0 / 脏链接）同样按收藏夹渲染，判定保持一致。
+    activeKey: search => {
+      const raw = Number(search.get("type"));
+      if (raw === CollectionType.VideoCollections) return String(CollectionType.VideoCollections);
+      if (raw === CollectionType.VideoSeries) return String(CollectionType.VideoSeries);
+      return String(CollectionType.Favorite);
+    },
   },
   "/search": {
     segments: [
@@ -316,10 +333,6 @@ export const resolveTopbarNote = (pathname: string): string | undefined =>
 
 export interface RouteShell {
   chrome: ShellChrome;
-  /** 始终可见的一级导航。 */
-  segments: TopbarSegment[];
-  /** 当前激活的一级入口。 */
-  activeSegmentKey: string;
   /** 当前页面内部的二级导航；没有子视图时为空。 */
   contextSegments: TopbarSegment[];
   /** 当前激活的二级入口。 */
@@ -364,7 +377,8 @@ const resolveDefaultActiveKey = (segments: TopbarSegment[], pathname: string): s
 /**
  * 解析某个地址的壳层契约。纯函数，无副作用——路由一变就能直接断言结果。
  *
- * 未声明分段的路由回落到一级导航，而不是「什么都不显示」。
+ * 未声明分段的路由得到空的 `contextSegments`（页面内没有子视图可切换），
+ * 这是正常状态而不是错误：一级导航由侧栏独立承接，不依赖这张表兜底。
  *
  * `search` 只参与**激活判定**（`/collection/:id` 的三段靠 `?type=` 区分），
  * 不影响 `chrome` 与分段内容。
@@ -372,25 +386,11 @@ const resolveDefaultActiveKey = (segments: TopbarSegment[], pathname: string): s
 export const resolveRouteShell = (pathname: string, search = ""): RouteShell => {
   const chrome = SHELL_CHROME_BY_ROUTE[pathname] ?? "default";
   const topbarNote = resolveTopbarNote(pathname);
-  const primaryPath =
-    pathname === "/" || pathname === "/search"
-      ? "/"
-      : pathname.startsWith("/library") || pathname.startsWith("/collection/")
-        ? "/library"
-        : pathname === "/later"
-          ? "/later"
-          : pathname === "/local-music"
-            ? "/local-music"
-            : pathname === "/download-list"
-              ? "/download-list"
-              : "";
 
   const declared = Object.entries(ROUTE_SEGMENTS).find(([pattern]) => matchesPattern(pathname, pattern));
   if (!declared) {
     return {
       chrome,
-      segments: DEFAULT_NAV_SEGMENTS,
-      activeSegmentKey: resolveDefaultActiveKey(DEFAULT_NAV_SEGMENTS, primaryPath),
       contextSegments: [],
       activeContextKey: "",
       topbarNote,
@@ -400,8 +400,6 @@ export const resolveRouteShell = (pathname: string, search = ""): RouteShell => 
   const spec = declared[1];
   return {
     chrome,
-    segments: DEFAULT_NAV_SEGMENTS,
-    activeSegmentKey: resolveDefaultActiveKey(DEFAULT_NAV_SEGMENTS, primaryPath),
     contextSegments: spec.segments,
     activeContextKey: spec.activeKey?.(new URLSearchParams(search)) ?? resolveDefaultActiveKey(spec.segments, pathname),
     topbarNote,

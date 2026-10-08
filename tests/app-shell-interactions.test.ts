@@ -3,11 +3,12 @@
  *
  * 覆盖三件事：
  *   1. `resolveShellLayout` —— 三种壳层状态各自渲染哪些槽位、用哪张背景。
- *   2. `resolveRouteShell` —— 路由 → 壳层状态的映射，以及分段的兜底行为。
+ *   2. `resolveRouteShell` —— 路由 → 壳层状态的映射，以及页面内二级导航的归属。
  *   3. 顶栏分段与 `cplus-spec-lock.json` 的对齐 —— 保证「待声明清单」不会漏掉任何一屏。
  *
- * 上一轮的侧栏宽度边界用例已随决策 3（移除侧栏）删除：那套逻辑本身没有了，
- * 留着测一个不存在的功能比不测更糟。
+ * 一级导航的用例钉在「侧栏与 `PRIMARY_NAV_ITEMS` 同源」上：侧栏是**唯一**渲染方，
+ * 那张表是唯一真源。两者曾经各写一份同样的 5 项（双份事实源），下面第一条用例
+ * 就是防它再漂回去。
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -16,9 +17,9 @@ import { describe, expect, test } from "vitest";
 import { resolveShellLayout, type ShellChrome } from "@/app/shell/model";
 import { CollectionType } from "@/common/constants/collection";
 import {
-  DEFAULT_NAV_SEGMENTS,
   DEFAULT_SEARCH_PLACEHOLDER,
   DEFERRED_SEGMENTS,
+  PRIMARY_NAV_ITEMS,
   ROUTE_SEGMENTS,
   SEARCH_PLACEHOLDER_BY_ROUTE,
   TOPBAR_NOTE_BY_ROUTE,
@@ -88,7 +89,10 @@ describe("壳层状态", () => {
     expect(shellCss).toContain("@media (width <= 640px)");
     expect(shellCss).toContain("--biu-4188-sidebar-compact-width");
     expect(shellCss).toContain("width: calc(100% - 55px)");
-    expect(topbarSource).toContain("<AvatarMenu");
+    // 4188 设计稿顶栏只有返回/前进/搜索；账户入口唯一落在侧栏账户区。
+    expect(topbarSource).not.toContain("<AvatarMenu");
+    const sidebarSource = readFileSync(path.resolve(process.cwd(), "src/layout/sidebar/index.tsx"), "utf8");
+    expect(sidebarSource).toContain("<ProfileMenu");
   });
 
   test("原生滚动容器与 OverlayScrollbars 使用同一套桌面主题", () => {
@@ -107,6 +111,7 @@ describe("壳层状态", () => {
 
   test("搜索下拉层使用不透明表面且不会侵入播放器区域", () => {
     const searchField = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/search-field.tsx"), "utf8");
+    const shellCss = readFileSync(path.resolve(process.cwd(), "src/app/shell/shell-4188.css"), "utf8");
 
     expect(searchField).toContain("bg-[rgb(var(--biu-color-surface-raised))]");
     expect(searchField).toContain("max-h-[calc(100dvh-var(--biu-layout-topbar-h)-var(--biu-layout-player-h)-0.5rem)]");
@@ -114,6 +119,17 @@ describe("壳层状态", () => {
     expect(searchField).not.toContain("absolute top-full left-0");
     expect(searchField).toContain("overscroll-contain");
     expect(searchField).not.toContain("bg-[var(--biu-surface-sunken)]");
+    // 高度规则只能命中 HeroUI Input 自己的槽位。两个坑都有真实事故：
+    // 1. 曾用 `.shell4188-search > div`，把同为直接子 div 的建议浮层钉成
+    //    搜索框高度（--biu-4188-search-height），浮层只剩 48px 一条；
+    // 2. 曾把 base 写成后代选择器 `.shell4188-search [data-slot="base"]`，
+    //    而下拉内部的 HeroUI Listbox 包装层**同样渲染 data-slot="base"**，
+    //    于是它被钉成 48px、overflow:clip 裁掉列表内容，还被 :focus-within
+    //    规则画上聚焦环 —— 见 2026-10-08 两次修复记录。
+    // 因此 base 必须限定为直接子级（Input 才是根节点的直接子元素）。
+    expect(shellCss).not.toContain(".shell4188-search > div");
+    expect(shellCss).toContain('.shell4188-search > [data-slot="base"]');
+    expect(shellCss).not.toContain('.shell4188-search [data-slot="base"]');
   });
 });
 
@@ -143,26 +159,30 @@ describe("路由壳层契约", () => {
     expect(resolveRouteShell("/does-not-exist").chrome).toBe("default");
   });
 
-  test("未声明分段的路由回落到可导航的一级导航", () => {
-    const { segments } = resolveRouteShell("/does-not-exist");
-    expect(segments).toEqual(DEFAULT_NAV_SEGMENTS);
-    // 兜底值必须是**真的能点**的：每个分段都要有 href，
-    // 否则回落到一级导航就只是换了一种没有出口的显示方式。
-    for (const segment of segments) {
-      expect(segment.href, `${segment.label} 缺少 href`).toBeTruthy();
-    }
+  test("未声明分段的路由没有页面内二级导航（一级导航由侧栏独立承接）", () => {
+    const { contextSegments, activeContextKey } = resolveRouteShell("/does-not-exist");
+    expect(contextSegments).toEqual([]);
+    expect(activeContextKey).toBe("");
   });
 
   test("一级导航覆盖五处一级入口，且互相不重复", () => {
-    const hrefs = DEFAULT_NAV_SEGMENTS.map(segment => segment.href);
+    const hrefs = PRIMARY_NAV_ITEMS.map(item => item.href);
     expect(hrefs).toEqual(["/", "/library", "/later", "/local-music", "/download-list"]);
     expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 
-  test("所有普通页面都保留一级导航，页面筛选只进入二级导航", () => {
+  test("侧栏一级导航派生自真源，且每个入口都有图标", () => {
+    // 侧栏曾硬编码一份与真源逐字相同的表（双份事实源，改一处漏一处）。
+    // 这条把它钉成「派生」：一旦有人再抄一份，`PRIMARY_NAV_ITEMS.map` 消失、用例即红。
+    const sidebarSource = readFileSync(path.resolve(process.cwd(), "src/layout/sidebar/index.tsx"), "utf8");
+    expect(sidebarSource).toContain("PRIMARY_NAV_ITEMS.map");
+    for (const item of PRIMARY_NAV_ITEMS) {
+      expect(sidebarSource, `${item.href} 在侧栏缺少图标`).toContain(`"${item.href}": Ri`);
+    }
+  });
+
+  test("页面筛选只进入页面内二级导航，不影响壳层状态", () => {
     const shell = resolveRouteShell("/collection/123", "?type=21");
-    expect(shell.segments).toEqual(DEFAULT_NAV_SEGMENTS);
-    expect(shell.activeSegmentKey).toBe("/library");
     expect(shell.contextSegments.map(segment => segment.key)).toEqual(["11", "21", "31"]);
     expect(shell.activeContextKey).toBe("21");
   });
@@ -248,7 +268,6 @@ describe("/collection/:id 顶栏分段组", () => {
   test("音乐库使用资产分段，默认激活我的歌单", () => {
     const shell = resolveRouteShell("/library");
     expect(shell.contextSegments.map(segment => segment.label)).toEqual(["我的歌单", "我收藏的"]);
-    expect(shell.activeSegmentKey).toBe("/library");
     expect(shell.activeContextKey).toBe("created");
   });
 });
@@ -322,8 +341,8 @@ describe("/search 顶栏分段组（模板 + 运行时计数）", () => {
     expect(composeSegmentCount(segment, { videoCount: 0, creatorCount: 0 }).count).toBe(0);
     expect(composeSegmentCount(segment, { videoCount: 9, creatorCount: 2 }).count).toBe(9);
     // 静态分段原样返回 —— 不引入多余的字段。
-    const nav = DEFAULT_NAV_SEGMENTS[0]!;
-    expect(composeSegmentCount(nav, { videoCount: null, creatorCount: null })).toBe(nav);
+    const staticSegment = resolveRouteShell("/library").contextSegments[0]!;
+    expect(composeSegmentCount(staticSegment, { videoCount: null, creatorCount: null })).toBe(staticSegment);
   });
 });
 

@@ -209,12 +209,6 @@ const CompactMiniPlayer = () => {
   );
 };
 
-const SYSTEM_SEGMENTS = [
-  { key: "mini", label: "迷你播放器", href: "#mini" },
-  { key: "tray", label: "托盘", href: "#tray" },
-  { key: "shortcuts", label: "全局快捷键", href: "#shortcuts" },
-];
-
 /**
  * `/mini-player` 同时承载两种窗口形态：主窗口中的系统集成页，以及 Electron 创建的
  * 360×140 独立播放窗。用实际视口宽度分流，避免为视觉页牺牲真正的迷你窗口能力。
@@ -223,7 +217,7 @@ const MiniPlayer = () => {
   if (window.innerWidth <= 600) return <CompactMiniPlayer />;
 
   return (
-    <AppShell topbar={<TopBar segments={SYSTEM_SEGMENTS} activeSegmentKey="mini" />} player={<PlayBar />}>
+    <AppShell topbar={<TopBar />} player={<PlayBar />}>
       <SystemIntegrationView />
     </AppShell>
   );
