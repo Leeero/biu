@@ -62,11 +62,6 @@ const SpaceInfo = ({ spaceInfo, relationStats, relationWithMe, refreshRelation }
     }
   };
 
-  // C+ 只有深色一套皮肤（决策 2）：不再依据系统主题推算遮罩档位，恒取深色档。
-  // 上一轮这里读 themeMode —— 现在那个设置项已不再影响渲染，继续读会得到
-  // 「系统是浅色、界面却是深色」的错配。
-  const overlayOpacity = 0.5;
-
   if (relationWithMe === UserRelation.Blocked) {
     return (
       <div className="flex h-[480px] w-full flex-col items-center justify-center space-y-6">
@@ -77,13 +72,11 @@ const SpaceInfo = ({ spaceInfo, relationStats, relationWithMe, refreshRelation }
   }
 
   return (
-    <div
-      className="relative min-h-[248px] overflow-hidden bg-cover bg-center text-white bg-blend-multiply"
-      style={{
-        background: `linear-gradient(to bottom, rgba(0,0,0,${overlayOpacity * 0.75}), rgba(0,0,0,${Math.min(overlayOpacity + 0.32, 0.82)})), url(${spaceInfo?.top_photo_v2?.l_200h_img}) center/cover no-repeat`,
-      }}
-    >
-      <div className="mx-auto flex min-h-[248px] w-full max-w-[1440px] items-end justify-between gap-8 px-6 py-7 lg:px-8">
+    <div className="social4188-creator-hero">
+      {spaceInfo?.top_photo_v2?.l_200h_img ? (
+        <img className="social4188-creator-cover" src={spaceInfo.top_photo_v2.l_200h_img} alt="" />
+      ) : null}
+      <div className="social4188-creator-info">
         <div className="flex min-w-0 grow items-end gap-5">
           <Avatar
             src={spaceInfo?.face}

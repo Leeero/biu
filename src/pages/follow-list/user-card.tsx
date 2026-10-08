@@ -64,7 +64,7 @@ const UserCard = ({ u, refresh, onSetGroup }: Props) => {
       isHoverable
       isPressable
       onPress={() => navigate(`/user/${u.mid}`)}
-      className="group relative h-full w-full overflow-hidden"
+      className="social4188-person-card group relative h-full w-full overflow-hidden"
     >
       <CardBody className="flex items-center space-y-2 overflow-hidden p-4">
         <div className="relative h-32 w-32 flex-none">

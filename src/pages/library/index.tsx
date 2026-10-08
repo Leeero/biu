@@ -146,7 +146,7 @@ const Library = () => {
           qualityPillText={`音质偏好 · ${overview.qualityLabel}`}
           createdTiles={created}
           collectedTiles={collected}
-          demoActionKeys={demoActionKeys}
+          demoActionKeys={searchParams.get("preview") === "4188" ? [] : demoActionKeys}
           onTilePress={() => {
             /* 夹具模式下不跳转：比对需要画面稳定。 */
           }}
@@ -156,10 +156,12 @@ const Library = () => {
           onPlayAll={() => undefined}
           onShuffleAll={() => undefined}
         />
-        <AnnotationBand anchor="low">
-          悬停或选中瓦片：玻璃操作带直接露出 5 个主操作（播放 / 下一首 / 入队 / 收藏 /
-          下载音频），其余进入右键菜单——每个 Track 的 8 项能力都有落点。
-        </AnnotationBand>
+        {searchParams.get("preview") !== "4188" && (
+          <AnnotationBand anchor="low">
+            悬停或选中瓦片：玻璃操作带直接露出 5 个主操作（播放 / 下一首 / 入队 / 收藏 /
+            下载音频），其余进入右键菜单——每个 Track 的 8 项能力都有落点。
+          </AnnotationBand>
+        )}
       </>
     );
   }

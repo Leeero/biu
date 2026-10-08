@@ -81,42 +81,140 @@ export const LibraryView = ({
   onPlayAll,
   onShuffleAll,
   bulkPending = false,
-}: LibraryViewProps) => (
-  // 壳层的 <main> 已是地标，这里用 div，不再嵌套第二个 main。
-  <ScrollContainer enableBackToTop className="h-full w-full">
-    <div className="w-full">
-      <PageHeader
-        title="我的音乐库"
-        lead={lead}
-        leadOffset="low"
-        aside={<InfoPanel eyebrow="库概览" items={overviewLines} />}
-      >
-        <FilterBar label="音乐库操作" gap="tight">
-          <Button variant="primary" loading={bulkPending} onClick={onPlayAll}>
-            全部播放
-          </Button>
-          <Button variant="secondary" disabled={bulkPending} onClick={onShuffleAll}>
-            随机播放
-          </Button>
-          <Pill variant="neutral">{qualityPillText}</Pill>
-        </FilterBar>
-      </PageHeader>
+}: LibraryViewProps) =>
+  demoActionKeys.length === 0 ? (
+    <ScrollContainer enableBackToTop className="h-full w-full">
+      <div className="asset4188-page">
+        <header className="asset4188-head">
+          <div>
+            <span className="asset4188-eyebrow">音乐库</span>
+            <h1>我的音乐</h1>
+            <p>{lead}</p>
+          </div>
+          <div className="asset4188-actions">
+            <button type="button" className="is-primary" disabled={bulkPending} onClick={onPlayAll}>
+              全部播放
+            </button>
+            <button type="button" disabled={bulkPending} onClick={onShuffleAll}>
+              随机播放
+            </button>
+            <span className="asset4188-pill">{qualityPillText}</span>
+          </div>
+        </header>
+        <div className="asset4188-stats">
+          {overviewLines.slice(0, 4).map(line => (
+            <span key={line}>
+              <b>{line.match(/[\d,]+/)?.[0] ?? "—"}</b>
+              {line}
+            </span>
+          ))}
+        </div>
+        {createdTiles.length > 0 && (
+          <LibrarySection
+            title={`我创建的 · ${createdTiles.length}`}
+            tiles={createdTiles}
+            onTilePress={onTilePress}
+            onTileAction={onTileAction}
+          />
+        )}
+        {collectedTiles.length > 0 && (
+          <LibrarySection
+            title={`我收藏的 · ${collectedTiles.length}`}
+            tiles={collectedTiles}
+            onTilePress={onTilePress}
+            onTileAction={onTileAction}
+          />
+        )}
+      </div>
+    </ScrollContainer>
+  ) : (
+    // 壳层的 <main> 已是地标，这里用 div，不再嵌套第二个 main。
+    <ScrollContainer enableBackToTop className="h-full w-full">
+      <div className="w-full">
+        <PageHeader
+          title="我的音乐库"
+          lead={lead}
+          leadOffset="low"
+          aside={<InfoPanel eyebrow="库概览" items={overviewLines} />}
+        >
+          <FilterBar label="音乐库操作" gap="tight">
+            <Button variant="primary" loading={bulkPending} onClick={onPlayAll}>
+              全部播放
+            </Button>
+            <Button variant="secondary" disabled={bulkPending} onClick={onShuffleAll}>
+              随机播放
+            </Button>
+            <Pill variant="neutral">{qualityPillText}</Pill>
+          </FilterBar>
+        </PageHeader>
 
-      {createdTiles.length > 0 && (
-        <Section title={`我创建的 · ${createdTiles.length} 个播放列表`}>
-          <MediaGrid columns={4}>
-            {createdTiles.map(tile => renderTile(tile, demoActionKeys.includes(tile.key), onTilePress, onTileAction))}
-          </MediaGrid>
-        </Section>
-      )}
+        {createdTiles.length > 0 && (
+          <Section title={`我创建的 · ${createdTiles.length} 个播放列表`}>
+            <MediaGrid columns={4}>
+              {createdTiles.map(tile => renderTile(tile, demoActionKeys.includes(tile.key), onTilePress, onTileAction))}
+            </MediaGrid>
+          </Section>
+        )}
 
-      {collectedTiles.length > 0 && (
-        <Section title={`我收藏的 · ${collectedTiles.length} 个播放列表`}>
-          <MediaGrid columns={4}>
-            {collectedTiles.map(tile => renderTile(tile, demoActionKeys.includes(tile.key), onTilePress, onTileAction))}
-          </MediaGrid>
-        </Section>
-      )}
+        {collectedTiles.length > 0 && (
+          <Section title={`我收藏的 · ${collectedTiles.length} 个播放列表`}>
+            <MediaGrid columns={4}>
+              {collectedTiles.map(tile =>
+                renderTile(tile, demoActionKeys.includes(tile.key), onTilePress, onTileAction),
+              )}
+            </MediaGrid>
+          </Section>
+        )}
+      </div>
+    </ScrollContainer>
+  );
+
+const LibrarySection = ({
+  title,
+  tiles,
+  onTilePress,
+  onTileAction,
+}: {
+  title: string;
+  tiles: LibraryTile[];
+  onTilePress: LibraryViewProps["onTilePress"];
+  onTileAction: LibraryViewProps["onTileAction"];
+}) => (
+  <section className="asset4188-section">
+    <div className="asset4188-section-head">
+      <h2>{title}</h2>
     </div>
-  </ScrollContainer>
+    <div className="asset4188-grid">
+      {tiles.map(tile => (
+        <article key={tile.key} className="asset4188-card">
+          <div
+            className="asset4188-card-art"
+            style={tile.coverGradient ? { backgroundImage: tile.coverGradient } : undefined}
+          >
+            {tile.cover && <img src={tile.cover} alt="" />}
+            <span className="asset4188-card-badge">{tile.badge}</span>
+            <span className="asset4188-card-actions">
+              {LIBRARY_TILE_ACTIONS.map(action => (
+                <button
+                  key={action.key}
+                  type="button"
+                  aria-label={`${action.label} ${tile.title}`}
+                  onClick={event => {
+                    event.stopPropagation();
+                    onTileAction(tile, action.key);
+                  }}
+                >
+                  {action.label.slice(0, 1)}
+                </button>
+              ))}
+            </span>
+          </div>
+          <button type="button" className="asset4188-card-link" onClick={() => onTilePress(tile)}>
+            <strong>{tile.title}</strong>
+            <small>{tile.meta ?? tile.badge}</small>
+          </button>
+        </article>
+      ))}
+    </div>
+  </section>
 );

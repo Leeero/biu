@@ -108,7 +108,7 @@ const LocalMusicPage = () => {
         title={fixture.header.title}
         lead={fixture.header.lead}
         cards={fixture.cards}
-        note={fixture.note}
+        note={searchParams.get("preview") === "4188" ? undefined : fixture.note}
         selectedId={fixture.cards[0].id}
         onPlayAll={() => undefined}
         onShuffle={() => undefined}

@@ -174,7 +174,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
     switch (selectedTab) {
       case "general":
         return (
-          <Card shadow="none" className="border-divider bg-content1/70 border">
+          <Card shadow="none" className="settings4188-card border-divider bg-content1/70 border">
             <CardBody className="gap-8 p-6">
               <SystemSettingsTab {...system} section="general" />
               <div className="border-divider border-t pt-6">
@@ -185,7 +185,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
         );
       case "playback":
         return (
-          <Card shadow="none" className="border-divider bg-content1/70 border">
+          <Card shadow="none" className="settings4188-card border-divider bg-content1/70 border">
             <CardBody className="p-6">
               <SystemSettingsTab {...system} section="playback" />
             </CardBody>
@@ -193,7 +193,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
         );
       case "download":
         return (
-          <Card shadow="none" className="border-divider bg-content1/70 border">
+          <Card shadow="none" className="settings4188-card border-divider bg-content1/70 border">
             <CardBody className="p-6">
               <SystemSettingsTab {...system} section="download" />
               <p className="text-default-500 border-divider mt-6 border-t pt-5 text-sm">
@@ -204,7 +204,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
         );
       case "shortcut":
         return (
-          <Card shadow="none" className="border-divider bg-content1/70 border">
+          <Card shadow="none" className="settings4188-card border-divider bg-content1/70 border">
             <CardBody className="p-6">
               <ShortcutSettingsPage />
             </CardBody>
@@ -212,7 +212,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
         );
       case "advanced":
         return (
-          <Card shadow="none" className="border-divider bg-content1/70 border">
+          <Card shadow="none" className="settings4188-card border-divider bg-content1/70 border">
             <CardBody className="gap-5 p-6">
               <div>
                 <h2>网络代理</h2>
@@ -224,7 +224,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
         );
       case "about":
         return (
-          <Card shadow="none" className="border-divider bg-content1/70 border">
+          <Card shadow="none" className="settings4188-card border-divider bg-content1/70 border">
             <CardBody className="p-6">
               <SystemSettingsTab {...system} section="about" />
             </CardBody>
@@ -235,15 +235,16 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
 
   return (
     <ScrollContainer enableBackToTop className="h-full w-full">
-      <div className="mx-auto w-full max-w-6xl py-7">
-        <div className="mb-7">
-          <h1 className="text-2xl font-semibold">设置</h1>
-          <p className="text-default-500 mt-1 text-sm">管理 Biu 的界面、播放与本地应用偏好</p>
+      <div className="settings4188-page">
+        <div className="settings4188-head">
+          <span>应用偏好</span>
+          <h1>设置</h1>
+          <p>管理 Biu 的界面、播放与本地应用偏好</p>
         </div>
         <div className="flex w-full items-start max-md:flex-col">
           <nav
             aria-label="设置分类"
-            className="sticky top-4 flex w-44 shrink-0 flex-col gap-1 max-md:static max-md:w-full max-md:flex-row max-md:overflow-x-auto max-md:pb-2"
+            className="settings4188-nav sticky top-4 flex w-44 shrink-0 flex-col gap-1 max-md:static max-md:w-full max-md:flex-row max-md:overflow-x-auto max-md:pb-2"
           >
             {SETTINGS_NAV_ITEMS.map(item => {
               const Icon = item.icon;
@@ -253,7 +254,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
                   key={item.key}
                   type="button"
                   aria-current={isSelected ? "page" : undefined}
-                  className={`flex h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors max-md:w-auto max-md:min-w-fit ${
+                  className={`settings4188-nav-item flex h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors max-md:w-auto max-md:min-w-fit ${
                     isSelected
                       ? "bg-default-200 text-foreground font-medium"
                       : "text-default-500 hover:bg-default-100 hover:text-foreground"
@@ -266,7 +267,10 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
               );
             })}
           </nav>
-          <main key={selectedTab} className="min-w-0 flex-1 px-7 max-md:w-full max-md:px-0 max-md:pt-5">
+          <main
+            key={selectedTab}
+            className="settings4188-content min-w-0 flex-1 px-7 max-md:w-full max-md:px-0 max-md:pt-5"
+          >
             {renderContent()}
           </main>
         </div>

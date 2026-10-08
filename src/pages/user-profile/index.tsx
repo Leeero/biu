@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { useParams, useSearchParams } from "react-router";
+import { NavLink, useParams, useSearchParams } from "react-router";
 
 import { Spinner } from "@heroui/react";
 import { useRequest } from "ahooks";
@@ -128,15 +128,31 @@ const UserProfile = () => {
 
   return (
     <ScrollContainer enableBackToTop ref={scrollRef} className="h-full w-full">
-      <SpaceInfo
-        spaceInfo={userInfo}
-        relationStats={relationStats}
-        relationWithMe={relationWithMe}
-        refreshRelation={refreshRelation}
-      />
-      {relationWithMe !== UserRelation.Blocked && (
-        <div className="mx-auto w-full max-w-[1440px] px-6 py-5 lg:px-8">{activeTab?.content}</div>
-      )}
+      <div className="social4188-profile">
+        <SpaceInfo
+          spaceInfo={userInfo}
+          relationStats={relationStats}
+          relationWithMe={relationWithMe}
+          refreshRelation={refreshRelation}
+        />
+        {relationWithMe !== UserRelation.Blocked && (
+          <>
+            <nav className="social4188-tabs" aria-label="创作者内容类型">
+              {tabs.map(tab => (
+                <NavLink
+                  key={tab.key}
+                  to={`/user/${id}?tab=${tab.key}`}
+                  className={activeTab?.key === tab.key ? "is-active" : undefined}
+                  aria-current={activeTab?.key === tab.key ? "page" : undefined}
+                >
+                  {tab.label}
+                </NavLink>
+              ))}
+            </nav>
+            <div className="social4188-profile-content">{activeTab?.content}</div>
+          </>
+        )}
+      </div>
     </ScrollContainer>
   );
 };

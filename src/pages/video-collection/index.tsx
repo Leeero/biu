@@ -35,7 +35,7 @@ const DIALOG_STATIC_TOP = 296 - SHELL_MAIN_TOP;
  * 下载弹层用 `DialogStatic` 按设计稿静态位（画布 left 752 / top 225）摆在同一
  * 定位上下文里 —— 设计稿把它**画**在页面上，夹具要复现画面就得静态渲染它。
  */
-const FixturePlaylistDetail = () => {
+const FixturePlaylistDetail = ({ preview4188 = false }: { preview4188?: boolean }) => {
   const fixture = usePlaylistDetailFixtureData();
 
   if (!fixture) return null;
@@ -57,7 +57,7 @@ const FixturePlaylistDetail = () => {
         columns={columns}
         tracks={fixture.tracks}
         rowActions={PLAYLIST_DETAIL_TRACK_ACTIONS}
-        demoActionRowIds={fixture.demoActionRowIds}
+        demoActionRowIds={preview4188 ? [] : fixture.demoActionRowIds}
         onPillPress={() => {
           /* 夹具模式不触网、不跳转：比对需要画面稳定。 */
         }}
@@ -65,14 +65,16 @@ const FixturePlaylistDetail = () => {
           /* 夹具模式不触网。 */
         }}
       />
-      <AnnotationBand>{fixture.note}</AnnotationBand>
-      <DialogStatic
-        style={{ left: DIALOG_STATIC_LEFT, top: DIALOG_STATIC_TOP }}
-        title={fixture.modal.title}
-        sub={fixture.modal.sub}
-        lines={fixture.modal.lines}
-        footer={<DialogAction onPress={() => undefined}>{fixture.modal.action}</DialogAction>}
-      />
+      {!preview4188 && <AnnotationBand>{fixture.note}</AnnotationBand>}
+      {!preview4188 && (
+        <DialogStatic
+          style={{ left: DIALOG_STATIC_LEFT, top: DIALOG_STATIC_TOP }}
+          title={fixture.modal.title}
+          sub={fixture.modal.sub}
+          lines={fixture.modal.lines}
+          footer={<DialogAction onPress={() => undefined}>{fixture.modal.action}</DialogAction>}
+        />
+      )}
     </>
   );
 };
@@ -88,7 +90,7 @@ const Folder = () => {
   );
 
   if (fixtureEnabled) {
-    return <FixturePlaylistDetail />;
+    return <FixturePlaylistDetail preview4188={searchParams.get("preview") === "4188"} />;
   }
 
   return (

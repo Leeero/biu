@@ -144,11 +144,11 @@ const Later = () => {
             progressPercent: row.progress.endsWith("%") ? Number.parseInt(row.progress, 10) : undefined,
           }))}
           rowActions={PLAYLIST_DETAIL_TRACK_ACTIONS}
-          demoActionRowIds={fixture.demoActionRowIds}
+          demoActionRowIds={searchParams.get("preview") === "4188" ? [] : fixture.demoActionRowIds}
           onPillPress={() => undefined}
           onRowAction={() => undefined}
         />
-        <AnnotationBand>{fixture.note}</AnnotationBand>
+        {searchParams.get("preview") !== "4188" && <AnnotationBand>{fixture.note}</AnnotationBand>}
       </>
     );
   }

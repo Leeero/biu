@@ -19,6 +19,7 @@ import {
   type TrackTableColumn,
 } from "@/ui/patterns/track-table";
 import { Button } from "@/ui/primitives/button";
+import { Icon } from "@/ui/primitives/icon";
 
 export interface DownloadRowViewModel {
   id: string;
@@ -68,6 +69,16 @@ const ROW_ACTIONS: ContextMenuItem[] = [
   { key: "delete", label: "删除任务", color: "danger" },
 ];
 
+const visibleActions = (row: DownloadRowViewModel) => {
+  const actions: ContextMenuItem[] = [];
+  if (row.status.includes("完成")) actions.push(ROW_ACTIONS[0]!);
+  if (row.status.includes("下载中")) actions.push(ROW_ACTIONS[1]!);
+  if (row.status.includes("暂停")) actions.push(ROW_ACTIONS[2]!);
+  if (row.status.includes("出错")) actions.push(ROW_ACTIONS[3]!);
+  actions.push(ROW_ACTIONS[4]!);
+  return actions;
+};
+
 export const DownloadsView = ({
   title,
   lead,
@@ -82,47 +93,130 @@ export const DownloadsView = ({
 }: DownloadsViewProps) => (
   <>
     <ScrollContainer enableBackToTop className="h-full w-full">
-      <PageHeader title={title} lead={lead}>
-        <FilterBar label="下载管理操作" gap="base">
-          {pills.map(pill => (
-            <Button
-              key={pill.key}
-              variant={pill.variant}
-              disabled={pill.disabled}
-              onClick={() => onPillPress(pill.key)}
-            >
-              {pill.label}
-            </Button>
-          ))}
-        </FilterBar>
-      </PageHeader>
-      <Section title={sectionTitle}>
-        <TrackTable variant="download" columns={columns}>
-          {rows.map(row => (
-            <ContextMenu key={row.id} items={ROW_ACTIONS} onAction={action => onRowAction(row.id, action)}>
-              <TrackTableRow trackId={row.id}>
-                <TrackIndex value={row.index} />
+      {!note ? (
+        <div className="manage4188-page">
+          <header className="manage4188-head">
+            <div>
+              <span>离线内容</span>
+              <h1>{title}</h1>
+              <p>{lead}</p>
+            </div>
+            <div className="manage4188-actions">
+              {pills.map(pill => (
                 <button
+                  key={pill.key}
                   type="button"
-                  className="relative z-[1] flex min-w-0 items-center gap-[var(--biu-layout-track-gap)] text-left"
-                  onClick={() => onRowPress(row.id)}
+                  disabled={pill.disabled}
+                  className={
+                    pill.variant === "primary" ? "is-primary" : pill.variant === "danger" ? "is-danger" : undefined
+                  }
+                  onClick={() => onPillPress(pill.key)}
                 >
-                  <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
-                  <TrackText title={row.title} subtitle={row.subtitle} />
+                  {pill.label}
                 </button>
-                <TrackCell>
-                  <InlineProgress
-                    label={row.status}
-                    percent={row.progress}
-                    className={row.progress === undefined ? undefined : "translate-y-1"}
-                  />
-                </TrackCell>
-                <TrackCell align="end">{row.size}</TrackCell>
-              </TrackTableRow>
-            </ContextMenu>
-          ))}
-        </TrackTable>
-      </Section>
+              ))}
+            </div>
+          </header>
+          <section className="manage4188-downloads">
+            <h2>{sectionTitle}</h2>
+            <div className="manage4188-task-grid">
+              {rows.map(row => (
+                <ContextMenu key={row.id} items={visibleActions(row)} onAction={action => onRowAction(row.id, action)}>
+                  <article className="manage4188-task">
+                    <button type="button" className="manage4188-task-main" onClick={() => onRowPress(row.id)}>
+                      {row.art ? <img src={row.art} alt="" /> : <span className="manage4188-task-cover" />}
+                      <span>
+                        <strong>{row.title}</strong>
+                        <small>{row.subtitle}</small>
+                      </span>
+                    </button>
+                    <div className="manage4188-task-status">
+                      <span>
+                        <b>{row.status}</b>
+                        <small>{row.size}</small>
+                      </span>
+                      {row.progress !== undefined && (
+                        <progress max="100" value={row.progress}>
+                          {row.progress}%
+                        </progress>
+                      )}
+                    </div>
+                    <div className="manage4188-task-actions">
+                      {visibleActions(row).map(action => (
+                        <button
+                          key={action.key}
+                          type="button"
+                          aria-label={`${action.label} ${row.title}`}
+                          onClick={() => onRowAction(row.id, action.key)}
+                        >
+                          <Icon
+                            name={
+                              action.key === "delete"
+                                ? "trash"
+                                : action.key === "open"
+                                  ? "folder-open"
+                                  : action.key === "retry"
+                                    ? "refresh"
+                                    : action.key === "pause"
+                                      ? "pause"
+                                      : "play"
+                            }
+                          />
+                          {action.label}
+                        </button>
+                      ))}
+                    </div>
+                  </article>
+                </ContextMenu>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : (
+        <>
+          <PageHeader title={title} lead={lead}>
+            <FilterBar label="下载管理操作" gap="base">
+              {pills.map(pill => (
+                <Button
+                  key={pill.key}
+                  variant={pill.variant}
+                  disabled={pill.disabled}
+                  onClick={() => onPillPress(pill.key)}
+                >
+                  {pill.label}
+                </Button>
+              ))}
+            </FilterBar>
+          </PageHeader>
+          <Section title={sectionTitle}>
+            <TrackTable variant="download" columns={columns}>
+              {rows.map(row => (
+                <ContextMenu key={row.id} items={ROW_ACTIONS} onAction={action => onRowAction(row.id, action)}>
+                  <TrackTableRow trackId={row.id}>
+                    <TrackIndex value={row.index} />
+                    <button
+                      type="button"
+                      className="relative z-[1] flex min-w-0 items-center gap-[var(--biu-layout-track-gap)] text-left"
+                      onClick={() => onRowPress(row.id)}
+                    >
+                      <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
+                      <TrackText title={row.title} subtitle={row.subtitle} />
+                    </button>
+                    <TrackCell>
+                      <InlineProgress
+                        label={row.status}
+                        percent={row.progress}
+                        className={row.progress === undefined ? undefined : "translate-y-1"}
+                      />
+                    </TrackCell>
+                    <TrackCell align="end">{row.size}</TrackCell>
+                  </TrackTableRow>
+                </ContextMenu>
+              ))}
+            </TrackTable>
+          </Section>
+        </>
+      )}
     </ScrollContainer>
     {note ? <AnnotationBand>{note}</AnnotationBand> : null}
   </>

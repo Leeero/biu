@@ -199,7 +199,7 @@ const FollowList = () => {
 
   return (
     <>
-      <div className="flex h-full w-full">
+      <div className="social4188-follow flex h-full w-full">
         <div className="h-full w-50 pb-4">
           <div className="border-divider/40 flex h-full flex-col border-r">
             <div className="mb-2 flex items-center justify-between space-x-1 px-4">

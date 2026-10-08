@@ -6,6 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { formatDuration, formatSecondsToDate } from "@/common/utils/time";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
+import { AssetTrackList } from "@/features/assets/asset-track-list";
 import { postHistoryClear } from "@/service/history-clear";
 import { postHistoryDelete } from "@/service/history-delete";
 import {
@@ -16,20 +17,6 @@ import {
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
-import { FilterBar } from "@/ui/patterns/filter-bar";
-import { InfoPanel } from "@/ui/patterns/info-panel";
-import { PageHeader } from "@/ui/patterns/page-header";
-import { Section } from "@/ui/patterns/section";
-import {
-  TrackArt,
-  TrackCell,
-  TrackIndex,
-  TrackMain,
-  TrackTable,
-  TrackTableActions,
-  TrackTableRow,
-  TrackText,
-} from "@/ui/patterns/track-table";
 import { Button } from "@/ui/primitives/button";
 import { PageState } from "@/ui/states/page-state";
 
@@ -162,6 +149,16 @@ const History = () => {
 
   const handleMenuAction = useCallback(async (key: string, item: HistoryListItem) => {
     switch (key) {
+      case "play":
+        await usePlayList.getState().play({
+          type: "mv",
+          title: item.title,
+          cover: item.cover,
+          bvid: item.history.bvid,
+          ownerName: item.author_name,
+          ownerMid: item.author_mid,
+        });
+        break;
       case "play-next":
         usePlayList.getState().addToNext({
           type: "mv",
@@ -254,104 +251,68 @@ const History = () => {
 
   return (
     <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
-      <PageHeader
-        title="B站历史"
-        lead="按时间查看、搜索和管理观看记录。"
-        aside={
-          <InfoPanel
-            eyebrow="同步状态"
-            items={[`共 ${list.length} 条已加载`, reportPlayHistory ? "播放历史上报 · 开启" : "播放历史上报 · 关闭"]}
-          />
-        }
-      >
-        <FilterBar label="历史操作">
-          <Button
-            variant={reportPlayHistory ? "primary" : "neutral"}
-            onClick={() => updateSettings({ reportPlayHistory: !reportPlayHistory })}
-          >
-            {reportPlayHistory ? "记录历史 · 开" : "记录历史 · 关"}
-          </Button>
-          <Button variant="danger" onClick={handleClear}>
-            清空历史
-          </Button>
-        </FilterBar>
-      </PageHeader>
-      <HistorySearch onSearch={handleSearch} onDateRangeChange={handleDateRangeChange} />
-      {loading && list.length === 0 ? (
-        <PageState kind="loading" />
-      ) : isEmpty ? (
-        <PageState kind="empty" title="暂无历史记录" />
-      ) : (
-        <Section title={`观看记录 · ${list.length} 条`}>
-          <TrackTable
-            columns={[
-              { key: "index", label: "#" },
-              { key: "title", label: "标题" },
-              { key: "progress", label: "进度" },
-              { key: "time", label: "观看时间", align: "end" },
-            ]}
-          >
-            {list.map((item, index) => (
-              <TrackTableRow
-                key={`${item.history.business}-${item.kid}`}
-                onDoubleClick={() =>
-                  void usePlayList.getState().play({
-                    type: "mv",
-                    title: item.title,
-                    cover: item.cover,
-                    bvid: item.history.bvid,
-                    ownerName: item.author_name,
-                    ownerMid: item.author_mid,
-                  })
-                }
-              >
-                <TrackIndex value={index + 1} />
-                <TrackMain>
-                  <TrackArt src={item.cover} artKey={String(item.kid)} />
-                  <TrackText title={item.title} subtitle={item.author_name} />
-                </TrackMain>
-                <TrackCell>{`${formatDuration(item.progress ?? 0)} / ${formatDuration(item.duration ?? 0)}`}</TrackCell>
-                <TrackCell align="end">{formatSecondsToDate(item.view_at)}</TrackCell>
-                <TrackTableActions
-                  actions={[
-                    {
-                      key: "play-next",
-                      label: "下一首",
-                      icon: "next",
-                      onPress: () => void handleMenuAction("play-next", item),
-                    },
-                    {
-                      key: "queue-add",
-                      label: "入队",
-                      icon: "queue-add",
-                      onPress: () => void handleMenuAction("add-to-playlist", item),
-                    },
-                    {
-                      key: "download",
-                      label: "下载",
-                      icon: "download",
-                      onPress: () => void handleMenuAction("download-audio", item),
-                    },
-                    {
-                      key: "delete",
-                      label: "删除",
-                      icon: "trash",
-                      onPress: () => void handleMenuAction("delete", item),
-                    },
-                  ]}
-                />
-              </TrackTableRow>
-            ))}
-          </TrackTable>
-          {hasMore && (
-            <div className="mt-5 flex justify-center">
-              <Button variant="neutral" disabled={loadingMore} onClick={() => void handleLoadMore()}>
-                {loadingMore ? "加载中…" : "加载更多"}
-              </Button>
+      <div className="asset4188-page">
+        <header className="asset4188-head">
+          <div>
+            <span className="asset4188-eyebrow">来自 Bilibili</span>
+            <h1>观看历史</h1>
+            <p>这里显示 Bilibili 历史，不等同于 Biu 的听歌统计。</p>
+          </div>
+          <div className="asset4188-actions">
+            <button
+              type="button"
+              className={reportPlayHistory ? "is-primary" : ""}
+              onClick={() => updateSettings({ reportPlayHistory: !reportPlayHistory })}
+            >
+              {reportPlayHistory ? "记录历史 · 开" : "记录历史 · 关"}
+            </button>
+            <button type="button" className="is-danger" onClick={handleClear}>
+              清空历史
+            </button>
+          </div>
+        </header>
+        <div className="asset4188-filter">
+          <HistorySearch onSearch={handleSearch} onDateRangeChange={handleDateRangeChange} />
+        </div>
+        {loading && list.length === 0 ? (
+          <PageState kind="loading" />
+        ) : isEmpty ? (
+          <PageState kind="empty" title="暂无历史记录" />
+        ) : (
+          <section className="asset4188-section">
+            <div className="asset4188-section-head">
+              <h2>观看记录 · {list.length} 条</h2>
             </div>
-          )}
-        </Section>
-      )}
+            <AssetTrackList
+              label="观看记录"
+              rows={list.map((item, index) => ({
+                id: `${item.history.business}-${item.kid}`,
+                index: index + 1,
+                title: item.title,
+                subtitle: item.author_name,
+                art: item.cover,
+                middle: `${formatDuration(item.progress ?? 0)} / ${formatDuration(item.duration ?? 0)}`,
+                end: formatSecondsToDate(item.view_at),
+                source: item,
+              }))}
+              actions={[
+                { key: "play-next", label: "下一首", icon: "next" },
+                { key: "add-to-playlist", label: "入队", icon: "queue-add" },
+                { key: "download-audio", label: "下载", icon: "download" },
+                { key: "delete", label: "删除", icon: "trash" },
+              ]}
+              onAction={(row, key) => void handleMenuAction(key, row.source)}
+            />
+            {hasMore && (
+              <div className="mt-5 flex justify-center">
+                <Button variant="neutral" disabled={loadingMore} onClick={() => void handleLoadMore()}>
+                  {loadingMore ? "加载中…" : "加载更多"}
+                </Button>
+              </div>
+            )}
+          </section>
+        )}
+      </div>
     </ScrollContainer>
   );
 };

@@ -1,6 +1,7 @@
 import type { ReactNode, RefObject } from "react";
 
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
+import { AssetTrackList } from "@/features/assets/asset-track-list";
 import { FilterBar } from "@/ui/patterns/filter-bar";
 import { InfoPanel } from "@/ui/patterns/info-panel";
 import { InlineProgress } from "@/ui/patterns/inline-progress";
@@ -116,65 +117,107 @@ export const LaterView = ({
   onRowAction,
   scrollRef,
   onReachEnd,
-}: LaterViewProps) => (
-  <ScrollContainer enableBackToTop ref={scrollRef} onReachEnd={onReachEnd} className="h-full w-full">
-    <div className="w-full">
-      <PageHeader
-        title={title}
-        lead={lead}
-        asideWidth={320}
-        aside={<InfoPanel eyebrow={panelEyebrow} items={panelItems} />}
-      >
-        <FilterBar label="稍后播放操作" gap="base">
-          {pills.map(pill =>
-            pill.kind === "primary" || pill.kind === "secondary" || pill.kind === "danger" ? (
-              <Button key={pill.label} variant={pill.kind} onClick={() => onPillPress(pill)}>
+}: LaterViewProps) =>
+  demoActionRowIds.length === 0 ? (
+    <ScrollContainer enableBackToTop ref={scrollRef} onReachEnd={onReachEnd} className="h-full w-full">
+      <div className="asset4188-page">
+        <header className="asset4188-head">
+          <div>
+            <span className="asset4188-eyebrow">Bilibili 稍后再看</span>
+            <h1>{title}</h1>
+            <p>{lead}</p>
+          </div>
+          <div className="asset4188-actions">
+            {pills.map(pill => (
+              <button
+                key={pill.label}
+                type="button"
+                className={pill.kind === "primary" ? "is-primary" : pill.kind === "danger" ? "is-danger" : ""}
+                onClick={() => onPillPress(pill)}
+              >
                 {pill.label}
-              </Button>
-            ) : (
-              <Pill key={pill.label} variant={pill.kind}>
-                {pill.label}
-              </Pill>
-            ),
-          )}
-        </FilterBar>
-      </PageHeader>
+              </button>
+            ))}
+          </div>
+        </header>
+        <div className="asset4188-stats">
+          {panelItems.map((item, index) => (
+            <span key={index}>
+              <b>{index === 0 ? tracks.length : "·"}</b>
+              {item}
+            </span>
+          ))}
+        </div>
+        <div className="asset4188-section-head">
+          <h2>{sectionTitle}</h2>
+        </div>
+        <AssetTrackList
+          label={sectionTitle}
+          rows={tracks.map(row => ({ ...row, middle: row.cell, end: row.progress }))}
+          actions={rowActions}
+          onAction={onRowAction}
+        />
+      </div>
+    </ScrollContainer>
+  ) : (
+    <ScrollContainer enableBackToTop ref={scrollRef} onReachEnd={onReachEnd} className="h-full w-full">
+      <div className="w-full">
+        <PageHeader
+          title={title}
+          lead={lead}
+          asideWidth={320}
+          aside={<InfoPanel eyebrow={panelEyebrow} items={panelItems} />}
+        >
+          <FilterBar label="稍后播放操作" gap="base">
+            {pills.map(pill =>
+              pill.kind === "primary" || pill.kind === "secondary" || pill.kind === "danger" ? (
+                <Button key={pill.label} variant={pill.kind} onClick={() => onPillPress(pill)}>
+                  {pill.label}
+                </Button>
+              ) : (
+                <Pill key={pill.label} variant={pill.kind}>
+                  {pill.label}
+                </Pill>
+              ),
+            )}
+          </FilterBar>
+        </PageHeader>
 
-      <Section title={sectionTitle}>
-        <TrackTable columns={columns}>
-          {tracks.map(row => (
-            <TrackTableRow key={row.id} trackId={row.id}>
-              <TrackIndex value={row.index} />
-              <TrackMain>
-                <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
-                <TrackText title={row.title} subtitle={row.subtitle} />
-              </TrackMain>
-              <TrackCell>{row.cell}</TrackCell>
-              <TrackCell align="end">
-                {row.progressPercent === undefined ? (
-                  row.progress
-                ) : (
-                  <InlineProgress
-                    label={row.progress}
-                    percent={row.progressPercent}
-                    orientation="inline"
-                    barWidth="96px"
-                    className="justify-end"
+        <Section title={sectionTitle}>
+          <TrackTable columns={columns}>
+            {tracks.map(row => (
+              <TrackTableRow key={row.id} trackId={row.id}>
+                <TrackIndex value={row.index} />
+                <TrackMain>
+                  <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
+                  <TrackText title={row.title} subtitle={row.subtitle} />
+                </TrackMain>
+                <TrackCell>{row.cell}</TrackCell>
+                <TrackCell align="end">
+                  {row.progressPercent === undefined ? (
+                    row.progress
+                  ) : (
+                    <InlineProgress
+                      label={row.progress}
+                      percent={row.progressPercent}
+                      orientation="inline"
+                      barWidth="96px"
+                      className="justify-end"
+                    />
+                  )}
+                </TrackCell>
+                {demoActionRowIds.includes(row.id) && (
+                  <TrackTableActions
+                    actions={rowActions.map(action => ({
+                      ...action,
+                      onPress: () => onRowAction(row, action.key),
+                    }))}
                   />
                 )}
-              </TrackCell>
-              {demoActionRowIds.includes(row.id) && (
-                <TrackTableActions
-                  actions={rowActions.map(action => ({
-                    ...action,
-                    onPress: () => onRowAction(row, action.key),
-                  }))}
-                />
-              )}
-            </TrackTableRow>
-          ))}
-        </TrackTable>
-      </Section>
-    </div>
-  </ScrollContainer>
-);
+              </TrackTableRow>
+            ))}
+          </TrackTable>
+        </Section>
+      </div>
+    </ScrollContainer>
+  );

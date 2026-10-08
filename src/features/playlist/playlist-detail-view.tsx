@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import ScrollContainer from "@/components/scroll-container";
+import { AssetTrackList } from "@/features/assets/asset-track-list";
 import { FilterBar } from "@/ui/patterns/filter-bar";
 import { PageHeader } from "@/ui/patterns/page-header";
 import { Section } from "@/ui/patterns/section";
@@ -91,48 +92,82 @@ export const PlaylistDetailView = ({
   demoActionRowIds,
   onPillPress,
   onRowAction,
-}: PlaylistDetailViewProps) => (
-  <ScrollContainer enableBackToTop className="h-full w-full">
-    <div className="w-full">
-      <PageHeader title={title} lead={lead}>
-        <FilterBar label="播放列表操作" gap="base">
-          {pills.map(pill =>
-            pill.kind === "primary" || pill.kind === "secondary" ? (
-              <Button key={pill.label} variant={pill.kind} onClick={() => onPillPress(pill)}>
+}: PlaylistDetailViewProps) =>
+  demoActionRowIds.length === 0 ? (
+    <ScrollContainer enableBackToTop className="h-full w-full">
+      <div className="asset4188-page">
+        <header className="asset4188-head">
+          <div>
+            <span className="asset4188-eyebrow">播放列表</span>
+            <h1>{title}</h1>
+            <p>{lead}</p>
+          </div>
+          <div className="asset4188-actions">
+            {pills.map(pill => (
+              <button
+                key={pill.label}
+                type="button"
+                className={pill.kind === "primary" ? "is-primary" : ""}
+                onClick={() => onPillPress(pill)}
+              >
                 {pill.label}
-              </Button>
-            ) : (
-              <Pill key={pill.label} variant={pill.kind}>
-                {pill.label}
-              </Pill>
-            ),
-          )}
-        </FilterBar>
-      </PageHeader>
+              </button>
+            ))}
+          </div>
+        </header>
+        <div className="asset4188-section-head">
+          <h2>{sectionTitle}</h2>
+        </div>
+        <AssetTrackList
+          label={sectionTitle}
+          rows={tracks.map(row => ({ ...row, middle: row.cell, end: row.duration }))}
+          actions={rowActions}
+          onAction={onRowAction}
+        />
+      </div>
+    </ScrollContainer>
+  ) : (
+    <ScrollContainer enableBackToTop className="h-full w-full">
+      <div className="w-full">
+        <PageHeader title={title} lead={lead}>
+          <FilterBar label="播放列表操作" gap="base">
+            {pills.map(pill =>
+              pill.kind === "primary" || pill.kind === "secondary" ? (
+                <Button key={pill.label} variant={pill.kind} onClick={() => onPillPress(pill)}>
+                  {pill.label}
+                </Button>
+              ) : (
+                <Pill key={pill.label} variant={pill.kind}>
+                  {pill.label}
+                </Pill>
+              ),
+            )}
+          </FilterBar>
+        </PageHeader>
 
-      <Section title={sectionTitle}>
-        <TrackTable columns={columns} currentId={tracks.find(row => row.current)?.id}>
-          {tracks.map(row => (
-            <TrackTableRow key={row.id} trackId={row.id}>
-              <TrackIndex value={row.index} />
-              <TrackMain>
-                <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
-                <TrackText title={row.title} subtitle={row.subtitle} />
-              </TrackMain>
-              <TrackCell>{row.cell}</TrackCell>
-              <TrackCell align="end">{row.duration}</TrackCell>
-              {demoActionRowIds.includes(row.id) && (
-                <TrackTableActions
-                  actions={rowActions.map(action => ({
-                    ...action,
-                    onPress: () => onRowAction(row, action.key),
-                  }))}
-                />
-              )}
-            </TrackTableRow>
-          ))}
-        </TrackTable>
-      </Section>
-    </div>
-  </ScrollContainer>
-);
+        <Section title={sectionTitle}>
+          <TrackTable columns={columns} currentId={tracks.find(row => row.current)?.id}>
+            {tracks.map(row => (
+              <TrackTableRow key={row.id} trackId={row.id}>
+                <TrackIndex value={row.index} />
+                <TrackMain>
+                  <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
+                  <TrackText title={row.title} subtitle={row.subtitle} />
+                </TrackMain>
+                <TrackCell>{row.cell}</TrackCell>
+                <TrackCell align="end">{row.duration}</TrackCell>
+                {demoActionRowIds.includes(row.id) && (
+                  <TrackTableActions
+                    actions={rowActions.map(action => ({
+                      ...action,
+                      onPress: () => onRowAction(row, action.key),
+                    }))}
+                  />
+                )}
+              </TrackTableRow>
+            ))}
+          </TrackTable>
+        </Section>
+      </div>
+    </ScrollContainer>
+  );

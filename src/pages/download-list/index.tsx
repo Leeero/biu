@@ -150,7 +150,7 @@ const DownloadList = () => {
         sectionTitle={fixture.section.title}
         columns={downloadColumns(fixture.section.head)}
         rows={fixture.tasks}
-        note={fixture.note}
+        note={params.get("preview") === "4188" ? undefined : fixture.note}
         onPillPress={() => undefined}
         onRowPress={() => undefined}
         onRowAction={() => undefined}

@@ -1,6 +1,7 @@
 import { twMerge } from "tailwind-merge";
 
 import ScrollContainer from "@/components/scroll-container";
+import { AssetTrackList } from "@/features/assets/asset-track-list";
 import { CreatorRow } from "@/ui/patterns/creator-row";
 import { PageLead } from "@/ui/patterns/page-header";
 import { Section } from "@/ui/patterns/section";
@@ -94,55 +95,112 @@ export const SearchView = ({
   onRowAction,
 }: SearchViewProps) => (
   <ScrollContainer enableBackToTop className="h-full w-full">
-    {/* 内容顶 24：main 的 pt 是 33，屏 06 收 9px（spec-lock 1.3.13「内容顶 24」）。 */}
-    <div className="-mt-[9px] w-full">
-      {/* 搜索框 margin-top 15（相对内容顶 24 ⇒ 盒上缘 110）。 */}
-      <div className="mt-[15px]">
-        <SearchField
-          value={query}
-          onValueChange={onQueryChange}
-          label="搜索音乐视频或创作者"
-          trailing={<LocalLink label={localLink} onPress={onLocalLinkPress} />}
-        />
+    {demoActionRowIds.length === 0 ? (
+      <div className="social4188-page search4188-page">
+        <header className="social4188-head">
+          <span>全局搜索</span>
+          <h1>“{query}”的搜索结果</h1>
+          <p>{lead}</p>
+        </header>
+        <div className="social4188-tabs" role="tablist" aria-label="搜索结果类型">
+          <button type="button" role="tab" aria-selected="true" className="is-active">
+            综合
+          </button>
+          <button type="button" role="tab" aria-selected="false">
+            歌曲
+          </button>
+          <button type="button" role="tab" aria-selected="false">
+            创作者
+          </button>
+          <button type="button" role="tab" aria-selected="false">
+            播放列表
+          </button>
+        </div>
+        <section className="social4188-section">
+          <h2>{videoSectionTitle}</h2>
+          <AssetTrackList
+            label={videoSectionTitle}
+            rows={videos.map((row, index) => ({
+              ...row,
+              index: index + 1,
+              art: row.art,
+              middle: null,
+              end: row.duration,
+            }))}
+            actions={rowActions}
+            onAction={onRowAction}
+          />
+        </section>
+        <section className="social4188-section">
+          <h2>{creatorSectionTitle}</h2>
+          <div className="social4188-creator-grid">
+            {creators.map(creator => (
+              <article key={creator.id}>
+                <span className="social4188-avatar">{creator.name.slice(0, 1)}</span>
+                <div>
+                  <strong>{creator.name}</strong>
+                  <small>{creator.meta}</small>
+                </div>
+                <button type="button">{creator.followed ? "已关注" : "查看主页"}</button>
+              </article>
+            ))}
+          </div>
+        </section>
+        <button type="button" className="social4188-local-link" onClick={onLocalLinkPress}>
+          {localLink}
+        </button>
       </div>
+    ) : (
+      <div className="-mt-[9px] w-full">
+        {/* 内容顶 24：main 的 pt 是 33，屏 06 收 9px（spec-lock 1.3.13「内容顶 24」）。 */}
+        {/* 搜索框 margin-top 15（相对内容顶 24 ⇒ 盒上缘 110）。 */}
+        <div className="mt-[15px]">
+          <SearchField
+            value={query}
+            onValueChange={onQueryChange}
+            label="搜索音乐视频或创作者"
+            trailing={<LocalLink label={localLink} onPress={onLocalLinkPress} />}
+          />
+        </div>
 
-      {/* 盒 → 导语 margin 20（覆盖 PageLead 缺省的 mt-2）。 */}
-      <PageLead className="mt-5">{lead}</PageLead>
+        {/* 盒 → 导语 margin 20（覆盖 PageLead 缺省的 mt-2）。 */}
+        <PageLead className="mt-5">{lead}</PageLead>
 
-      {/* 导语 → 首段 margin 23（gap=push）。分组标题下是无表头行，
+        {/* 导语 → 首段 margin 23（gap=push）。分组标题下是无表头行，
           head margin 用无表头变体 4px（spec-lock geometry.sectionHead.noHeaderVariant，1.3.14）。
           [&+&] 是成对约束：两个 Section 必须都带该类，兄弟选择器才会匹配。 */}
-      <Section title={videoSectionTitle} gap="push" className="[&+&]:mt-[23px] [&>header]:mb-[4px]">
-        <TrackTable variant="search">
-          {videos.map(row => (
-            <TrackTableRow key={row.id} trackId={row.id}>
-              <TrackMain>
-                <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
-                <TrackText title={row.title} subtitle={row.subtitle} />
-              </TrackMain>
-              <TrackCell />
-              <TrackCell align="end">{row.duration}</TrackCell>
-              {demoActionRowIds.includes(row.id) && (
-                <TrackTableActions
-                  className="right-[224px]"
-                  actions={rowActions.map(action => ({
-                    ...action,
-                    onPress: () => onRowAction(row, action.key),
-                  }))}
-                />
-              )}
-            </TrackTableRow>
-          ))}
-        </TrackTable>
-      </Section>
+        <Section title={videoSectionTitle} gap="push" className="[&+&]:mt-[23px] [&>header]:mb-[4px]">
+          <TrackTable variant="search">
+            {videos.map(row => (
+              <TrackTableRow key={row.id} trackId={row.id}>
+                <TrackMain>
+                  <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
+                  <TrackText title={row.title} subtitle={row.subtitle} />
+                </TrackMain>
+                <TrackCell />
+                <TrackCell align="end">{row.duration}</TrackCell>
+                {demoActionRowIds.includes(row.id) && (
+                  <TrackTableActions
+                    className="right-[224px]"
+                    actions={rowActions.map(action => ({
+                      ...action,
+                      onPress: () => onRowAction(row, action.key),
+                    }))}
+                  />
+                )}
+              </TrackTableRow>
+            ))}
+          </TrackTable>
+        </Section>
 
-      {/* 段间 margin 23（覆盖 Section 缺省的 27，见 spec-lock 1.3.13 / 1.3.14）。 */}
-      <Section title={creatorSectionTitle} className="[&+&]:mt-[23px] [&>header]:mb-[4px]">
-        {creators.map(row => (
-          <CreatorRow key={row.id} name={row.name} meta={row.meta} followed={row.followed} />
-        ))}
-      </Section>
-    </div>
+        {/* 段间 margin 23（覆盖 Section 缺省的 27，见 spec-lock 1.3.13 / 1.3.14）。 */}
+        <Section title={creatorSectionTitle} className="[&+&]:mt-[23px] [&>header]:mb-[4px]">
+          {creators.map(row => (
+            <CreatorRow key={row.id} name={row.name} meta={row.meta} followed={row.followed} />
+          ))}
+        </Section>
+      </div>
+    )}
   </ScrollContainer>
 );
 

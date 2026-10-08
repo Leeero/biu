@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-
-import { Tabs, Tab } from "@heroui/react";
+import { useNavigate, useSearchParams } from "react-router";
 
 import Empty from "@/components/empty";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
@@ -28,6 +27,7 @@ import VideoList from "./video-list";
  */
 const FixtureSearch = () => {
   const fixture = useSearchFixtureData();
+  const [searchParams] = useSearchParams();
   const setCounts = useSearchSegments(state => state.setCounts);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const FixtureSearch = () => {
         creatorSectionTitle={fixture.creatorSectionTitle}
         creators={fixture.creators}
         rowActions={PLAYLIST_DETAIL_TRACK_ACTIONS}
-        demoActionRowIds={fixture.demoActionRowIds}
+        demoActionRowIds={searchParams.get("preview") === "4188" ? [] : fixture.demoActionRowIds}
         onQueryChange={() => {
           /* 夹具模式不触网：比对需要画面稳定。 */
         }}
@@ -61,17 +61,20 @@ const FixtureSearch = () => {
       {/* 文字跨度收 1216px 复现设计的两行断点（行 2 = 「主操作。」）——
           Chrome 排版比设计稿 PDF 窄，不收宽度会排成一行。
           spec-lock meta.revisions 1.3.14（字体度量差补偿）。 */}
-      <AnnotationBand anchor="high" className="[&>span:last-child]:max-w-[1216px]">
-        {fixture.note}
-      </AnnotationBand>
+      {searchParams.get("preview") !== "4188" && (
+        <AnnotationBand anchor="high" className="[&>span:last-child]:max-w-[1216px]">
+          {fixture.note}
+        </AnnotationBand>
+      )}
     </>
   );
 };
 
 const Search = () => {
   const fixtureEnabled = useSearchFixture();
+  const navigate = useNavigate();
   const scrollerRef = useRef<ScrollRefObject>(null);
-  const [searchType, setSearchType] = useState(SearchType.Video);
+  const [searchType, setSearchType] = useState(SearchType.All);
   const keyword = useSearchHistory(s => s.keyword);
 
   if (fixtureEnabled) {
@@ -84,45 +87,53 @@ const Search = () => {
 
   return (
     <ScrollContainer enableBackToTop ref={scrollerRef} className="h-full w-full">
-      <div className="w-full pt-5 pb-8">
-        <div className="mb-4">
-          <h1 className="m-0 text-[length:var(--biu-type-page-title-size)] leading-[var(--biu-type-page-title-leading)] font-semibold tracking-[var(--biu-type-page-title-tracking)] text-[rgb(var(--biu-text-primary))]">
-            {`“${keyword}”的搜索结果`}
-          </h1>
-          <p className="mt-2 text-[length:var(--biu-type-lead-size)] leading-7 tracking-[-0.2px] text-[rgb(var(--biu-text-secondary))]">
-            结果来自 B 站搜索，可按音乐视频或创作者查看。
-          </p>
+      <div className="social4188-page search4188-page">
+        <header className="social4188-head">
+          <span>全局搜索</span>
+          <h1>{`“${keyword}”的搜索结果`}</h1>
+          <p>音乐视频与创作者来自 B 站；播放列表仅检索我的音乐，不扩展远程搜索范围。</p>
+        </header>
+        <div className="social4188-tabs" role="tablist" aria-label="搜索结果类型">
+          {SearchTypeOptions.map(option => (
+            <button
+              key={option.value}
+              type="button"
+              role="tab"
+              aria-selected={searchType === option.value}
+              className={searchType === option.value ? "is-active" : undefined}
+              onClick={() => setSearchType(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
-        <div className="mb-5 flex items-center justify-between border-b border-[rgb(var(--biu-color-border)/0.06)] pb-3">
-          <Tabs
-            aria-label="搜索结果类型"
-            variant="light"
-            radius="full"
-            classNames={{
-              tabList: "gap-1 bg-[rgb(var(--biu-color-surface-hover))] p-1 rounded-full",
-              cursor: "rounded-full bg-[rgb(var(--biu-color-surface-raised))] shadow-sm",
-              tabContent: "group-data-[selected=true]:text-primary font-medium",
-            }}
-            items={SearchTypeOptions}
-            selectedKey={searchType}
-            onSelectionChange={v => {
-              setSearchType(v as SearchType);
-            }}
-          >
-            {item => <Tab key={item.value} title={item.label} />}
-          </Tabs>
-        </div>
-        {searchType === SearchType.Video && (
-          <VideoList
-            keyword={keyword}
-            getScrollElement={() => scrollerRef.current?.osInstance()?.elements().viewport || null}
-          />
+        {(searchType === SearchType.All || searchType === SearchType.Video) && (
+          <section className="social4188-section">
+            <h2>音乐视频</h2>
+            <VideoList
+              keyword={keyword}
+              getScrollElement={() => scrollerRef.current?.osInstance()?.elements().viewport || null}
+            />
+          </section>
         )}
         {searchType === SearchType.User && (
-          <UserList
-            keyword={keyword}
-            getScrollElement={() => scrollerRef.current?.osInstance()?.elements().viewport || null}
-          />
+          <section className="social4188-section">
+            <h2>创作者</h2>
+            <UserList
+              keyword={keyword}
+              getScrollElement={() => scrollerRef.current?.osInstance()?.elements().viewport || null}
+            />
+          </section>
+        )}
+        {searchType === SearchType.Playlist && (
+          <div className="social4188-local-result">
+            <span>来自我的音乐</span>
+            <h2>在已有播放列表中查找“{keyword}”</h2>
+            <p>这里不会发起新的远程请求；进入我的音乐后可继续查看本地目录、收藏夹、合集与系列。</p>
+            <button type="button" onClick={() => navigate("/library")}>
+              前往我的音乐
+            </button>
+          </div>
         )}
       </div>
     </ScrollContainer>

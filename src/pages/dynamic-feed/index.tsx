@@ -135,7 +135,7 @@ const DynamicFeedPage = () => {
   }, [handleScroll]);
 
   return (
-    <div className="flex h-full w-full">
+    <div className="social4188-feed flex h-full w-full">
       <AuthorList selectedAuthorMid={selectedAuthorMid} onSelect={handleSelectAuthor} />
 
       <div className="flex min-w-0 flex-1">
