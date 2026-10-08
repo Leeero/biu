@@ -13,6 +13,7 @@ import {
 import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
 import { loadAllPlaylistTracks, type PlaylistTrackSource } from "@/features/playlist/load-tracks";
 import { useFavoritesStore } from "@/store/favorite";
+import { openLoginModal } from "@/store/login-modal";
 import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 import { AnnotationBand } from "@/ui/patterns/annotation-band";
@@ -167,7 +168,15 @@ const Library = () => {
   }
 
   if (!user?.isLogin) {
-    return <PageState kind="empty" title="登录后查看我的收藏" description="收藏内容同步自当前 B 站账号" />;
+    return (
+      <PageState
+        kind="empty"
+        title="登录后查看我的收藏"
+        description="收藏内容同步自当前 B 站账号"
+        actionLabel="去登录"
+        onAction={openLoginModal}
+      />
+    );
   }
 
   const createdTiles: LibraryTile[] = [

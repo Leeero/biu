@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import { getSocialTab } from "@/features/social/model";
 import DynamicFeed from "@/pages/dynamic-feed";
 import FollowList from "@/pages/follow-list";
+import { openLoginModal } from "@/store/login-modal";
 import { useUser } from "@/store/user";
 import { PageState } from "@/ui/states/page-state";
 
@@ -12,7 +13,15 @@ const SocialPage = () => {
   const selectedTab = getSocialTab(searchParams.get("tab"));
 
   if (!user?.isLogin) {
-    return <PageState kind="empty" title="登录后查看关注内容" description="关注列表与动态同步自当前 B 站账号" />;
+    return (
+      <PageState
+        kind="empty"
+        title="登录后查看关注内容"
+        description="关注列表与动态同步自当前 B 站账号"
+        actionLabel="去登录"
+        onAction={openLoginModal}
+      />
+    );
   }
 
   return (
