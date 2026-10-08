@@ -99,15 +99,17 @@ const routes: RouteObject[] = [
             },
           ]
         : []),
+      {
+        // 404 落在**壳层内**：侧栏与播放栏仍然可用，用户有出口可走。
+        // 放到 Layout 之外会得到一张裸页面，连导航都没有。
+        path: "*",
+        element: <NotFound />,
+      },
     ],
   },
   {
     path: "mini-player",
     element: <MiniPlayer />,
-  },
-  {
-    path: "*",
-    element: <NotFound />,
   },
 ];
 

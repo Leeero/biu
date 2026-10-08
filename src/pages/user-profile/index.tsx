@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import { NavLink, useParams, useSearchParams } from "react-router";
 
-import { Spinner } from "@heroui/react";
 import { useRequest } from "ahooks";
 
 import { UserRelation } from "@/common/constants/relation";
@@ -11,6 +10,7 @@ import { getXSpaceSettings } from "@/service/space-setting";
 import { getSpaceWbiAccInfo } from "@/service/space-wbi-acc-info";
 import { getSpaceWbiAccRelation } from "@/service/space-wbi-acc-relation";
 import { useUser } from "@/store/user";
+import { PageState } from "@/ui/states/page-state";
 
 import DynamicList from "./dynamic-list";
 import Favorites from "./favorites";
@@ -28,7 +28,12 @@ const UserProfile = () => {
   const isSelf = String(user?.mid) === id;
   const scrollRef = useRef<ScrollRefObject>(null);
 
-  const { data: userInfo, loading } = useRequest(
+  const {
+    data: userInfo,
+    loading,
+    error,
+    refresh: retryUserInfo,
+  } = useRequest(
     async () => {
       const res = await getSpaceWbiAccInfo({
         mid: id as string,
@@ -37,6 +42,10 @@ const UserProfile = () => {
       if (res.code === 0) {
         return res.data;
       }
+
+      // 失败必须抛出来：此前它静默返回 undefined，页面于是永远停在骨架 + 无限
+      // spinner 上，用户看不到「失败了」，也看不到「可以重试」。
+      throw new Error(res.message || "获取创作者信息失败");
     },
     {
       ready: !!id,
@@ -119,10 +128,21 @@ const UserProfile = () => {
   const activeTab = tabs.find(item => item.key === requestedTab) ?? tabs[0];
 
   if (loading) {
+    return <PageState kind="loading" className="h-full" />;
+  }
+
+  // 接口失败、或无效 id（空间不存在）都在这里收口：可重试，而不是无限 spinner。
+  // 这里**不设**登录门禁：B 站的空间内容本身是公开的，未登录也能看，
+  // 缺的是「拿不到内容」的出口，不是登录态。
+  if (error || !userInfo) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Spinner size="lg" color="primary" />
-      </div>
+      <PageState
+        kind="error"
+        className="h-full"
+        description={error?.message}
+        actionLabel="重新加载"
+        onAction={() => void retryUserInfo()}
+      />
     );
   }
 
