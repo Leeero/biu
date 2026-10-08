@@ -14,9 +14,11 @@ import {
   type HistoryListItem,
   type WebInterfaceHistorySearchParams,
 } from "@/service/web-interface-history-search";
+import { openLoginModal } from "@/store/login-modal";
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
 import { useSettings } from "@/store/settings";
+import { useUser } from "@/store/user";
 import { Button } from "@/ui/primitives/button";
 import { PageState } from "@/ui/states/page-state";
 
@@ -30,10 +32,13 @@ const History = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [list, setList] = useState<HistoryListItem[]>([]);
+  // 首页加载失败时的错误信息；为空表示无错误（避免用空态伪装请求失败）
+  const [loadError, setLoadError] = useState<null | string>(null);
   const pageRef = useRef(1);
   const keywordRef = useRef("");
   const dateRangeRef = useRef<{ start?: number; end?: number } | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const user = useUser(state => state.user);
   const { reportPlayHistory, updateSettings } = useSettings(
     useShallow(state => ({
       reportPlayHistory: state.reportPlayHistory,
@@ -69,7 +74,8 @@ const History = () => {
       }
 
       const newList = res.data?.list || [];
-      // 统一走追加逻辑；首次加载 / 刷新前会清空 list
+      // 请求成功：清除错误态，统一走追加逻辑（首次加载 / 刷新前会清空 list）
+      setLoadError(null);
       if (pageRef.current === 1) {
         setList(newList);
       } else {
@@ -78,19 +84,24 @@ const History = () => {
 
       setHasMore(res.data.has_more);
     } catch (error: any) {
-      addToast({
-        title: error?.message || "获取历史记录失败",
-        color: "danger",
-      });
-      // 如果是第一页请求失败，清空列表
+      const message = error?.message || "获取历史记录失败";
       if (pageRef.current === 1) {
+        // 首页失败：进入错误态并提供重试，不用"暂无记录"的空态掩盖失败
         setList([]);
+        setLoadError(message);
+      } else {
+        // 加载更多失败：保留已有列表，仅提示
+        addToast({
+          title: message,
+          color: "danger",
+        });
       }
     }
   }, []);
 
   const refreshList = useCallback(async () => {
     pageRef.current = 1;
+    setLoadError(null);
     setLoading(true);
     try {
       await fetchHistory();
@@ -142,10 +153,12 @@ const History = () => {
   );
 
   useEffect(() => {
+    // 未登录时由登录门禁接管，不再发起必然失败的请求
+    if (!user?.isLogin) return;
     const days = range === "7d" ? 7 : range === "30d" ? 30 : 0;
     dateRangeRef.current = days ? { start: Date.now() - days * 86_400_000, end: Date.now() } : null;
     void refreshList();
-  }, [range, refreshList]);
+  }, [range, refreshList, user?.isLogin]);
 
   const handleMenuAction = useCallback(async (key: string, item: HistoryListItem) => {
     switch (key) {
@@ -266,7 +279,7 @@ const History = () => {
             >
               {reportPlayHistory ? "记录历史 · 开" : "记录历史 · 关"}
             </button>
-            <button type="button" className="is-danger" onClick={handleClear}>
+            <button type="button" className="is-danger" disabled={!user?.isLogin} onClick={handleClear}>
               清空历史
             </button>
           </div>
@@ -274,8 +287,18 @@ const History = () => {
         <div className="asset4188-filter">
           <HistorySearch onSearch={handleSearch} onDateRangeChange={handleDateRangeChange} />
         </div>
-        {loading && list.length === 0 ? (
+        {!user?.isLogin ? (
+          <PageState
+            kind="empty"
+            title="登录后查看观看历史"
+            description="历史记录同步自当前 B 站账号，登录后即可查看与清理"
+            actionLabel="去登录"
+            onAction={openLoginModal}
+          />
+        ) : loading && list.length === 0 ? (
           <PageState kind="loading" />
+        ) : loadError && list.length === 0 ? (
+          <PageState kind="error" description={loadError} actionLabel="重新加载" onAction={() => void refreshList()} />
         ) : isEmpty ? (
           <PageState kind="empty" title="暂无历史记录" />
         ) : (

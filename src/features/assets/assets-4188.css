@@ -70,6 +70,15 @@
   border-color: var(--biu-4188-error);
 }
 
+.asset4188-actions button:disabled,
+.asset4188-actions button:disabled:hover {
+  color: var(--biu-4188-text-muted);
+  border-color: var(--biu-4188-border);
+  background: var(--biu-4188-surface);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .asset4188-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
