@@ -1,0 +1,9 @@
+/** 4188 动效节奏；减少动效覆盖位于 index.css。 */
+.biu-theme-4188 {
+  --biu-4188-duration-fast: 120ms;
+  --biu-4188-duration-normal: 180ms;
+  --biu-4188-duration-slow: 350ms;
+  --biu-4188-ease-standard: ease;
+  --biu-4188-ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --biu-4188-press-scale: 0.97;
+}

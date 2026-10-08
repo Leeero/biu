@@ -59,6 +59,7 @@ const ConfirmModal = () => {
       isOpen={isConfirmModalOpen}
       onOpenChange={onConfirmModalOpenChange}
       isDismissable={false}
+      classNames={{ base: "manage4188-modal" }}
     >
       <ModalContent>
         {() => (

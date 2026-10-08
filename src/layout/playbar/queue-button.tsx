@@ -1,6 +1,5 @@
-import { useNavigate } from "react-router";
-
 import { useNowPlaying } from "@/features/player/now-playing";
+import { useQueueDrawer } from "@/store/queue-drawer";
 import { Button } from "@/ui/primitives/button";
 
 /**
@@ -25,15 +24,17 @@ import { Button } from "@/ui/primitives/button";
  * 抽屉组件本身要到 P5 才删除，因此 P1 期间两个入口并存。
  */
 const QueueButton = () => {
-  const navigate = useNavigate();
   const { queueCount } = useNowPlaying();
+  const open = useQueueDrawer(state => state.open);
+  const toggle = useQueueDrawer(state => state.toggle);
 
   return (
     <Button
       aria-label={`播放队列，共 ${queueCount} 首`}
+      aria-pressed={open}
       variant="ghost"
-      onClick={() => navigate("/queue")}
-      className="min-w-[104px] gap-[var(--biu-playbar-pill-gap)] px-[var(--biu-playbar-pill-pad)] tabular-nums"
+      onClick={toggle}
+      className="shell4188-queue-button min-w-[104px] tabular-nums"
     >
       队列 · {queueCount}
     </Button>

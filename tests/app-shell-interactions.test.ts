@@ -80,12 +80,14 @@ describe("壳层状态", () => {
     expect(playbarSource).not.toContain("init()");
   });
 
-  test("最小窗口宽度下优先压缩导航与搜索位，头像保持完整可见", () => {
+  test("4188 响应式壳层按 900 / 640 两档压缩导航与搜索位", () => {
     const topbarSource = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/index.tsx"), "utf8");
+    const shellCss = readFileSync(path.resolve(process.cwd(), "src/app/shell/shell-4188.css"), "utf8");
 
-    expect(topbarSource).toContain("max-[1320px]:[&_a]:px-4");
-    expect(topbarSource).toContain("max-[1320px]:min-w-[180px]");
-    expect(topbarSource).toContain("max-[1240px]:hidden");
+    expect(shellCss).toContain("@media (width <= 900px)");
+    expect(shellCss).toContain("@media (width <= 640px)");
+    expect(shellCss).toContain("--biu-4188-sidebar-compact-width");
+    expect(shellCss).toContain("width: calc(100% - 55px)");
     expect(topbarSource).toContain("<AvatarMenu");
   });
 

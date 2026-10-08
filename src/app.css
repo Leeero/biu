@@ -1,5 +1,12 @@
 @import "tailwindcss";
 @import "./ui/tokens/index.css";
+@import "./features/discover/discover-4188.css";
+@import "./features/player/queue-4188.css";
+@import "./features/assets/assets-4188.css";
+@import "./features/social/social-4188.css";
+@import "./features/downloads/manage-4188.css";
+@import "./pages/mini-player/mini-player-4188.css";
+@import "./pages/now-playing/now-playing-4188.css";
 
 @plugin "./hero.ts";
 @plugin "@tailwindcss/typography";
@@ -7,6 +14,7 @@
 @source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant biu-theme-4188 (&:is(.biu-theme-4188 *));
 
 @layer base {
   h1 {
@@ -128,6 +136,20 @@ body,
 .keyword {
   font-style: normal;
   color: var(--biu-color-brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .os-theme-biu {

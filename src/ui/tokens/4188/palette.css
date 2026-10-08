@@ -1,0 +1,40 @@
+/**
+ * 4188 原始色板。字面色值只允许在本文件出现。
+ * 真值：prototypes/biu-discover-option2/src/styles.css 的「夜航声场主题」。
+ */
+.biu-theme-4188 {
+  --c-4188-canvas: #090b12;
+  --c-4188-surface: #111620;
+  --c-4188-surface-elevated: #182131;
+  --c-4188-surface-hover: #202a3a;
+  --c-4188-surface-pressed: #252e40;
+  --c-4188-border: #2a3447;
+  --c-4188-text-primary: #f5f7fb;
+  --c-4188-text-secondary: #9da8ba;
+  --c-4188-text-muted: #737f95;
+  --c-4188-primary: #796cff;
+  --c-4188-primary-hover: #8c80ff;
+  --c-4188-primary-soft: rgb(121 108 255 / 16%);
+  --c-4188-primary-hover-soft: rgb(121 108 255 / 10%);
+  --c-4188-primary-selected-start: rgb(121 108 255 / 28%);
+  --c-4188-primary-selected-end: rgb(121 108 255 / 11%);
+  --c-4188-playback: #32c5d2;
+  --c-4188-playback-hover: #55d4df;
+  --c-4188-playback-soft: rgb(50 197 210 / 14%);
+  --c-4188-favorite: #f071a8;
+  --c-4188-success: #45c98a;
+  --c-4188-warning: #f0b65f;
+  --c-4188-error: #ff657a;
+  --c-4188-focus: #a89fff;
+  --c-4188-disabled: rgb(115 127 149 / 46%);
+  --c-4188-scrim: rgb(2 4 7 / 72%);
+  --c-4188-shadow: rgb(0 0 0 / 52%);
+  --c-4188-player: rgb(17 22 32 / 97%);
+  --c-4188-topbar: rgb(9 11 18 / 84%);
+  --c-4188-image-shade-strong: rgb(4 7 12 / 92%);
+  --c-4188-image-shade-soft: rgb(4 7 12 / 20%);
+  --c-4188-image-label: rgb(0 0 0 / 68%);
+  --c-4188-image-chip: rgb(8 12 18 / 82%);
+  --c-4188-image-on-dark: #fff;
+  --c-4188-shadow-deep: rgb(0 0 0 / 48%);
+}

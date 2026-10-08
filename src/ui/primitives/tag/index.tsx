@@ -54,6 +54,14 @@ const VARIANTS: Record<TagVariant, string> = {
   danger: "bg-[var(--biu-danger-soft)] text-[rgb(var(--biu-danger))]",
 };
 
+const VARIANTS_4188: Record<TagVariant, string> = {
+  quality: "biu-theme-4188:bg-[var(--biu-4188-playback-soft)] biu-theme-4188:text-[var(--biu-4188-playback)]",
+  accent: "biu-theme-4188:bg-[var(--biu-4188-action-soft)] biu-theme-4188:text-[var(--biu-4188-action)]",
+  plain: "biu-theme-4188:bg-[var(--biu-4188-surface-hover)] biu-theme-4188:text-[var(--biu-4188-text-secondary)]",
+  danger:
+    "biu-theme-4188:bg-[color-mix(in_srgb,var(--biu-4188-error)_12%,transparent)] biu-theme-4188:text-[var(--biu-4188-error)]",
+};
+
 const SIZES: Record<TagSize, string> = {
   sm: "h-[22px] px-2",
   lg: "h-[var(--biu-layout-hero-tag-h)] px-[var(--biu-layout-hero-tag-x)]",
@@ -75,6 +83,7 @@ export const Tag = ({ variant = "plain", size = "sm", children, className }: Tag
       "text-[length:var(--biu-type-micro-size)] font-medium whitespace-nowrap",
       SIZES[size],
       VARIANTS[variant],
+      VARIANTS_4188[variant],
       className,
     )}
   >

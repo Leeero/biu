@@ -30,6 +30,10 @@ export const IconButton = ({ label, children, className, tooltipProps, ...props 
         "text-[rgb(var(--biu-text-tertiary))] hover:bg-[var(--biu-surface-hover)] hover:text-[rgb(var(--biu-text-primary))]",
         "data-[pressed=true]:scale-95",
         "transition-[color,background-color,transform] duration-[var(--biu-duration-fast)]",
+        "biu-theme-4188:text-[var(--biu-4188-text-muted)] biu-theme-4188:hover:bg-[var(--biu-4188-surface-hover)] biu-theme-4188:hover:text-[var(--biu-4188-text-primary)]",
+        "biu-theme-4188:data-[pressed=true]:bg-[var(--biu-4188-surface-pressed)] biu-theme-4188:data-[pressed=true]:scale-[var(--biu-4188-press-scale)]",
+        "biu-theme-4188:duration-[var(--biu-4188-duration-fast)]",
+        "aria-[pressed=true]:border aria-[pressed=true]:border-[var(--biu-4188-action)] aria-[pressed=true]:bg-[var(--biu-4188-action-soft)] aria-[pressed=true]:text-[var(--biu-4188-action)]",
         className,
       )}
       {...props}

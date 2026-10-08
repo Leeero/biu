@@ -8,17 +8,28 @@ import { twMerge } from "tailwind-merge";
  * 让人以为「这里应该有 hover」。因此 `StateMatrix` 的 `states` 可裁剪，
  * 未列出的状态是**有意的缺席**，在 `Showcase` 的 `note` 里说明理由。
  */
-export type UiState = "default" | "hover" | "pressed" | "focus-visible" | "disabled" | "loading";
+export type UiState = "default" | "hover" | "focus-visible" | "pressed" | "selected" | "disabled" | "loading" | "error";
 
-const ALL_STATES: readonly UiState[] = ["default", "hover", "pressed", "focus-visible", "disabled", "loading"];
+const ALL_STATES: readonly UiState[] = [
+  "default",
+  "hover",
+  "focus-visible",
+  "pressed",
+  "selected",
+  "disabled",
+  "loading",
+  "error",
+];
 
 const STATE_LABEL: Record<UiState, string> = {
   default: "default",
   hover: "hover",
   pressed: "pressed",
+  selected: "selected",
   "focus-visible": "focus-visible",
   disabled: "disabled",
   loading: "loading",
+  error: "error",
 };
 
 /**
@@ -46,7 +57,7 @@ interface StateMatrixProps {
  * 换行会让「第 4 个格子是哪个状态」变得依赖屏宽。
  */
 export const StateMatrix = ({ render, states = ALL_STATES, className }: StateMatrixProps) => (
-  <div className={twMerge("grid grid-cols-3 gap-x-6 gap-y-5 lg:grid-cols-6", className)}>
+  <div className={twMerge("grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4 xl:grid-cols-8", className)}>
     {states.map(state => (
       <div key={state} className="min-w-0">
         <p className="m-0 mb-2 flex items-baseline gap-1.5 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-disabled))]">
@@ -92,6 +103,7 @@ export const Showcase = ({ name, proto, page, note, children, className }: Showc
     id={`c-${name}`}
     className={twMerge(
       "rounded-[var(--biu-radius-lg)] border border-[var(--biu-border-weak)] bg-[var(--biu-surface-raised)] p-6",
+      "biu-theme-4188:rounded-[var(--biu-4188-radius-panel)] biu-theme-4188:border-[var(--biu-4188-border)] biu-theme-4188:bg-[var(--biu-4188-surface)]",
       className,
     )}
   >

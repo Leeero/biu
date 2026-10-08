@@ -1,0 +1,41 @@
+/** 4188 语义颜色。组件只能引用 --biu-4188-*，不得越层引用 --c-4188-*。 */
+.biu-theme-4188 {
+  --biu-4188-canvas: var(--c-4188-canvas);
+  --biu-4188-surface: var(--c-4188-surface);
+  --biu-4188-surface-elevated: var(--c-4188-surface-elevated);
+  --biu-4188-surface-hover: var(--c-4188-surface-hover);
+  --biu-4188-surface-pressed: var(--c-4188-surface-pressed);
+  --biu-4188-surface-player: var(--c-4188-player);
+  --biu-4188-surface-topbar: var(--c-4188-topbar);
+  --biu-4188-border: var(--c-4188-border);
+  --biu-4188-text-primary: var(--c-4188-text-primary);
+  --biu-4188-text-secondary: var(--c-4188-text-secondary);
+  --biu-4188-text-muted: var(--c-4188-text-muted);
+  --biu-4188-text-disabled: var(--c-4188-disabled);
+  --biu-4188-action: var(--c-4188-primary);
+  --biu-4188-action-hover: var(--c-4188-primary-hover);
+  --biu-4188-action-soft: var(--c-4188-primary-soft);
+  --biu-4188-action-hover-soft: var(--c-4188-primary-hover-soft);
+  --biu-4188-selection-bg: linear-gradient(
+    90deg,
+    var(--c-4188-primary-selected-start),
+    var(--c-4188-primary-selected-end)
+  );
+  --biu-4188-playback: var(--c-4188-playback);
+  --biu-4188-playback-hover: var(--c-4188-playback-hover);
+  --biu-4188-playback-soft: var(--c-4188-playback-soft);
+  --biu-4188-favorite: var(--c-4188-favorite);
+  --biu-4188-success: var(--c-4188-success);
+  --biu-4188-warning: var(--c-4188-warning);
+  --biu-4188-error: var(--c-4188-error);
+  --biu-4188-focus: var(--c-4188-focus);
+  --biu-4188-scrim: var(--c-4188-scrim);
+  --biu-4188-shadow-drawer: -28px 0 70px var(--c-4188-shadow);
+  --biu-4188-shadow-modal: 0 28px 100px var(--c-4188-shadow);
+  --biu-4188-image-shade-strong: var(--c-4188-image-shade-strong);
+  --biu-4188-image-shade-soft: var(--c-4188-image-shade-soft);
+  --biu-4188-image-label: var(--c-4188-image-label);
+  --biu-4188-image-chip: var(--c-4188-image-chip);
+  --biu-4188-image-on-dark: var(--c-4188-image-on-dark);
+  --biu-4188-shadow-deep: var(--c-4188-shadow-deep);
+}

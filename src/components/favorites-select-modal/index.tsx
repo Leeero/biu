@@ -173,6 +173,7 @@ const FavoritesSelectModal = () => {
       size="md"
       radius="md"
       classNames={{
+        base: "manage4188-modal",
         backdrop: "z-200",
         wrapper: "z-200",
       }}

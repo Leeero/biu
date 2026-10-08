@@ -48,6 +48,9 @@ const DIALOG_SURFACE = [
   "h-[var(--biu-layout-dialog-h)] overflow-hidden rounded-[var(--biu-radius-lg)]",
   "border border-[var(--biu-veil-14)] bg-[var(--biu-surface-modal)]",
   "backdrop-blur-[var(--biu-blur-modal)] shadow-[var(--biu-shadow-modal)]",
+  "biu-theme-4188:h-auto biu-theme-4188:w-[min(480px,100%)] biu-theme-4188:max-w-[480px]",
+  "biu-theme-4188:rounded-[var(--biu-4188-radius-modal)] biu-theme-4188:border-[var(--biu-4188-border)]",
+  "biu-theme-4188:bg-[var(--biu-4188-surface-elevated)] biu-theme-4188:shadow-[var(--biu-4188-shadow-modal)]",
 ].join(" ");
 
 interface DialogProps {
@@ -120,13 +123,17 @@ export const Dialog = ({
         "h-[var(--biu-layout-dialog-h)] overflow-hidden rounded-[var(--biu-radius-lg)]",
         "border border-[var(--biu-veil-14)] bg-[var(--biu-surface-modal)]",
         "backdrop-blur-[var(--biu-blur-modal)] shadow-[var(--biu-shadow-modal)]",
+        "biu-theme-4188:h-auto biu-theme-4188:w-[min(480px,calc(100%_-_40px))] biu-theme-4188:max-w-[480px]",
+        "biu-theme-4188:rounded-[var(--biu-4188-radius-modal)] biu-theme-4188:border-[var(--biu-4188-border)]",
+        "biu-theme-4188:bg-[var(--biu-4188-surface-elevated)] biu-theme-4188:shadow-[var(--biu-4188-shadow-modal)]",
         className,
       ),
-      backdrop: "bg-[var(--biu-scrim)] backdrop-blur-none",
+      backdrop:
+        "bg-[var(--biu-scrim)] backdrop-blur-none biu-theme-4188:bg-[var(--biu-4188-scrim)] biu-theme-4188:backdrop-blur-[8px]",
     }}
     aria-label={typeof title === "string" ? title : undefined}
   >
-    <ModalContent className="relative px-6 pt-[17px] pb-5">
+    <ModalContent className="biu-theme-4188:p-[22px] relative px-6 pt-[17px] pb-5">
       <DialogContent title={title} sub={sub} lines={lines} footer={footer} />
     </ModalContent>
   </Modal>
@@ -183,6 +190,7 @@ export const DialogAction = ({ children, onPress, className }: DialogActionProps
       "inline-flex h-9 cursor-pointer items-center rounded-[var(--biu-radius-pill)] px-5",
       "bg-[rgb(var(--biu-accent))] text-[length:var(--biu-type-label-size)] font-semibold",
       "text-[rgb(var(--biu-text-primary))]",
+      "biu-theme-4188:bg-[var(--biu-4188-text-primary)] biu-theme-4188:text-[var(--biu-4188-canvas)]",
       className,
     )}
   >

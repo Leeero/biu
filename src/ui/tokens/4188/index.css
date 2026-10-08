@@ -1,0 +1,18 @@
+/**
+ * 4188「夜航声场」设计令牌入口。
+ *
+ * 作用域类由 Theme 挂在 html 上；本层不覆盖旧 C+ 变量，页面完成迁移前不会
+ * 改变既有渲染。引入顺序是契约：原始色板 → 语义角色 → 几何 → 动效。
+ */
+@import "./palette.css";
+@import "./semantic.css";
+@import "./geometry.css";
+@import "./motion.css";
+
+@media (prefers-reduced-motion: reduce) {
+  .biu-theme-4188 {
+    --biu-4188-duration-fast: 0ms;
+    --biu-4188-duration-normal: 0ms;
+    --biu-4188-duration-slow: 0ms;
+  }
+}

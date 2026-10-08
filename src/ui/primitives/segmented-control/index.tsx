@@ -131,6 +131,9 @@ export const SegmentedControl = ({
       isActive
         ? "bg-[rgb(var(--biu-inverse-surface))] font-semibold text-[rgb(var(--biu-inverse-ink))]"
         : "text-[rgb(var(--biu-text-chrome-label))] hover:bg-[var(--biu-veil-8)]",
+      isActive
+        ? "biu-theme-4188:bg-[var(--biu-4188-action)] biu-theme-4188:text-[var(--biu-4188-text-primary)]"
+        : "biu-theme-4188:text-[var(--biu-4188-text-secondary)] biu-theme-4188:hover:bg-[var(--biu-4188-surface-hover)]",
       isDisabled && "cursor-not-allowed opacity-40 hover:bg-transparent",
     );
 

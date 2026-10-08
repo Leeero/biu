@@ -56,6 +56,7 @@ export const ProgressBar = ({
       aria-valuenow={Math.round(percent)}
       className={twMerge(
         "flex-none overflow-hidden bg-[var(--biu-veil-18)]",
+        "biu-theme-4188:bg-[var(--biu-4188-surface-pressed)]",
         radius === "sm" ? "rounded-[2px]" : "rounded-none",
         className,
       )}
@@ -66,6 +67,9 @@ export const ProgressBar = ({
           "block h-full",
           radius === "sm" ? "rounded-[2px]" : "rounded-none",
           tone === "accent" ? "bg-[rgb(var(--biu-accent))]" : "bg-[rgb(var(--biu-inverse-surface))]",
+          tone === "accent"
+            ? "biu-theme-4188:bg-[var(--biu-4188-playback)]"
+            : "biu-theme-4188:bg-[var(--biu-4188-text-primary)]",
         )}
         style={{ width: `${percent}%` }}
       />

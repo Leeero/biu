@@ -3,7 +3,8 @@ import { PageHeader } from "@/ui/patterns/page-header";
 
 import { PatternsExhibit } from "./patterns-exhibit";
 import { PrimitivesExhibit } from "./primitives-exhibit";
-import { TokensExhibit } from "./tokens-exhibit";
+import { State4188Exhibit } from "./state-4188-exhibit";
+import { Tokens4188Exhibit } from "./tokens-4188-exhibit";
 
 /**
  * 设计系统展示页。
@@ -28,7 +29,7 @@ const DesignSystemPage = () => (
     <div className="w-full">
       <PageHeader
         title="设计系统"
-        lead="仅开发环境可见。P2 组件层的活文档：令牌 → 基础件 → 模式件，每件标注原型类与设计页。"
+        lead="仅开发环境可见。阶段 3 的组件与状态验收基线：4188 令牌 → 八态合同 → 现有基础件与模式件。"
         baseline="flat"
         aside={
           <aside className="rounded-[var(--biu-radius-lg)] border border-[var(--biu-glass-border)] bg-[var(--biu-surface-glass)] px-[22px] py-5 backdrop-blur-[var(--biu-blur-glass)]">
@@ -36,16 +37,17 @@ const DesignSystemPage = () => (
               怎么用这一页
             </p>
             <ul className="m-0 list-none p-0 text-[length:var(--biu-type-label-size)] leading-[26px] text-[rgb(var(--biu-text-primary))]">
-              <li>逐项对照 app.css 的原型类</li>
-              <li>带 ↗ 的状态需真实交互才可见</li>
-              <li>数值以 cplus-spec-lock.json 为准</li>
-              <li>色卡不显示十六进制，避免抄第二遍</li>
+              <li>视觉唯一依据：4188 源文件</li>
+              <li>八态逐项截图与键鼠核对</li>
+              <li>数值以阶段 1 令牌为准</li>
+              <li>业务组件只复用，不复制样式</li>
             </ul>
           </aside>
         }
       />
 
-      <TokensExhibit />
+      <Tokens4188Exhibit />
+      <State4188Exhibit />
       <PrimitivesExhibit />
       <PatternsExhibit />
     </div>

@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
+import { RiLoader4Line } from "@remixicon/react";
 import { twMerge } from "tailwind-merge";
 
 import { Icon, type IconName } from "@/ui/primitives/icon";
@@ -56,6 +57,7 @@ export const Button = ({
       type={type}
       disabled={isInert}
       aria-busy={loading || undefined}
+      data-loading={loading || undefined}
       className={pillClass(
         variant,
         twMerge(
@@ -66,16 +68,18 @@ export const Button = ({
             : "hover:after:bg-[var(--biu-veil-8)]",
           "active:after:bg-[var(--biu-veil-14)]",
           "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:after:bg-transparent",
+          "biu-theme-4188:duration-[var(--biu-4188-duration-fast)] biu-theme-4188:ease-[var(--biu-4188-ease-standard)]",
+          "biu-theme-4188:hover:brightness-110 biu-theme-4188:active:scale-[var(--biu-4188-press-scale)]",
+          "aria-[pressed=true]:border-[var(--biu-4188-action)] aria-[pressed=true]:bg-[var(--biu-4188-action-soft)] aria-[pressed=true]:text-[var(--biu-4188-text-primary)]",
+          "aria-[invalid=true]:border-[var(--biu-4188-error)] aria-[invalid=true]:text-[var(--biu-4188-error)]",
+          "data-[loading=true]:opacity-70",
           block && "w-full justify-center",
           className,
         ),
       )}
     >
       {loading ? (
-        <span
-          aria-hidden="true"
-          className="size-[15px] flex-none animate-spin rounded-full border-2 border-current border-t-transparent"
-        />
+        <RiLoader4Line aria-hidden="true" className="size-[15px] flex-none animate-spin" />
       ) : (
         icon && <Icon name={icon} size={PILL_ICON_SIZE} />
       )}

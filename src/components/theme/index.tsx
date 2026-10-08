@@ -38,6 +38,7 @@ const Theme = ({ children }: Props) => {
 
     root.classList.remove("light");
     root.classList.add(APP_THEME);
+    root.classList.add("biu-theme-4188");
     root.style.colorScheme = APP_THEME;
 
     const validFontFamily = fontFamily === "system-default" ? "system-ui" : fontFamily;

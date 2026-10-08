@@ -42,6 +42,19 @@ const VARIANTS: Record<PillVariant, string> = {
   ghost: "bg-[var(--biu-surface-hover)] text-[rgb(var(--biu-text-secondary))]",
 };
 
+const VARIANTS_4188: Record<PillVariant, string> = {
+  default: "text-[var(--biu-4188-text-primary)]",
+  primary: "bg-[var(--biu-4188-action)] font-semibold text-[var(--biu-4188-text-primary)]",
+  secondary: "bg-[var(--biu-4188-surface-hover)] font-medium text-[var(--biu-4188-text-primary)]",
+  neutral:
+    "border-[var(--biu-4188-border)] bg-[var(--biu-4188-surface-elevated)] text-[var(--biu-4188-text-secondary)]",
+  outline: "border-[var(--biu-4188-border)] bg-transparent text-[var(--biu-4188-text-secondary)]",
+  accent: "bg-[var(--biu-4188-action-soft)] font-medium text-[var(--biu-4188-action)]",
+  danger:
+    "border-[color-mix(in_srgb,var(--biu-4188-error)_40%,transparent)] bg-[color-mix(in_srgb,var(--biu-4188-error)_12%,transparent)] text-[var(--biu-4188-error)]",
+  ghost: "bg-[var(--biu-4188-surface-hover)] text-[var(--biu-4188-text-secondary)]",
+};
+
 /** 图标在药丸里的字号，原型 `.pill .i` 为 15px。 */
 export const PILL_ICON_SIZE = 15;
 
@@ -51,6 +64,7 @@ export const pillClass = (variant: PillVariant = "default", className?: string) 
     "rounded-[var(--biu-radius-pill)] border border-transparent px-[18px]",
     "text-[length:var(--biu-type-label-size)] whitespace-nowrap",
     VARIANTS[variant],
+    VARIANTS_4188[variant],
     className,
   );
 

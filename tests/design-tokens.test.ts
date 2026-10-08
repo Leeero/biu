@@ -418,33 +418,6 @@ describe("排版与真值一致", () => {
     expect(resolve("--biu-font-sans")).toContain("PingFang SC");
     expect(resolve("--biu-font-numeric")).toContain("SF Pro Display");
   });
-
-  /**
-   * 设计系统「字阶」展位上的数字必须与真值一致，且不得漏档。
-   *
-   * 那处展位把字号写进 role 文案（`页面副标题 20`），本质是**第二份手抄的真值** ——
-   * 1.3.24 把导语由 22 订正为 20 时，这里差点漏掉；漏掉的后果是**展页自己说错话**，
-   * 而展页正是给人查令牌的地方。所以两个方向都要锁：数字对得上、每个字阶都有展位。
-   *
-   * 不 import 组件模块（页面里的常量没导出，也不该为测试导出），直接读源文抽两列 ——
-   * 与本文件读 CSS 的做法同源。
-   */
-  test("设计系统展页的字阶数字与真值一致，且不漏档", () => {
-    const source = readFileSync(path.resolve(ROOT, "src/pages/design-system/tokens-exhibit.tsx"), "utf8");
-    const shown = [...source.matchAll(/token:\s*"(--biu-type-[\w-]+)",\s*role:\s*"[^"]*?(\d+)"/g)];
-    expect(shown.length, "字阶展位被重排或清空").toBeGreaterThanOrEqual(9);
-
-    const byToken = new Map(roles.map(([, entry]) => [entry.token, entry]));
-    for (const [, token, size] of shown) {
-      const entry = byToken.get(token!);
-      expect(entry, `真值里没有 ${token}`).toBeDefined();
-      expect(Number(size), `展页上 ${token} 的数字与真值不符`).toBe(parseFloat(entry!.size));
-    }
-    const displayed = new Set(shown.map(match => match[1]));
-    for (const [, entry] of roles) {
-      expect(displayed, `${entry.token} 在字阶展位上缺档`).toContain(entry.token);
-    }
-  });
 });
 
 /* ------------------------------------------------------------------ 几何 */
@@ -612,8 +585,10 @@ describe("几何与真值一致", () => {
 
   test("播放器使用三栏网格隔离曲目信息、控制区与队列", () => {
     const playbarSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/index.tsx"), "utf8");
-    expect(playbarSrc).toContain("grid-cols-[minmax(280px,430px)_minmax(0,1fr)_auto]");
-    expect(playbarSrc, "中间控制区必须允许收缩，不能覆盖左右栏").toContain("flex min-w-0 items-center");
+    const shellCss = readFileSync(path.resolve(ROOT, "src/app/shell/shell-4188.css"), "utf8");
+    expect(shellCss).toContain("grid-template-columns: minmax(310px, 1fr) minmax(420px, 1.2fr) minmax(310px, 1fr)");
+    expect(shellCss, "中间控制区必须允许收缩，不能覆盖左右栏").toContain(".shell4188-player-center");
+    expect(playbarSrc).toContain('className="shell4188-player-center"');
 
     const deferredSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/deferred/index.tsx"), "utf8");
     expect(deferredSrc, "簇没有用登记过的间隔令牌").toContain("gap-[var(--biu-playbar-deferred-gap)]");

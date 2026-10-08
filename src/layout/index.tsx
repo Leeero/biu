@@ -10,11 +10,15 @@ import Fallback from "@/components/error-fallback";
 import FavoritesSelectModal from "@/components/favorites-select-modal";
 import ReleaseNoteModal from "@/components/release-note-modal";
 import VideoPagesDownloadSelectModal from "@/components/video-pages-download-select-modal";
+import MobileNav from "@/layout/mobile-nav";
 import PlayBar from "@/layout/playbar";
+import QueueDrawer from "@/layout/queue-drawer";
 import { composeLocalMusicSegments, composeSegmentCount, resolveRouteShell } from "@/layout/route-shell";
+import Sidebar from "@/layout/sidebar";
 import TopBar from "@/layout/topbar";
 import SegmentNav from "@/layout/topbar/segment-nav";
 import { usePlayList } from "@/store/play-list";
+import { useQueueDrawer } from "@/store/queue-drawer";
 import { useSearchSegments } from "@/store/search-segments";
 import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
@@ -47,6 +51,12 @@ const Layout = () => {
   } = resolveRouteShell(location.pathname, location.search);
   const { videoCount, creatorCount } = useSearchSegments();
   const localMusicDirs = useSettings(state => state.localMusicDirs);
+  const queueOpen = useQueueDrawer(state => state.open);
+  const pageOwnsContextNavigation =
+    location.pathname === "/search" ||
+    location.pathname === "/follow" ||
+    location.pathname === "/settings" ||
+    location.pathname.startsWith("/user/");
 
   /**
    * 模板分段与运行时计数的组合点（spec-lock `topbarSegments.labelSources`）。
@@ -68,6 +78,10 @@ const Layout = () => {
     void initPlayer();
   }, [initPlayer]);
 
+  useEffect(() => {
+    useQueueDrawer.getState().setOpen(false);
+  }, [location.pathname]);
+
   return (
     <ErrorBoundary
       FallbackComponent={Fallback}
@@ -78,11 +92,15 @@ const Layout = () => {
     >
       <AppShell
         chrome={chrome}
+        sidebar={<Sidebar pathname={location.pathname} />}
         topbar={<TopBar segments={segments} activeSegmentKey={activeSegmentKey} note={topbarNote} />}
         player={<PlayBar />}
+        queueDrawer={<QueueDrawer />}
+        mobileNav={<MobileNav pathname={location.pathname} />}
+        queueOpen={queueOpen}
       >
         <div className="flex h-full min-h-0 flex-col">
-          {contextSegments.length > 0 && (
+          {contextSegments.length > 0 && !pageOwnsContextNavigation && (
             <div className="mb-4 flex h-10 flex-none items-center" aria-label="页面内导航">
               <SegmentNav segments={contextSegments} activeKey={activeContextKey} />
             </div>

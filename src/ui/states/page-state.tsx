@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 
-import { Button, Spinner } from "@heroui/react";
-import { RiErrorWarningLine, RiInbox2Line } from "@remixicon/react";
+import { RiErrorWarningLine, RiInbox2Line, RiLoader4Line } from "@remixicon/react";
 import { twMerge } from "tailwind-merge";
+
+import { Button } from "@/ui/primitives/button";
 
 type PageStateKind = "loading" | "empty" | "error";
 
@@ -36,17 +37,19 @@ export const PageState = ({
     aria-live="polite"
     className={twMerge("flex min-h-64 flex-col items-center justify-center px-6 text-center", className)}
   >
-    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--biu-color-surface-raised))] text-[rgb(var(--biu-color-text-secondary))] shadow-[var(--biu-shadow-card)]">
+    <div className="biu-theme-4188:bg-[var(--biu-4188-surface-elevated)] biu-theme-4188:text-[var(--biu-4188-text-secondary)] biu-theme-4188:shadow-none mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--biu-color-surface-raised))] text-[rgb(var(--biu-color-text-secondary))] shadow-[var(--biu-shadow-card)]">
       {kind === "loading" ? (
-        <Spinner size="md" />
+        <RiLoader4Line aria-hidden="true" className="size-6 animate-spin text-[var(--biu-4188-action)]" />
       ) : (
         (icon ?? (kind === "error" ? <RiErrorWarningLine /> : <RiInbox2Line />))
       )}
     </div>
-    <h2 className="text-base font-semibold">{title}</h2>
-    <p className="mt-1 max-w-sm text-sm text-[rgb(var(--biu-color-text-secondary))]">{description}</p>
+    <h2 className="biu-theme-4188:text-[var(--biu-4188-text-primary)] text-base font-semibold">{title}</h2>
+    <p className="biu-theme-4188:text-[var(--biu-4188-text-muted)] mt-1 max-w-sm text-sm text-[rgb(var(--biu-color-text-secondary))]">
+      {description}
+    </p>
     {actionLabel && onAction && (
-      <Button className="mt-5" color="primary" variant="flat" onPress={onAction}>
+      <Button className="mt-5" variant="primary" onClick={onAction}>
         {actionLabel}
       </Button>
     )}

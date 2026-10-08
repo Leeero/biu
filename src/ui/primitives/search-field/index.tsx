@@ -62,10 +62,17 @@ export const SearchField = ({
     className={twMerge(
       "flex h-[var(--biu-layout-searchfield-h)] items-center gap-[18px] rounded-[var(--biu-radius-field-lg)]",
       "border border-[var(--biu-veil-14)] bg-[var(--biu-veil-8)] pr-4 pl-[22px]",
+      "biu-theme-4188:h-[var(--biu-4188-search-height)] biu-theme-4188:rounded-[var(--biu-4188-radius-md)]",
+      "biu-theme-4188:border-[var(--biu-4188-border)] biu-theme-4188:bg-[var(--biu-4188-surface-elevated)]",
+      "biu-theme-4188:focus-within:border-[var(--biu-4188-focus)]",
       className,
     )}
   >
-    <Icon name="search" size="var(--biu-layout-searchfield-icon)" className="text-[rgb(var(--biu-text-secondary))]" />
+    <Icon
+      name="search"
+      size="var(--biu-layout-searchfield-icon)"
+      className="biu-theme-4188:text-[var(--biu-4188-text-muted)] text-[rgb(var(--biu-text-secondary))]"
+    />
     <input
       ref={inputRef}
       type="search"
@@ -81,6 +88,8 @@ export const SearchField = ({
       className={twMerge(
         "min-w-0 flex-1 border-0 bg-transparent pt-[11px] font-semibold tracking-[-0.4px] outline-none",
         "text-[30px] text-[rgb(var(--biu-text-primary))] placeholder:text-[var(--biu-text-placeholder)]",
+        "biu-theme-4188:pt-0 biu-theme-4188:text-[length:var(--biu-4188-type-body-size)] biu-theme-4188:font-normal biu-theme-4188:tracking-normal",
+        "biu-theme-4188:text-[var(--biu-4188-text-primary)] biu-theme-4188:placeholder:text-[var(--biu-4188-text-muted)]",
       )}
     />
     {trailing}

@@ -36,8 +36,15 @@ const installBrowserElectronStub = () => {
     listLocalMusic: asyncEmptyList,
     scanLocalMusic: asyncEmptyList,
     getShortcuts: asyncEmptyList,
+    getFonts: asyncEmptyList,
     syncMediaDownloadTaskList: () => () => undefined,
+    navigate: () => () => undefined,
+    onDownloadAppProgress: () => () => undefined,
+    onPlayerCommand: () => () => undefined,
+    onShortcutCommand: () => () => undefined,
+    onUpdateAvailable: () => () => undefined,
     onWindowFullScreenChange: () => () => undefined,
+    onWindowMaximizeChange: () => () => undefined,
   };
 
   const stub = new Proxy(
