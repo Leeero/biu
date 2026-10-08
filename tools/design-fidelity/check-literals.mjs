@@ -21,10 +21,10 @@ import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
 
-/** 第 1 层：唯一允许出现字面色值的文件 */
-const PALETTE_FILE = "src/ui/tokens/palette.css";
-/** 第 2 层：唯一允许引用原始色板的文件（与 palette.css 同一层内的引用） */
-const SEMANTIC_FILE = "src/ui/tokens/semantic.css";
+/** 第 1 层：唯一允许出现字面色值的文件。4188 在迁移期独立作用域，不能污染旧色板。 */
+const PALETTE_FILES = new Set(["src/ui/tokens/palette.css", "src/ui/tokens/4188/palette.css"]);
+/** 第 2 层：唯一允许引用对应原始色板的文件。 */
+const SEMANTIC_FILES = new Set(["src/ui/tokens/semantic.css", "src/ui/tokens/4188/semantic.css"]);
 /** 令牌层整体：允许桥接 HeroUI 主题变量 */
 const TOKEN_LAYER_PREFIX = "src/ui/tokens/";
 /**
@@ -156,14 +156,18 @@ function paletteTriples() {
   // 必须先去掉注释：palette.css 的说明性注释里会举出夹具渐变的例子
   // （例如「占位封面渐变，如 linear-gradient(150deg, #3a3a46, #1c1c22)」），
   // 那些是**文档引用**不是登记值。把注释算进去会让这条检查误报自己写的注释。
-  const body = readFileSync(path.join(ROOT, PALETTE_FILE), "utf8").replace(/\/\*[\s\S]*?\*\//g, " ");
-  return colorTriples(body);
+  const found = new Set();
+  for (const file of PALETTE_FILES) {
+    const body = readFileSync(path.join(ROOT, file), "utf8").replace(/\/\*[\s\S]*?\*\//g, " ");
+    for (const triple of colorTriples(body)) found.add(triple);
+  }
+  return found;
 }
 
 function checkFile(absPath) {
   const rel = path.relative(ROOT, absPath);
-  const isPalette = rel === PALETTE_FILE;
-  const isSemantic = rel === SEMANTIC_FILE;
+  const isPalette = PALETTE_FILES.has(rel);
+  const isSemantic = SEMANTIC_FILES.has(rel);
   const inTokenLayer = rel.startsWith(TOKEN_LAYER_PREFIX);
   const raw = readFileSync(absPath, "utf8");
   const lines = raw.split("\n");
