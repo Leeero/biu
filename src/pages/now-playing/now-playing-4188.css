@@ -27,13 +27,13 @@
   grid-template-columns: minmax(340px, 0.9fr) minmax(420px, 1.1fr);
   gap: 6vw;
   align-items: center;
-  max-width: 1320px;
+  max-width: 1560px;
   width: 100%;
   margin: 12px auto;
 }
 
 .np4188-art {
-  width: min(31vw, 420px);
+  width: min(30vw, 460px);
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 22px;
@@ -216,7 +216,7 @@
 }
 
 .np4188-controls {
-  max-width: 1320px;
+  max-width: 1560px;
   width: 100%;
   margin: 0 auto;
   padding: 18px 24px 0;

@@ -23,8 +23,8 @@
   --biu-4188-mobile-nav-height: 52px;
   --biu-4188-queue-width: 388px;
   --biu-4188-queue-overlay-width: 380px;
-  --biu-4188-content-max-width: 1120px;
-  --biu-4188-content-gutter: 28px;
+  --biu-4188-content-max-width: 1760px;
+  --biu-4188-content-gutter: clamp(28px, 2.5vw, 48px);
   --biu-4188-content-gutter-mobile: 16px;
   --biu-4188-search-height: 48px;
   --biu-4188-track-row-height: 66px;

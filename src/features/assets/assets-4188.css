@@ -81,7 +81,7 @@
 
 .asset4188-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
   margin-bottom: 32px;
 }
@@ -345,10 +345,6 @@
 }
 
 @media (width<=980px) {
-  .asset4188-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .asset4188-row {
     grid-template-columns: 30px 52px minmax(150px, 1fr) 80px 130px;
   }

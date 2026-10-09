@@ -155,7 +155,9 @@
 
 .discover4188-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  /* 列数随容器宽度自适应增长（4 → 5 → 6 …），卡片最小 230px，不再钉死 4 列。 */
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 22px 16px;
 }
 
@@ -275,12 +277,6 @@
   margin-top: 5px;
   color: var(--biu-4188-text-muted);
   font-size: 10px;
-}
-
-@media (width <= 1100px) {
-  .discover4188-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 @media (width <= 760px) {
