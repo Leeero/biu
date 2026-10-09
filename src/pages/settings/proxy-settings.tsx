@@ -24,6 +24,8 @@ const EMPTY_PROXY: ProxySettings = {
 
 const ProxyEditor = ({ value, onApply }: { value: ProxySettings; onApply: (value: ProxySettings) => void }) => {
   const [draft, setDraft] = useState(value);
+  // 校验时机：字段 blur 或用户尝试应用之后才标红，选完代理类型不立刻报错。
+  const [touched, setTouched] = useState({ host: false, port: false });
 
   useEffect(() => setDraft(value), [value]);
 
@@ -34,7 +36,11 @@ const ProxyEditor = ({ value, onApply }: { value: ProxySettings; onApply: (value
   const showPassword = draft.type === "http" || draft.type === "socks5";
 
   const apply = () => {
-    if (!isValid) return;
+    if (!isValid) {
+      // 点了应用但没填完：把两条字段的错误同时揭示出来。
+      setTouched({ host: true, port: true });
+      return;
+    }
     onApply(draft);
     addToast({ title: "代理设置已应用", color: "success" });
   };
@@ -64,8 +70,9 @@ const ProxyEditor = ({ value, onApply }: { value: ProxySettings; onApply: (value
               label="主机"
               placeholder="例如 127.0.0.1"
               value={draft.host ?? ""}
-              isInvalid={!draft.host.trim()}
+              isInvalid={touched.host && !draft.host.trim()}
               errorMessage="请输入代理主机"
+              onBlur={() => setTouched(t => ({ ...t, host: true }))}
               onValueChange={host => setProxy({ host })}
             />
             <Input
@@ -73,8 +80,9 @@ const ProxyEditor = ({ value, onApply }: { value: ProxySettings; onApply: (value
               placeholder="1–65535"
               inputMode="numeric"
               value={draft.port ? String(draft.port) : ""}
-              isInvalid={!draft.port || draft.port > 65535}
+              isInvalid={touched.port && (!draft.port || draft.port > 65535)}
               errorMessage="请输入有效端口"
+              onBlur={() => setTouched(t => ({ ...t, port: true }))}
               onValueChange={nextValue => {
                 const port = Number(nextValue.trim());
                 setProxy({ port: Number.isInteger(port) && port > 0 ? port : undefined });

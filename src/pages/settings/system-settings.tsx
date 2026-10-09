@@ -44,9 +44,10 @@ export const SystemSettingsTab = ({
               control={control}
               name="displayMode"
               render={({ field }) => (
+                /* 不用 fullWidth：铺满整行会把左侧标签挤到 3 行，也与其它行的定宽控件不一致。 */
                 <Tabs
                   aria-label="数据展示"
-                  fullWidth
+                  size="sm"
                   classNames={{
                     cursor: "rounded-medium",
                   }}
@@ -204,7 +205,8 @@ export const SystemSettingsTab = ({
                 name="downloadPath"
                 render={({ field }) => (
                   <div className="flex items-center space-x-1">
-                    <Input isDisabled placeholder="选择文件夹" value={field.value} onValueChange={field.onChange} />
+                    {/* 只读而非禁用：路径由右侧「选择」修改，输入框本身不应呈现「坏了」的灰化态。 */}
+                    <Input isReadOnly placeholder="选择文件夹" value={field.value} onValueChange={field.onChange} />
                     <Button
                       variant="flat"
                       onPress={async () => {
@@ -232,7 +234,7 @@ export const SystemSettingsTab = ({
                 name="ffmpegPath"
                 render={({ field }) => (
                   <div className="flex items-center space-x-1">
-                    <Input isDisabled placeholder="自动检测" value={field.value} onValueChange={field.onChange} />
+                    <Input isReadOnly placeholder="自动检测" value={field.value} onValueChange={field.onChange} />
                     <Button
                       variant="flat"
                       onPress={async () => {
@@ -251,7 +253,7 @@ export const SystemSettingsTab = ({
       )}
       {section === "general" && (
         <>
-          <h2 className="pt-2">搜索与应用行为</h2>
+          <h2 className="pt-2">搜索与系统行为</h2>
           {/* 显示搜索历史 */}
           <div className="flex w-full items-center justify-between gap-4">
             <div className="mr-6 space-y-1">
