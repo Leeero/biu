@@ -17,7 +17,7 @@ import { appSettingsStore } from "./store";
 import { autoUpdater, setupAutoUpdater, stopCheckForUpdates } from "./updater";
 import { getWindowIcon } from "./utils";
 import { setupWindowsThumbar } from "./windows/thumbar";
-import { createTray, destroyTray } from "./windows/tray"; // 托盘功能
+import { createTray, destroyTray } from "./windows/tray"; // 菜单栏/托盘功能
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +34,7 @@ if (isDev) {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let unsubscribeThumbarStatus: (() => void) | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -87,9 +88,9 @@ function createWindow() {
 
   mainWindow.loadFile(indexPath);
 
-  // 初始化 Windows 任务栏缩略按钮，并监听播放状态更新
+  // 初始化 Windows 任务栏缩略按钮，并订阅播放状态更新
   if (process.platform === "win32") {
-    setupWindowsThumbar(mainWindow);
+    unsubscribeThumbarStatus = setupWindowsThumbar(mainWindow);
 
     // 拦截 WM_INITMENU (0x0116) 消息，阻止系统菜单
     mainWindow.hookWindowMessage(0x0116, () => {
@@ -167,15 +168,14 @@ if (!gotTheLock) {
 
     registerAllShortcuts(() => mainWindow);
 
-    if (process.platform !== "darwin") {
-      createTray({
-        getMainWindow: () => mainWindow,
-        onExit: () => {
-          (app as any).quitting = true;
-          app.quit();
-        },
-      });
-    }
+    // macOS 菜单栏图标 + Windows/Linux 托盘
+    createTray({
+      getMainWindow: () => mainWindow,
+      onExit: () => {
+        (app as any).quitting = true;
+        app.quit();
+      },
+    });
   });
 
   app.on("activate", () => mainWindow?.show());
@@ -198,6 +198,11 @@ if (!gotTheLock) {
     }
 
     destroyMiniPlayer();
+
+    if (unsubscribeThumbarStatus) {
+      unsubscribeThumbarStatus();
+      unsubscribeThumbarStatus = null;
+    }
 
     stopCheckForUpdates();
     autoUpdater.removeAllListeners();

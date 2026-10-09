@@ -2,10 +2,6 @@ import { contextBridge, ipcRenderer } from "electron";
 
 import { channel } from "./ipc/channel";
 
-let playerPrevHandler: ((_: Electron.IpcRendererEvent) => void) | null = null;
-let playerNextHandler: ((_: Electron.IpcRendererEvent) => void) | null = null;
-let playerToggleHandler: ((_: Electron.IpcRendererEvent) => void) | null = null;
-
 const api: ElectronAPI = {
   getStore: name => ipcRenderer.invoke(channel.store.get, name),
   setStore: (name, value: any) => ipcRenderer.invoke(channel.store.set, name, value),
@@ -45,10 +41,11 @@ const api: ElectronAPI = {
 
     return platform;
   },
-  // 上报当前播放状态（播放/暂停）给主进程，用于更新任务栏缩略按钮
-  updatePlaybackState: isPlaying => {
+  // 上报播放状态快照（播放/暂停、静音、音量、当前曲目）给主进程，
+  // 供 macOS 菜单栏 / Windows 托盘菜单与任务栏缩略按钮展示
+  updatePlayerStatus: status => {
     try {
-      ipcRenderer.send(channel.player.state, isPlaying);
+      ipcRenderer.send(channel.player.state, status);
     } catch (error) {
       console.error("[preload] 上报播放状态失败:", error);
     }
@@ -75,73 +72,19 @@ const api: ElectronAPI = {
   registerAllShortcuts: () => ipcRenderer.invoke(channel.shortcut.registerAll),
   // 注销所有快捷键
   unregisterAllShortcuts: () => ipcRenderer.invoke(channel.shortcut.unregisterAll),
-  // 订阅主进程下发的播放器命令（上一首、下一首、播放/暂停）
+  // 订阅主进程下发的播放器命令（菜单栏/托盘/任务栏触发）
   onPlayerCommand: cb => {
-    // 先移除旧的监听，避免重复
-    if (playerPrevHandler) {
+    const handler = (_: Electron.IpcRendererEvent, cmd: PlayerCommand) => {
       try {
-        ipcRenderer.removeListener(channel.player.prev, playerPrevHandler);
+        cb(cmd);
       } catch (error) {
-        console.error("[preload] 移除上一首监听器失败:", error);
-      }
-      playerPrevHandler = null;
-    }
-    if (playerNextHandler) {
-      try {
-        ipcRenderer.removeListener(channel.player.next, playerNextHandler);
-      } catch (error) {
-        console.error("[preload] 移除下一首监听器失败:", error);
-      }
-      playerNextHandler = null;
-    }
-    if (playerToggleHandler) {
-      try {
-        ipcRenderer.removeListener(channel.player.toggle, playerToggleHandler);
-      } catch (error) {
-        console.error("[preload] 移除播放/暂停监听器失败:", error);
-      }
-      playerToggleHandler = null;
-    }
-    playerPrevHandler = () => {
-      try {
-        cb("prev");
-      } catch (error) {
-        console.error("[preload] player prev 回调失败:", error);
-      }
-    };
-    playerNextHandler = () => {
-      try {
-        cb("next");
-      } catch (error) {
-        console.error("[preload] player next 回调失败:", error);
-      }
-    };
-    playerToggleHandler = () => {
-      try {
-        cb("toggle");
-      } catch (error) {
-        console.error("[preload] player toggle 回调失败:", error);
+        console.error("[preload] player command callback failed:", error);
       }
     };
 
-    ipcRenderer.on(channel.player.prev, playerPrevHandler);
-    ipcRenderer.on(channel.player.next, playerNextHandler);
-    ipcRenderer.on(channel.player.toggle, playerToggleHandler);
+    ipcRenderer.on(channel.player.command, handler);
 
-    return () => {
-      if (playerPrevHandler) {
-        ipcRenderer.removeListener(channel.player.prev, playerPrevHandler);
-        playerPrevHandler = null;
-      }
-      if (playerNextHandler) {
-        ipcRenderer.removeListener(channel.player.next, playerNextHandler);
-        playerNextHandler = null;
-      }
-      if (playerToggleHandler) {
-        ipcRenderer.removeListener(channel.player.toggle, playerToggleHandler);
-        playerToggleHandler = null;
-      }
-    };
+    return () => ipcRenderer.removeListener(channel.player.command, handler);
   },
   // 获取应用版本
   getAppVersion: () => ipcRenderer.invoke(channel.app.getVersion),

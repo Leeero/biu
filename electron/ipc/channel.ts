@@ -34,10 +34,10 @@ export const channel = {
     navigate: "router:navigate",
   },
   player: {
+    // 渲染端 -> 主进程：播放状态快照（PlayerStatusSnapshot），供菜单栏/托盘/任务栏展示
     state: "player:state",
-    prev: "player:prev",
-    next: "player:next",
-    toggle: "player:toggle",
+    // 主进程 -> 渲染端：统一播放命令（PlayerCommand）
+    command: "player:command",
   },
   shortcut: {
     triggered: "shortcut:triggered",

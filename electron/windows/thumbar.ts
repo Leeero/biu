@@ -4,7 +4,7 @@ import path from "node:path";
 import { ELECTRON_ICON_BASE_PATH } from "@shared/path";
 
 import { channel } from "../ipc/channel";
-import { onTrustedIpc } from "../security/ipc";
+import { subscribePlayerStatus } from "../ipc/player-status";
 import { IconBase } from "../utils";
 
 const iconPrev = nativeImage.createFromPath(path.resolve(IconBase, ELECTRON_ICON_BASE_PATH, "prev.png"));
@@ -22,17 +22,17 @@ export function setupWindowsThumbar(win: BrowserWindow) {
       {
         tooltip: "上一首",
         icon: iconPrev,
-        click: () => win.webContents.send(channel.player.prev),
+        click: () => win.webContents.send(channel.player.command, "prev"),
       },
       {
         tooltip: isPlaying ? "暂停" : "播放",
         icon: isPlaying ? iconPause : iconPlay,
-        click: () => win.webContents.send(channel.player.toggle),
+        click: () => win.webContents.send(channel.player.command, "togglePlay"),
       },
       {
         tooltip: "下一首",
         icon: iconNext,
-        click: () => win.webContents.send(channel.player.next),
+        click: () => win.webContents.send(channel.player.command, "next"),
       },
     ]);
   };
@@ -40,7 +40,7 @@ export function setupWindowsThumbar(win: BrowserWindow) {
   // 初始化按钮（默认未播放）
   ensureThumbBar(false);
 
-  onTrustedIpc(channel.player.state, (_, isPlaying) => {
-    ensureThumbBar(isPlaying === true);
+  return subscribePlayerStatus(status => {
+    ensureThumbBar(status.isPlaying);
   });
 }

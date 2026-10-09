@@ -5,12 +5,12 @@ import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import moment from "moment";
 
 import { getCookitFromBSite } from "./common/utils/cookie";
-import { toggleMiniMode } from "./common/utils/mini-player";
+import { isPlayerCommand, runPlayerCommand } from "./common/utils/player-command";
+import { startPlayerStatusBridge } from "./common/utils/player-status-bridge";
 import { mapKeyToElectronAccelerator } from "./common/utils/shortcut";
 import Theme from "./components/theme";
 import routes from "./routes";
 import { useAppUpdateStore } from "./store/app-update";
-import { usePlayList } from "./store/play-list";
 import { usePlayProgress } from "./store/play-progress";
 import { useShortcutSettings } from "./store/shortcuts";
 
@@ -20,6 +20,13 @@ import "overlayscrollbars/overlayscrollbars.css";
 import "./app.css";
 
 moment.locale("zh-cn");
+
+/** 快捷键命令里混有非播放器动作（如 toggleLyrics），先收敛再分发 */
+const dispatchCommand = (command: ShortcutCommand | PlayerCommand) => {
+  if (isPlayerCommand(command)) {
+    runPlayerCommand(command);
+  }
+};
 
 export function App() {
   const routeElement = useRoutes(routes);
@@ -37,53 +44,24 @@ export function App() {
     }
   }, [navigate]);
 
-  // 订阅来自主进程的任务栏缩略按钮命令
+  // 订阅来自主进程的播放器命令（macOS 菜单栏 / Windows 托盘 / 任务栏缩略按钮触发）
   useEffect(() => {
     if (window.electron && window.electron.onPlayerCommand) {
-      const removeListener = window.electron.onPlayerCommand(cmd => {
-        const { prev, next, togglePlay } = usePlayList.getState();
-        if (cmd === "prev") {
-          prev();
-        } else if (cmd === "next") {
-          next();
-        } else if (cmd === "toggle") {
-          togglePlay();
-        }
-      });
+      const removeListener = window.electron.onPlayerCommand(cmd => dispatchCommand(cmd));
       return removeListener;
     }
   }, []);
 
-  // 订阅来自主进程的全局快捷键命令
+  // 订阅来自主进程的全局快捷键命令（与播放器命令共用同一分发器）
   useEffect(() => {
     if (window.electron && window.electron.onShortcutCommand) {
-      return window.electron.onShortcutCommand(cmd => {
-        const { prev, next, togglePlay, setVolume, volume } = usePlayList.getState();
-
-        switch (cmd) {
-          case "togglePlay":
-            togglePlay();
-            break;
-          case "prev":
-            prev();
-            break;
-          case "next":
-            next();
-            break;
-          case "volumeUp":
-            setVolume(Math.min(1, volume + 0.05));
-            break;
-          case "volumeDown":
-            setVolume(Math.max(0, volume - 0.05));
-            break;
-          case "toggleMiniMode":
-            toggleMiniMode();
-            break;
-          default:
-            break;
-        }
-      });
+      return window.electron.onShortcutCommand(cmd => dispatchCommand(cmd));
     }
+  }, []);
+
+  // 把播放状态快照推送给主进程，驱动菜单栏/托盘菜单与任务栏按钮
+  useEffect(() => {
+    return startPlayerStatusBridge();
   }, []);
 
   // 监听应用内快捷键
@@ -103,29 +81,7 @@ export function App() {
 
       if (matched) {
         e.preventDefault();
-        const { prev, next, togglePlay, setVolume, volume } = usePlayList.getState();
-        switch (matched.id) {
-          case "togglePlay":
-            togglePlay();
-            break;
-          case "prev":
-            prev();
-            break;
-          case "next":
-            next();
-            break;
-          case "volumeUp":
-            setVolume(Math.min(1, volume + 0.05));
-            break;
-          case "volumeDown":
-            setVolume(Math.max(0, volume - 0.05));
-            break;
-          case "toggleMiniMode":
-            toggleMiniMode();
-            break;
-          default:
-            break;
-        }
+        dispatchCommand(matched.id);
       }
     };
 

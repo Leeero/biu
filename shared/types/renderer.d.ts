@@ -48,8 +48,8 @@ declare global {
     getPlatform: () => AppPlatForm;
     /** 更新网络代理设置 */
     setProxySettings: (proxySettings: ProxySettings) => Promise<void>;
-    /** 上报当前播放状态到主进程（用于任务栏按钮切换） */
-    updatePlaybackState: (isPlaying: boolean) => void;
+    /** 上报播放状态快照到主进程（菜单栏/托盘菜单与任务栏按钮展示用） */
+    updatePlayerStatus: (status: PlayerStatusSnapshot) => void;
     /** 订阅主进程下发的快捷键命令 */
     onShortcutCommand: (cb: (cmd: ShortcutCommand) => void) => VoidFunction;
     /** 注册快捷键，返回是否注册成功 */
@@ -60,8 +60,8 @@ declare global {
     registerAllShortcuts: () => Promise<void>;
     /** 注销所有快捷键 */
     unregisterAllShortcuts: () => Promise<void>;
-    /** 订阅主进程下发的播放器命令（上一首、下一首、播放/暂停） */
-    onPlayerCommand: (cb: (cmd: "prev" | "next" | "toggle") => void) => VoidFunction;
+    /** 订阅主进程下发的播放器命令（播放控制/音量/静音/迷你模式/收藏） */
+    onPlayerCommand: (cb: (cmd: PlayerCommand) => void) => VoidFunction;
     /** 获取当前应用版本 */
     getAppVersion: () => Promise<string>;
     /** 判断是否为开发模式 */

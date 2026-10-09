@@ -208,13 +208,16 @@ const createAudio = (): HTMLAudioElement => {
 
 export const audio = createAudio();
 
+/**
+ * 同步系统级播放状态。
+ *
+ * 只负责 mediaSession；推送给主进程（菜单栏/托盘/任务栏）的状态快照由
+ * src/common/utils/player-status-bridge.ts 订阅本 store 统一上报，
+ * 这里不再单独发 IPC，避免同一状态有两条上报路径。
+ */
 const updatePlaybackState = () => {
   if ("mediaSession" in navigator) {
     navigator.mediaSession.playbackState = audio.paused ? "paused" : "playing";
-  }
-
-  if (window.electron && window.electron.updatePlaybackState) {
-    window.electron.updatePlaybackState(!audio.paused);
   }
 };
 
