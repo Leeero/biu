@@ -9,13 +9,13 @@
   "description": "music application based on bilibili api",
   "author": "Leeero",
   "license": "PolyForm-Noncommercial-1.0.0",
-  "homepage": "https://github.com/Leeero/LiLi#readme",
+  "homepage": "https://github.com/Leeero/lili#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Leeero/LiLi.git"
+    "url": "git+https://github.com/Leeero/lili.git"
   },
   "bugs": {
-    "url": "https://github.com/Leeero/LiLi/issues"
+    "url": "https://github.com/Leeero/lili/issues"
   },
   "keywords": [
     "music",

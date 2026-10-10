@@ -125,7 +125,7 @@ const ProfileMenu = () => {
       label: "问题反馈",
       startContent: <RiFeedbackLine size={18} />,
       endContent: <RiExternalLinkLine size={18} />,
-      onPress: () => window.electron.openExternal("https://github.com/Leeero/LiLi/issues"),
+      onPress: () => window.electron.openExternal("https://github.com/Leeero/lili/issues"),
     },
     {
       key: "logout",

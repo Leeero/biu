@@ -9,8 +9,8 @@
   非官方项目，与哔哩哔哩无任何官方关联或背书
 </p>
 <p align="center">
-  <a href="https://github.com/Leeero/LiLi/releases">
-    <img src="https://badgen.net/github/tag/Leeero/LiLi?label=最新版本&color=blueviolet" alt="Latest Version" />
+  <a href="https://github.com/Leeero/lili/releases">
+    <img src="https://badgen.net/github/tag/Leeero/lili?label=最新版本&color=blueviolet" alt="Latest Version" />
   </a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-orange.svg" alt="License" /></a>
 </p>
@@ -39,7 +39,7 @@
 
 ## 下载和使用
 
-- 下载页面：[GitHub Releases](https://github.com/Leeero/LiLi/releases/latest)
+- 下载页面：[GitHub Releases](https://github.com/Leeero/lili/releases/latest)
 - 快速选择：
   - <img alt="Windows" src="https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white" /> 优先选安装包 `win-setup`；需要免安装/无管理员权限选 `win-portable`
   - <img alt="macOS" src="https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white" /> 优先选 `dmg`；需要脚本/自动化分发可选 `zip`
@@ -303,10 +303,10 @@ lili 换了打包身份（`appId` 由 `com.biu.wood3n` 改为 `com.leeero.lili`�
 
 ## ♥️ Contributors
 
-<a href="https://github.com/Leeero/LiLi/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Leeero/LiLi" />
+<a href="https://github.com/Leeero/lili/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Leeero/lili" />
 </a>
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Leeero/LiLi&type=date&legend=top-left)](https://www.star-history.com/#Leeero/LiLi&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=Leeero/lili&type=date&legend=top-left)](https://www.star-history.com/#Leeero/lili&type=date&legend=top-left)

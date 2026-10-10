@@ -195,7 +195,7 @@ Linux:   ~/.config/Biu/logs/main.log
 | `src/pages/history/index.tsx` | 「不等同于 lili 的听歌统计」 |
 | `src/pages/design-system/patterns-exhibit.tsx` | 展位示例文案「lili Music · 63 首」 |
 | `src/pages/settings/export-import.tsx` | 导出文件名 `lili-settings-*.json` |
-| `src/layout/sidebar/profile-menu.tsx`<br>`src/components/error-fallback/index.tsx` | 反馈链接 `github.com/Leeero/biu/issues` → `github.com/Leeero/LiLi/issues` |
+| `src/layout/sidebar/profile-menu.tsx`<br>`src/components/error-fallback/index.tsx` | 反馈链接 `github.com/Leeero/biu/issues` → `github.com/Leeero/lili/issues` |
 
 ### 3.2 CSS 令牌与主题命名空间（一条 sed）
 
@@ -212,7 +212,7 @@ Linux:   ~/.config/Biu/logs/main.log
 - `.github/ISSUE_TEMPLATE/bug-report.yml` — 三条日志路径
 - `.github/ISSUE_TEMPLATE/config.yml` — discussions URL
 - `.github/CODEOWNERS` — 已是 `@Leeero`，**不用动**
-- 仓库改名 `Leeero/biu` → `Leeero/LiLi` 时：`package.json` 三处 URL + `publish.owner`/`repo` + README badges + contributors / star-history 链接（`CHANGELOG.md` 历史链接**不动**）
+- 仓库改名 `Leeero/biu` → `Leeero/lili`（**已落地**）：`package.json` 三处 URL + `publish.owner`/`repo` + `dev-app-update.yml` + README badges + contributors / star-history 链接（`CHANGELOG.md` 历史链接**不动**）
 
 ### 3.4 资产与截图（「截图的地方」）
 
@@ -246,7 +246,7 @@ Linux:   ~/.config/Biu/logs/main.log
 |---|---|---|
 | `package.json` | `"version": "1.16.0"`（继承上游版本线） | `1.0.0` |
 | `CHANGELOG.md` | `v1.16.0` 段 + `wood3n/biu` 的 compare/commit 链接 | **不改**（顶部加了一段改名说明） |
-| `README.md` | 版本 badge | 指向 `Leeero/LiLi`（版本号在 badge 里不写死） |
+| `README.md` | 版本 badge | 指向 `Leeero/lili`（版本号在 badge 里不写死） |
 | `plugins/electron-build.ts` | `artifactName: ${productName}-${version}-*.${ext}` | 改 productName 后自动变 `lili-...` |
 
 **版本策略（已定）：从 `1.0.0` 重启。**
@@ -336,7 +336,7 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 | 1 | 纯个人非商业，还是商业打算？ | **不含商业** | §0.4 的商业闸门关闭，方案成立；README / NOTICE 写明非商业限制 |
 | 2 | 现网是否已有真实用户？ | **没有真实用户** | userData 迁移**不做代码**，只在 README 给手动搬目录指引（§2.1 方案 3） |
 | 3 | 版本号走 2.0.0 / 1.17.0 / 1.0.0？ | **1.0.0 重启** | `package.json` → `1.0.0`；首次改版 tag 打 `v1.0.0`；`CHANGELOG.md` 加说明 |
-| 4 | 产品名 / 仓库名？ | **产品名 `lili`；仓库改名为 `LiLi`** | `productName: "lili"`、产物名 `lili-<version>-*`；GitHub 仓库 `Leeero/biu` → `Leeero/LiLi`；保留上游署名 |
+| 4 | 产品名 / 仓库名？ | **产品名 `lili`；仓库改名为 `lili`（小写）** | `productName: "lili"`、产物名 `lili-<version>-*`；GitHub 仓库 `Leeero/biu` → `Leeero/lili`（实际落地为小写，与 `package.json` 的 `name` 一致）；保留上游署名 |
 | 5 | 上游署名怎么处理？ | **保留** | LICENSE 逐字不动；新增 `NOTICE`；README + 关于页补归属 |
 
 ---
@@ -352,43 +352,41 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 3. **「另起仓库能保住上游更新通道」这条常见理由在本项目不成立。** 上游自 2026-01-20 起已停更 9 个月，fork 点**就是**上游尖端，没有更新可切；保留历史的唯一价值就是归属证据，更不该丢。
 4. **仓库名只影响 GitHub 层，与打包身份是两件事。** 真正决定「装了哪个应用」的是 `appId`（已改为 `com.leeero.lili`），仓库名不影响装机升级路径。
 
-**执行步骤（GitHub 网页操作，本机没有 `gh` CLI）：**
+**执行结果（已完成，2026-10-10）：**
 
-1. 打开 `https://github.com/Leeero/biu/settings`，在 **Repository name** 填 `LiLi`，点 **Rename**。
-   - 旧地址 `github.com/Leeero/biu` 会自动 302 到 `github.com/Leeero/LiLi`。
-   - 若该仓库是 fork，改名**不破坏** fork 网络，上游关系自动保留。
-2. 更新本地 remote（GitHub 会帮你重定向，但显式改更清楚）：
-
-   ```bash
-   git remote set-url origin git@github.com:Leeero/LiLi.git
-   git remote -v   # 复核
-   ```
-
-3. **本地目录名不影响任何东西**，仍叫 `biu` 也能正常工作。若想一起改（注意会改变所有脚本里的绝对路径）：
+1. ✅ 仓库已在 GitHub 网页改名为 **`Leeero/lili`**（小写；旧地址 `github.com/Leeero/biu` 自动 302）。
+   - 改名前该仓库是 fork，改名**未破坏** fork 网络，上游关系自动保留。
+   - 大小写口径：最终定为**小写 `lili`**，与 `package.json` 的 `name: "lili"`、`productName: "lili"`、产物名 `lili-<version>-*` 全部对齐（GitHub 仓库名大小写不敏感，但显示名统一更干净）。
+2. ✅ 本地 remote 已更新并实测可达：
 
    ```bash
-   mv /Users/lero/Documents/MyData/Code/biu /Users/lero/Documents/MyData/Code/LiLi
+   git remote set-url origin https://github.com/Leeero/lili.git
+   git remote -v            # origin  https://github.com/Leeero/lili.git (fetch/push)
+   git ls-remote --heads origin   # 返回 refs/heads/master，连通正常
    ```
+3. **本地目录名仍叫 `biu`，不影响任何东西**，不必改（改了反而要动所有脚本里的绝对路径）。
+4. 仓库名口径已随本次提交落到代码与配置：`package.json` 三处 URL、`plugins/electron-build.ts` 的 `publish.owner` + `repo: "lili"`、`electron/updater/dev-app-update.yml` 的 `repo: lili`、`.github/ISSUE_TEMPLATE/config.yml` 的 discussions URL、`src` 两处反馈链接、README 的 badges / contributors / star-history 链接。
+5. **不要动** `CHANGELOG.md` 里指向 `wood3n/biu` 的历史链接（自动发布的既有事实）。
 
-4. 需要留意的地方（都已在本次提交里处理）：`package.json` 三处 URL、`plugins/electron-build.ts` 的 `publish.owner` + `repo: "LiLi"`、README 的 badges / contributors / star-history 链接。
-5. **不要动** `CHANGELOG.md` 里指向 `wood3n/biu` 的历史链接。
+> 注意：上游 feed 的 `publish.repo` 与 `dev-app-update.yml` 必须与新仓库名一致——自动更新不认「重定向语义之外」的路径变化，这一层若不同步会直接导致更新检查失败。
 
 ---
 
 ## 8. 执行状态与验证清单
 
-**已完成：** 提交 `93d988f`（令牌）、`a979aa0`（品牌与打包）、`2c56547`（运行时路径）、本次提交（文档与授权）。
+**已完成：** 提交 `93d988f`（令牌）、`a979aa0`（品牌与打包）、`2c56547`（运行时路径）、`054b917`（文档与授权）、本次提交（仓库名口径收口）。
 
 - [x] `pnpm verify:phase-drift` — 改名后 0 新增漂移（用 `git worktree` 对照逐字证明，§2.3）
 - [x] `pnpm verify:literals` — 通过
 - [x] `tests/design-tokens.test.ts`、`tests/shell-menu.test.ts`、`tests/app-shell-interactions.test.ts` 等契约测试
 - [x] `docs/design-4188/phase1/tokens.json` 的 `contract.scope` 已改为 `.lili-theme-4188`，`verify-tokens.mjs` 报 `ok: true`
+- [x] `verify-source-lock.mjs` 报 `ok: true`——15 个哈希全对，机器侧证明「不重命名 `prototypes/biu-discover-option2`」是正确判断
 - [x] 全仓 `grep -riE 'biu'` 收敛到 §5 白名单
+- [x] **GitHub 仓库已改名为 `Leeero/lili`**，本地 remote 同步并 `git ls-remote` 实测可达
 - [ ] `pnpm test -- --run tests/design-tokens.test.ts`（单文件；**不要跑全量**，沙箱内会被资源守卫 SIGTERM，**空输出 + exit 137 是「被杀掉」，不是通过**）
-- [ ] `pnpm verify:phase-drift` / `verify:literals`（重任务，一次只跑一个）
 - [ ] 打包实测：产物名 `lili-1.0.0-*`、应用显示名 `lili`、userData 目录为 `lili`
 - [ ] macOS 菜单栏 + Windows 托盘「退出 lili」文案（契约测试已钉）
-- [ ] 新 appId 下 GitHub Releases 自动更新能拉到新版本
+- [ ] 新 appId 下 GitHub Releases 自动更新能拉到新版本（依赖 `publish.repo` / `dev-app-update.yml` 已同步为新仓库名）
 - [ ] 关于页 / README / `NOTICE` 三处都能看到 `Required Notice` 原文
 - [ ] **截图全部重截**（`screenshots/` 6 张 + `audit-2026-09-30/` 6 张）、`logo.svg` 与图标重做，README 里不再出现旧版界面与旧字标
 

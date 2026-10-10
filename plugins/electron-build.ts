@@ -81,7 +81,7 @@ export async function buildElectron() {
       publish: {
         provider: "github",
         owner: "Leeero",
-        repo: "LiLi",
+        repo: "lili",
         releaseType: null,
       },
     },
