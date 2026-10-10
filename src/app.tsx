@@ -1,13 +1,16 @@
 import { Suspense, useEffect } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useHref, useNavigate, useRoutes } from "react-router";
 
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
+import log from "electron-log/renderer";
 import moment from "moment";
 
 import { getCookitFromBSite } from "./common/utils/cookie";
 import { isPlayerCommand, runPlayerCommand } from "./common/utils/player-command";
 import { startPlayerStatusBridge } from "./common/utils/player-status-bridge";
 import { mapKeyToElectronAccelerator } from "./common/utils/shortcut";
+import Fallback from "./components/error-fallback";
 import Theme from "./components/theme";
 import routes from "./routes";
 import { useAppUpdateStore } from "./store/app-update";
@@ -132,15 +135,29 @@ export function App() {
         }}
       />
       <Theme>
-        <Suspense
-          fallback={
-            <div className="flex h-full min-h-40 items-center justify-center" role="status" aria-label="页面加载中">
-              <span className="text-default-500 text-sm">正在加载…</span>
-            </div>
-          }
+        {/*
+          应用级错误边界：壳层自己崩了才落到这里，兜底是**整页**的错误说明
+          （`反馈` / `回到首页`）。页面级的错误由 `layout` 里那个只包住
+          `<Outlet />` 的边界接住，两者不要合并 —— 合并就会把侧栏、播放栏与
+          登录弹窗宿主一起卸载掉（2026-10-10 的事故形态）。
+          这里的 `resetErrorBoundary` 只在用户点「回到首页」时触发。
+        */}
+        <ErrorBoundary
+          FallbackComponent={Fallback}
+          onError={(error, info) => {
+            log.error("[ErrorBoundary:app]", error, info);
+          }}
         >
-          {routeElement}
-        </Suspense>
+          <Suspense
+            fallback={
+              <div className="flex h-full min-h-40 items-center justify-center" role="status" aria-label="页面加载中">
+                <span className="text-default-500 text-sm">正在加载…</span>
+              </div>
+            }
+          >
+            {routeElement}
+          </Suspense>
+        </ErrorBoundary>
       </Theme>
     </HeroUIProvider>
   );

@@ -6,7 +6,7 @@ import log from "electron-log/renderer";
 
 import { AppShell } from "@/app/shell";
 import ConfirmModal from "@/components/confirm-modal";
-import Fallback from "@/components/error-fallback";
+import ContentFallback from "@/components/error-fallback/content";
 import FavoritesSelectModal from "@/components/favorites-select-modal";
 import ReleaseNoteModal from "@/components/release-note-modal";
 import VideoPagesDownloadSelectModal from "@/components/video-pages-download-select-modal";
@@ -48,7 +48,9 @@ const LoginHost = () => {
  *      激活判定（`/collection/:id` 的三段靠 `?type=` 区分），不影响其余契约。
  *   2. 托住全局弹层（收藏夹选择、确认框、发布说明、下载选择、登录）。
  *      它们不属于任何单个页面，也不属于壳层。
- *   3. 错误边界按路径重置，避免一个页面的渲染错误把整个应用钉死。
+ *   3. 页面级错误边界按路径重置，避免一个页面的渲染错误把整个应用钉死。
+ *      它**只包住 `<Outlet />`**：壳层与全局弹层在边界之外，页面挂掉时用户
+ *      仍有导航与登录可用。整页兜底属于应用级边界，见 `app.tsx`。
  *
  * 一级导航落在侧栏（`layout/sidebar`，数据源是 `route-shell.ts` 的
  * `PRIMARY_NAV_ITEMS`），账户入口在侧栏底部的账户卡；顶栏只有返回 / 前进 / 搜索，
@@ -98,13 +100,7 @@ const Layout = () => {
   }, [location.pathname]);
 
   return (
-    <ErrorBoundary
-      FallbackComponent={Fallback}
-      resetKeys={[location.pathname]}
-      onError={(error, info) => {
-        log.error("[ErrorBoundary]", error, info);
-      }}
-    >
+    <>
       <AppShell
         chrome={chrome}
         sidebar={<Sidebar pathname={location.pathname} />}
@@ -121,7 +117,22 @@ const Layout = () => {
             </div>
           )}
           <div className="min-h-0 flex-1">
-            <Outlet />
+            {/*
+              页面级错误边界：**只**包住路由内容。
+              侧栏 / 顶栏 / 播放栏 / 分段导航与全局弹层（含登录宿主）都在边界外 ——
+              页面（尤其是懒加载 chunk）出错时壳层必须活着，否则用户既没有出口、
+              也点不到登录。整页兜底 `Fallback` 留给应用级边界（`app.tsx`）。
+              `resetKeys` 取 pathname：换页即复位，避免一个页面的错误钉死后续所有页面。
+            */}
+            <ErrorBoundary
+              FallbackComponent={ContentFallback}
+              resetKeys={[location.pathname]}
+              onError={(error, info) => {
+                log.error("[ErrorBoundary]", error, info);
+              }}
+            >
+              <Outlet />
+            </ErrorBoundary>
           </div>
         </div>
       </AppShell>
@@ -130,7 +141,7 @@ const Layout = () => {
       <VideoPagesDownloadSelectModal />
       <ReleaseNoteModal />
       <LoginHost />
-    </ErrorBoundary>
+    </>
   );
 };
 

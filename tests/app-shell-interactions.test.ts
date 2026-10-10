@@ -464,3 +464,66 @@ describe("顶栏搜索框不记住上一次的查询词", () => {
     expect(useSearchHistory.getState().items.map(item => item.value)).toEqual(["下雨"]);
   });
 });
+
+/**
+ * 错误边界的**位置**是一份壳层契约，不是实现细节。
+ *
+ * 2026-10-10 的事故：当时唯一的边界包着 `<AppShell>` 加全部全局弹层。运行中的
+ * 应用产物被清理后，点任何懒加载页面都会 `ChunkLoadError`，于是**整个壳层**
+ * 被兜底页替换 —— 侧栏、账户卡、播放栏、登录弹窗宿主一起消失，用户既没有出口、
+ * 也点不到登录（截图里那张「ERROR 404」插画页就是这么来的）。
+ *
+ * 现在分两层：页面级边界只包 `<Outlet />`（下面第一条），整页兜底留给应用级
+ * 边界（第二条钉在 `app.tsx` 上）。谁把两层合回去，这里就红。
+ */
+describe("错误边界分层", () => {
+  const readSource = (relativePath: string) =>
+    readFileSync(path.resolve(process.cwd(), relativePath), "utf8")
+      // 下面的断言看的是**代码结构**（元素顺序、用了哪个组件）。注释里同样会出现
+      // `<Outlet />` 这类字样（解释「为什么」时躲不开），先剥掉注释再比对，
+      // 否则一段说明文字就能把顺序断言带偏。
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+
+  test("页面级边界只包住路由内容，壳层与全局弹层留在边界外", () => {
+    const layoutSource = readSource("src/layout/index.tsx");
+    const indexOf = (needle: string) => layoutSource.indexOf(needle);
+
+    const shellStart = indexOf("<AppShell");
+    const boundaryStart = indexOf("<ErrorBoundary");
+    const outlet = indexOf("<Outlet />");
+    const boundaryEnd = indexOf("</ErrorBoundary>");
+
+    expect(shellStart).toBeGreaterThan(-1);
+    // 边界嵌在 AppShell **内部**，且只圈住 <Outlet />。
+    expect(boundaryStart).toBeGreaterThan(shellStart);
+    expect(outlet).toBeGreaterThan(boundaryStart);
+    expect(boundaryEnd).toBeGreaterThan(outlet);
+
+    // 全局弹层与登录宿主必须排在边界**之后**（即边界之外）。
+    for (const host of [
+      "<FavoritesSelectModal />",
+      "<ConfirmModal />",
+      "<VideoPagesDownloadSelectModal />",
+      "<ReleaseNoteModal />",
+      "<LoginHost />",
+    ]) {
+      const at = indexOf(host);
+      expect(at, `${host} 应在页面级边界之外`).toBeGreaterThan(boundaryEnd);
+    }
+  });
+
+  test("页面级兜底是内容区尺寸，整页兜底只给应用级边界用", () => {
+    const layoutSource = readSource("src/layout/index.tsx");
+    const appSource = readSource("src/app.tsx");
+    const contentFallback = readSource("src/components/error-fallback/content.tsx");
+
+    expect(layoutSource).toContain("FallbackComponent={ContentFallback}");
+    // 整页兜底（h-screen）不允许再出现在壳层里 —— 那正是事故形态。
+    expect(layoutSource).not.toContain('from "@/components/error-fallback";');
+    expect(contentFallback).not.toContain("h-screen");
+
+    // 壳层自己崩了仍有兜底：应用级边界负责整页恢复页。
+    expect(appSource).toContain("FallbackComponent={Fallback}");
+  });
+});
