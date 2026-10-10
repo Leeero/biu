@@ -1,5 +1,5 @@
 /**
- * Biu 2.0 · C+ 视觉稿图标集
+ * lili 2.0 · C+ 视觉稿图标集
  * 自包含 SVG sprite，不依赖网络与字体图标；用法：
  *   <svg class="i"><use href="#i-play"></use></svg>
  * 说明：生产实现应替换为项目已安装的 @remixicon/react 或 SF Symbols 对应字形。
@@ -51,9 +51,9 @@
   svg += "</defs></svg>";
 
   function inject() {
-    if (document.getElementById("biu-icon-sprite")) return;
+    if (document.getElementById("lili-icon-sprite")) return;
     var holder = document.createElement("div");
-    holder.id = "biu-icon-sprite";
+    holder.id = "lili-icon-sprite";
     holder.innerHTML = svg;
     document.body.insertBefore(holder, document.body.firstChild);
   }

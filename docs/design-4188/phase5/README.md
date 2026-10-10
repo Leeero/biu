@@ -22,7 +22,7 @@
 - `pnpm exec vitest run --exclude 'prototypes/**'`：见本阶段最终执行记录。
 - ESLint：阶段 5 涉及的 TS/TSX 通过（仅保留项目既有 Fast Refresh 提示时另行注明）。
 - Stylelint：`src/features/assets/assets-4188.css` 通过。
-- `BIU_WEB_ONLY=1 pnpm run build`：通过。
+- `LILI_WEB_ONLY=1 pnpm run build`：通过。
 - 视觉比对：1280×720 下完成设计源“我的音乐”与四个实现主态的人工核对；记录见 `design-qa.md`。
 
 ## 证据

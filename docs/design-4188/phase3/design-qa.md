@@ -34,7 +34,7 @@
 - focused comparison：Button 八态与 IconButton 八态单独滚动到视口检查；首轮两项 P2 已修复并重新截图。
 - fonts/typography：沿用 Inter / Noto Sans SC / PingFang SC；组件正文与标签使用阶段 1 的 14/12px 档，层级与源设计一致。
 - spacing/layout rhythm：38px 药丸按钮、11/14/18px 圆角体系与 4188 源样式一致；状态矩阵只作验收排列，不进入业务 UI。
-- colors/tokens：所有新增样式引用 `--biu-4188-*`；字面色与原始色板越层检查通过。
+- colors/tokens：所有新增样式引用 `--lili-4188-*`；字面色与原始色板越层检查通过。
 - image quality/assets：本阶段不新增图片资产；可见图标使用现有 SVG/Remix Icon，未使用 CSS 图形替代设计资产。
 - copy/content：设计系统说明明确指向阶段 1 令牌与 4188 源文件；业务文案未改变。
 - interactions checked：Tab 焦点、pressed/selected、disabled、loading、error、输入框标签与错误边框；组件测试同时验证 ARIA。

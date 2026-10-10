@@ -1,4 +1,4 @@
-# Biu 阶段 9 发布回归清单
+# lili 阶段 9 发布回归清单
 
 本文用于下一正式版本发布前的三平台安装、升级和核心功能验收。每个平台、架构和安装形式必须独立记录结果；未经验证的项目不得视为通过。
 
@@ -22,7 +22,7 @@
 - [ ] 发布提交已通过 `pnpm test -- --run`。
 - [ ] 发布提交已通过 ESLint、Knip 和完整构建。
 - [ ] Git 标签与 `package.json` 版本一致。
-- [ ] GitHub 发布目标为 `Leeero/biu`。
+- [ ] GitHub 发布目标为 `Leeero/lili`。
 - [ ] GitHub Actions 具有 `contents: write` 权限。
 - [ ] macOS 签名、公证凭据可用；若暂不签名，发布说明明确 Gatekeeper 操作方式。
 - [ ] Windows 签名凭据可用；若暂不签名，发布说明明确 SmartScreen 风险。

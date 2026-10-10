@@ -2,7 +2,7 @@
 
 ## 适用范围
 
-本契约只适用于带有 `.biu-theme-4188` 祖先的界面。旧 C+ 页面在逐页迁移前继续消费旧令牌，禁止把 4188 数值全局覆盖到 `:root`。设计来源为 `prototypes/biu-discover-option2/src/styles.css`；源文件哈希必须先通过 `verify-source-lock.mjs`。
+本契约只适用于带有 `.lili-theme-4188` 祖先的界面。旧 C+ 页面在逐页迁移前继续消费旧令牌，禁止把 4188 数值全局覆盖到 `:root`。设计来源为 `prototypes/biu-discover-option2/src/styles.css`；源文件哈希必须先通过 `verify-source-lock.mjs`。
 
 ## 颜色角色
 
@@ -27,7 +27,7 @@
 
 ## 交互与无障碍规则
 
-1. 所有可键盘操作元素必须显示 `--biu-4188-focus` 焦点环；不得用 `outline: none` 后不补偿。
+1. 所有可键盘操作元素必须显示 `--lili-4188-focus` 焦点环；不得用 `outline: none` 后不补偿。
 2. 选中、播放、喜欢、错误不得只靠颜色区分；同时使用图标、边线、文本或 `aria-*` 状态。
 3. 加载态保持最终组件宽高，避免壳层和列表跳动；异步按钮保持原标签作为可访问名称。
 4. `prefers-reduced-motion: reduce` 时三档时长归零，状态变化仍必须立即可见。

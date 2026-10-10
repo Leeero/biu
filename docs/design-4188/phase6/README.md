@@ -14,7 +14,7 @@
 - ESLint：阶段 6 TS/TSX 全部通过。
 - Stylelint：`src/features/social/social-4188.css` 通过。
 - Vitest：44 个测试文件、460 项测试全部通过。
-- `BIU_WEB_ONLY=1 pnpm run build`：通过。
+- `LILI_WEB_ONLY=1 pnpm run build`：通过。
 - `verify:literals` 与 4188 源文件哈希锁：通过。
 - 搜索提交、播放列表分类和“我的音乐”边界提示已在真实页面交互验证。
 

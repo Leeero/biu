@@ -21,7 +21,7 @@
 - ESLint：阶段文件无错误，仅保留既有 Fast Refresh 导出警告。
 - Stylelint：阶段 CSS 通过。
 - Vitest：44 个测试文件、460 项测试全部通过。
-- `BIU_WEB_ONLY=1 pnpm run build`：通过。
+- `LILI_WEB_ONLY=1 pnpm run build`：通过。
 - `verify:literals` 与 4188 源文件哈希锁：通过。
 - 1440 × 1000 桌面视口完成设计稿与实现实页对照；首轮双列卡片偏差已修正并复验。
 

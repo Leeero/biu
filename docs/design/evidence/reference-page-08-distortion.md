@@ -182,7 +182,7 @@ python tools/design-fidelity/correct_reference.py --selftest # 回归：生成�
    画板坐标 841（不在 900 视口的像素里）；实现时注解带按**页流**排在专辑网格之后，首屏不可见。
 
 **为什么不直接改 `resize` 目标**：`prepare_reference.sh` 需要**源 PDF** 才能重跑，而源 PDF
-不在仓库内（`meta.sourceRender` 指向 `/tmp/biu-design/`，已失效）。上面的纠正不需要源 PDF；
+不在仓库内（`meta.sourceRender` 指向 `/tmp/lili-design/`，已失效）。上面的纠正不需要源 PDF；
 生成脚本本身也已改成「保宽等比 + 壳层对齐裁切」，将来能拿到 PDF 时走的是同一条路径。
 
 ## 7. 防复发

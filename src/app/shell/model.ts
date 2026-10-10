@@ -7,7 +7,7 @@
  * 为什么把状态做成受控属性而不是在组件里 `useLocation()` 推断：
  * `/mini-player` 是独立窗口、`/now-playing` 是沉浸态，两者的差异属于**路由契约**，
  * 不属于壳层实现细节。壳层自己推断会让「为什么这个路由没有顶栏」散落在两处。
- * 见 `docs/design/biu-cplus-refactor-plan.md` §3.2。
+ * 见 `docs/design/lili-cplus-refactor-plan.md` §3.2。
  */
 
 /** 壳层状态。 */

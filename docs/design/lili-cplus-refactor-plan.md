@@ -1,6 +1,6 @@
-# Biu 2.0 · C+ 视觉重构方案
+# lili 2.0 · C+ 视觉重构方案
 
-> 版本：v1.0　日期：2026-09-25输入依据：[C+ 视觉稿](../../prototypes/c-plus-2026/index.html)（定性卡 + 12 屏 + 色板，设计稿 14 页）前置文档：[Biu 2.0 重构实施计划](../biu-refactor-plan.md)（阶段 0–9 已完成）、[当前能力依赖清单](../biu-current-architecture-map.md) 真值文件：[`cplus-spec-lock.json`](./cplus-spec-lock.json)　施工矩阵：[`cplus-screen-matrix.md`](./cplus-screen-matrix.md)　令牌桥接：[`cplus-token-bridge.md`](./cplus-token-bridge.md)
+> 版本：v1.0　日期：2026-09-25输入依据：[C+ 视觉稿](../../prototypes/c-plus-2026/index.html)（定性卡 + 12 屏 + 色板，设计稿 14 页）前置文档：[lili 2.0 重构实施计划](../lili-refactor-plan.md)（阶段 0–9 已完成）、[当前能力依赖清单](../lili-current-architecture-map.md) 真值文件：[`cplus-spec-lock.json`](./cplus-spec-lock.json)　施工矩阵：[`cplus-screen-matrix.md`](./cplus-screen-matrix.md)　令牌桥接：[`cplus-token-bridge.md`](./cplus-token-bridge.md)
 
 ---
 
@@ -140,7 +140,7 @@ L3 单独列出是因为它抓的是 L1/L2 抓不到的东西：玻璃模糊强�
 ```text
 <AppShell>                                    1440 × 900 基准
 ├── <TopBar>            71px   常驻
-│   ├── 品牌 Biu         → 导航到 /
+│   ├── 品牌 lili         → 导航到 /
 │   ├── <SegmentNav>     由当前路由决定的分段组（见 spec-lock.topbarSegments）
 │   ├── <SearchField>    占位「搜索音乐视频或创作者」+ Ctrl K
 │   └── <AvatarMenu>     我的音乐库 / 发现音乐 / B站历史 / 我的关注 / 设置 / 检查更新 / 关于 / 退出
@@ -214,23 +214,23 @@ L3 单独列出是因为它抓的是 L1/L2 抓不到的东西：玻璃模糊强�
 src/ui/tokens/
 ├── index.css        聚合 @import + 减少动效
 ├── palette.css      --c-*    原始色板，唯一允许字面色值
-├── semantic.css     --biu-*  语义令牌，唯一允许被业务代码引用
-└── geometry.css     --biu-layout-* / --biu-text-* / --biu-radius-* / --biu-z-* / --biu-duration-*
+├── semantic.css     --lili-*  语义令牌，唯一允许被业务代码引用
+└── geometry.css     --lili-layout-* / --lili-text-* / --lili-radius-* / --lili-z-* / --lili-duration-*
 ```
 
 ### 4.2 与现有令牌的兼容处置
 
 | 现有令牌 | 处置 | 原因 |
 | --- | --- | --- |
-| `--biu-color-canvas/surface/...` | 值替换为 C+ 实测值，语义名保留 | 减少改动面 |
-| `--biu-color-brand` | `hsl(var(--heroui-primary))` → `var(--biu-accent)` | 决策 2 移除自定义主色 |
-| `--biu-radius-sm/md/lg/xl` | `calc(var(--heroui-radius-medium) ± n)` → 固定 8/12/20/999 | 决策 2 移除自定义圆角 |
-| `--biu-topbar-height` 64 | → **71** | 设计稿实测 |
-| `--biu-player-height` 84 | → **88** | 设计稿实测 |
-| `--biu-sidebar-width` 220 | **删除** | 侧栏移除 |
-| `--biu-content-max-width` 1440 | → `none` | 满幅剧场，内容不居中收窄 |
-| `--biu-space-*` | 补齐 48 / 64 | 对齐原型 `--sp-12` / `--sp-16` |
-| `--biu-duration-*` / `--biu-ease-*` | 缓动改为 `cubic-bezier(0.32, 0.72, 0, 1)` | 以原型为准 |
+| `--lili-color-canvas/surface/...` | 值替换为 C+ 实测值，语义名保留 | 减少改动面 |
+| `--lili-color-brand` | `hsl(var(--heroui-primary))` → `var(--lili-accent)` | 决策 2 移除自定义主色 |
+| `--lili-radius-sm/md/lg/xl` | `calc(var(--heroui-radius-medium) ± n)` → 固定 8/12/20/999 | 决策 2 移除自定义圆角 |
+| `--lili-topbar-height` 64 | → **71** | 设计稿实测 |
+| `--lili-player-height` 84 | → **88** | 设计稿实测 |
+| `--lili-sidebar-width` 220 | **删除** | 侧栏移除 |
+| `--lili-content-max-width` 1440 | → `none` | 满幅剧场，内容不居中收窄 |
+| `--lili-space-*` | 补齐 48 / 64 | 对齐原型 `--sp-12` / `--sp-16` |
+| `--lili-duration-*` / `--lili-ease-*` | 缓动改为 `cubic-bezier(0.32, 0.72, 0, 1)` | 以原型为准 |
 
 ### 4.3 HeroUI 的保留边界
 
@@ -242,9 +242,9 @@ HeroUI 继续作为**交互与无障碍基础**（焦点管理、键盘导航、
 
 ### 4.4 样式表达方式
 
-现有代码用 Tailwind arbitrary value 引用令牌（`bg-[rgb(var(--biu-color-surface))]`）。这个方式**保留**，因为它在类型安全、tree-shaking 与 IDE 提示上都优于 CSS Modules，且迁移面最小。
+现有代码用 Tailwind arbitrary value 引用令牌（`bg-[rgb(var(--lili-color-surface))]`）。这个方式**保留**，因为它在类型安全、tree-shaking 与 IDE 提示上都优于 CSS Modules，且迁移面最小。
 
-新增约束：任意值里只能出现 `var(--biu-*)`，不得出现字面色值。这条由 §7 的护栏强制。
+新增约束：任意值里只能出现 `var(--lili-*)`，不得出现字面色值。这条由 §7 的护栏强制。
 
 ---
 
@@ -590,11 +590,11 @@ P0 的原则是**「新增令牌语言 + 上护栏」**，不是改渲染。因�
 
 | 项目 | 落在 | 依据 |
 | --- | --- | --- |
-| 三层令牌文件与全部新增命名空间（`--biu-surface-*` / `--biu-text-*` / `--biu-type-*` / `--biu-layout-*` / `--biu-radius-*` / `--biu-z-*` / `--biu-duration-*` / `--biu-space-12,16`） | **P0** | 纯新增，不改变任何现有渲染 |
-| 圆角收敛为固定值（不再由 `--heroui-radius-medium` 派生） | **P0** | 属令牌语言本身；设计稿明确「界面里没有直角卡片」，圆角不是可调项。渲染上只有 `--biu-radius-lg` 由 16 → 20 一处变化 |
+| 三层令牌文件与全部新增命名空间（`--lili-surface-*` / `--lili-text-*` / `--lili-type-*` / `--lili-layout-*` / `--lili-radius-*` / `--lili-z-*` / `--lili-duration-*` / `--lili-space-12,16`） | **P0** | 纯新增，不改变任何现有渲染 |
+| 圆角收敛为固定值（不再由 `--heroui-radius-medium` 派生） | **P0** | 属令牌语言本身；设计稿明确「界面里没有直角卡片」，圆角不是可调项。渲染上只有 `--lili-radius-lg` 由 16 → 20 一处变化 |
 | 缓动改为 `cubic-bezier(0.32, 0.72, 0, 1)`、`slow` 280 → 240ms | **P0** | 同上，属令牌语言 |
-| `--biu-color-brand` / `-focus` 收敛到 C+ 强调色；删除浅色主题；移除自定义主色 / 圆角 / 背景色入口 | **P1** | 这三项都是**移除用户可见能力**，必须与设置页改造、迁移提示同批发布 |
-| `--biu-topbar-height` 64 → 71、`--biu-player-height` 84 → 88、`--biu-content-max-width` 1440 → none、删除 `--biu-sidebar-width` | **P1** | 属**壳层几何**，其验收就在 P1 出口标准里（顶栏 71 / 播放栏 88 的 L1 硬锚点）。P0 目标是值已在 `--biu-layout-*` 冻结，别名在 P1 重指 |
+| `--lili-color-brand` / `-focus` 收敛到 C+ 强调色；删除浅色主题；移除自定义主色 / 圆角 / 背景色入口 | **P1** | 这三项都是**移除用户可见能力**，必须与设置页改造、迁移提示同批发布 |
+| `--lili-topbar-height` 64 → 71、`--lili-player-height` 84 → 88、`--lili-content-max-width` 1440 → none、删除 `--lili-sidebar-width` | **P1** | 属**壳层几何**，其验收就在 P1 出口标准里（顶栏 71 / 播放栏 88 的 L1 硬锚点）。P0 目标是值已在 `--lili-layout-*` 冻结，别名在 P1 重指 |
 
 > 这样切分的结果是：**P0 结束时应用的外观与行为与 P0 之前一致**（除圆角 4px 的差异），而目标值、护栏与真值已全部就位。P1 才开始真正动壳层。
 
@@ -617,19 +617,19 @@ P0 的原则是**「新增令牌语言 + 上护栏」**，不是改渲染。因�
 
 | 令牌 | 变化 | 被业务代码消费 | 结论 |
 | --- | --- | --- | --- |
-| `--biu-radius-lg` | 16px → 20px | ✅ 8 个组件 | **可视变更，已显式确认** |
-| `--biu-radius-md` | `var(--heroui-radius-medium)` → `12px` | ✅ 6 个组件 | 有效值相同（`--heroui-radius-medium` = 12px） |
-| `--biu-radius-xl` | `calc(12px + 8px)` → `20px` | ✅ 2 个组件 | 有效值相同 |
-| `--biu-radius-sm` | `max(4px, 12px - 4px)` → `8px` | ❌ | 同值改写 |
-| `--biu-ease-standard` / `-emphasized` | 改为 C+ 缓动 | ❌ | 无消费方，无可视影响 |
+| `--lili-radius-lg` | 16px → 20px | ✅ 8 个组件 | **可视变更，已显式确认** |
+| `--lili-radius-md` | `var(--heroui-radius-medium)` → `12px` | ✅ 6 个组件 | 有效值相同（`--heroui-radius-medium` = 12px） |
+| `--lili-radius-xl` | `calc(12px + 8px)` → `20px` | ✅ 2 个组件 | 有效值相同 |
+| `--lili-radius-sm` | `max(4px, 12px - 4px)` → `8px` | ❌ | 同值改写 |
+| `--lili-ease-standard` / `-emphasized` | 改为 C+ 缓动 | ❌ | 无消费方，无可视影响 |
 
-另外 32 个遗留令牌的有效值逐字未变。这个工具在 P0 收尾时首次运行就报出 6 处偏差 —— 若不求值、不补主题变量，`--biu-radius-md/xl` 会被误报为违规；若只比文本就收工，真实的 `--biu-radius-lg` 变更又会被掩盖在噪声里。
+另外 32 个遗留令牌的有效值逐字未变。这个工具在 P0 收尾时首次运行就报出 6 处偏差 —— 若不求值、不补主题变量，`--lili-radius-md/xl` 会被误报为违规；若只比文本就收工，真实的 `--lili-radius-lg` 变更又会被掩盖在噪声里。
 
 **P0 落地时发现并修正的真值分叉**：
 
 1. 沉浸态背景渐变在桥接表里记的是**拟合前的中间参数**，与原型实现不符 —— 已按原型现值校正。
 2. 文字色阶对比度记的是照上一轮暗底 `#121214` 算的值，C+ 底板改为 `#08080A` 后应整体提升 —— 已重算（20.01 / 12.46 / 7.78 / 6.14 / 3.95）并改为由单测校验。
 3. 原型实际使用的合成色（反色对 `#F2F2F2`/`#0A0A0C`、强调药丸文字 `#7CBCFF`、占位符、底板环境光、顶栏渐变停止点）此前未登记 —— 已补录，否则 P2 建组件时必然就地写死。
-4. **登记了却没有断言的令牌**：`--biu-radius-image` / `--biu-radius-window` / `--biu-scrim` / `--biu-scrim-veil` 四条在真值里存在，但没有任何用例断言它们，漂移不会报警。其中 `--biu-scrim-veil` 的四个停止点只写在自由文本 `rule` 里，无法被断言。已补齐取值断言与 `stops` 字段，并新增「登记即断言」完备性校验，使这类缺口在结构上无法再生。
+4. **登记了却没有断言的令牌**：`--lili-radius-image` / `--lili-radius-window` / `--lili-scrim` / `--lili-scrim-veil` 四条在真值里存在，但没有任何用例断言它们，漂移不会报警。其中 `--lili-scrim-veil` 的四个停止点只写在自由文本 `rule` 里，无法被断言。已补齐取值断言与 `stops` 字段，并新增「登记即断言」完备性校验，使这类缺口在结构上无法再生。
 
 这四条都不是笔误，而是**「文档与实现各写一份」的必然结果**。护栏与对照单测的价值即在于此：它们不会让第一份文档变对，但会让第二份无法存在。

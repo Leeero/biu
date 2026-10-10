@@ -1,0 +1,31 @@
+lili
+Copyright (c) 2026 Leeero
+
+本软件是基于 wood3n 的 Biu 音乐播放器二次开发的非官方版本（下称「本二开版」）。
+
+一、上游项目
+
+  Biu — https://github.com/wood3n/biu
+  上游最后提交：2026-01-20（7d49920）
+  本仓库的 git 历史自上游该提交点之后延续，未做历史重写、未剔除任何上游提交。
+  上游署名与提交记录是本次二开的归属证据链，逐条可追溯。
+
+二、许可证
+
+  本二开版及其全部衍生作品，许可沿用上游：
+
+    PolyForm Noncommercial License 1.0.0
+    https://polyformproject.org/licenses/noncommercial/1.0.0
+
+  许可证全文见本仓库根目录的 LICENSE 文件。请注意 PolyForm Noncommercial
+  不是 OSI 开源许可：它只授予非商业目的下的修改与分发权，并禁止 sublicense
+  与转让；商业用途须先取得著作权人的书面授权。
+
+三、署名要求（分发时必须逐字保留）
+
+  按上游许可证的 Notices 条款，任何获得本二开版副本的人，都必须同时获得
+  许可证原文（或上面的许可证 URL），以及下面这行逐字不动的纯文本行：
+
+Required Notice: Copyright (c) 2022–2025 wood3n
+
+  改名、换图标、改打包身份，都不改变这一要求。

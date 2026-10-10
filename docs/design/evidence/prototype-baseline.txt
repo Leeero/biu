@@ -1,4 +1,4 @@
-目标：prototype　输出：/tmp/biu-fidelity-out
+目标：prototype　输出：/tmp/lili-fidelity-out
 
 ===== 01 我的音乐库   vs   设计稿第 2 页　[标准壳层] =====
   [L1 硬锚点 · 渲染实测 vs 设计实测]
@@ -268,4 +268,4 @@
   PASS  11 设置                   平均亮度差   7.06
   FAIL  12 迷你播放器与系统集成           平均亮度差   9.73
 
-4 / 12 通过　并排对照图：/tmp/biu-fidelity-out
+4 / 12 通过　并排对照图：/tmp/lili-fidelity-out

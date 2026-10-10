@@ -13,7 +13,7 @@
 - `pnpm exec vitest run --exclude 'prototypes/**'`：44 个测试文件、460 项测试通过。
 - ESLint：阶段 4 涉及的 TS/TSX 无错误，仅 `queue-view.tsx` 保留已有的 Fast Refresh 导出结构提示。
 - Stylelint：三个阶段 4 样式文件通过。
-- `BIU_WEB_ONLY=1 pnpm run build`：通过。
+- `LILI_WEB_ONLY=1 pnpm run build`：通过。
 - 新增 `tests/queue-view-model-4188.test.ts`，验证共享去重、当前项、下一首、本地来源和多分 P。
 
 ## 证据

@@ -1,10 +1,10 @@
 {
   "$schema": "https://lili.local/schemas/cplus-spec-lock.json",
   "meta": {
-    "name": "lili 1.0 · C+ 满幅剧场 · 能力可读版",
+    "name": "lili 2.0 · C+ 满幅剧场 · 能力可读版",
     "version": "1.3.35",
     "frozenAt": "2026-10-10",
-    "sourcePdf": "lili 1.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
+    "sourcePdf": "lili 2.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
     "sourceRender": "/tmp/lili-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
@@ -15,9 +15,10 @@
         "phase": "改名",
         "changes": [
           "**产品改名 biu → lili。**令牌命名空间 `--biu-*` 全量改为 `--lili-*`（含 `--biu-4188-*`），主题作用域 `.biu-theme-4188` 改为 `.lili-theme-4188`。这是一次**纯同值改写**：所有令牌的解析值一字未动，只换名字。",
-          "**本文件同步换名。**机器可读的 token 字段与说明性散文一并替换为 `--lili-*`，使文档里的令牌名与实现保持同名可检索；改名这件事实由本条修订记录承载，不靠保留旧名来承担历史。`meta.name` / `meta.sourcePdf` 随之改为 lili 1.0。",
+          "**本文件同步换名。**机器可读的 token 字段与说明性散文一并替换为 `--lili-*`，使文档里的令牌名与实现保持同名可检索；改名这件事实由本条修订记录承载，不靠保留旧名来承担历史。`meta.name` / `meta.sourcePdf` 随之由「Biu 2.0」改为「lili 2.0」；`globalChrome.brand.text` 由 `Biu` 改为 `lili`（该字段是活跃规格值，随实现一并改）。",
           "**护栏联动的必要性。**`tools/design-fidelity/phase-boundary.json` 的阶段基线以令牌名为 key，`check-phase-drift.mjs` 逐名比对；若不做前缀归一，这次改名会被判成 368 处「令牌消失」，一次性的假偏差会把真漂移淹掉。已在 `check-phase-drift.mjs` 的 `collectDeclarations` 与消费方枚举两处加 `normalizeName`，把 `--biu-` 与 `--lili-` 收敛到同一身份。",
-          "**回归。**令牌真值对照测试、阶段边界检查、字面值护栏共同作为本次出口。"
+          "**回归。**令牌真值对照测试、阶段边界检查、字面值护栏共同作为本次出口。",
+          "**术语口径：`2.0` 是重构代次，不是应用版本号。**本文件与各阶段文档里的「lili 2.0 / 阶段 N」指 2026-09 起的 C+ 重构代次；应用版本号另由 `package.json` 承载，本次改名时由 `1.16.0` 重启为 `1.0.0`（因 appId 变更、与旧版无自动升级路径）。两者不要混读。"
         ]
       },
       {
@@ -1979,7 +1980,7 @@
   },
   "globalChrome": {
     "brand": {
-      "text": "Biu",
+      "text": "lili",
       "action": "回到 /"
     },
     "topbarNote": {

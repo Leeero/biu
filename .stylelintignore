@@ -1,3 +1,9 @@
 dist/
 public/
 .electron/
+
+# 原型目录整体排除：它们是设计参考实现，不是项目源码。
+# 其中 prototypes/biu-discover-option2 还受 docs/design-4188/phase0/source-lock.json
+# 的 SHA-256 指纹保护 —— 一旦被 `stylelint --fix` 重排（该目录有 282 条 non-conformant
+# 规则），verify-source-lock.mjs 会立刻失败。参考实现也不该按项目源码的风格规则改写。
+prototypes/

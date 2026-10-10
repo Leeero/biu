@@ -3,7 +3,13 @@ import { Controller } from "react-hook-form";
 import type { Control, UseFormSetValue } from "react-hook-form";
 
 import { Button, Form, Input, Radio, RadioGroup, Select, SelectItem, Switch, Tab, Tabs } from "@heroui/react";
-import { RiArrowRightLongLine, RiFileListLine, RiLayoutGridFill, RiListView } from "@remixicon/react";
+import {
+  RiArrowRightLongLine,
+  RiExternalLinkLine,
+  RiFileListLine,
+  RiLayoutGridFill,
+  RiListView,
+} from "@remixicon/react";
 
 import FontSelect from "@/components/font-select";
 import UpdateCheckButton from "@/components/update-check-button";
@@ -89,7 +95,7 @@ export const SystemSettingsTab = ({
               C+ 只有深色一套皮肤、固定主色与固定圆角（决策 2）。
               对应的 AppSettings 字段（themeMode / primaryColor / backgroundColor /
               borderRadius）仍然保留并被 store 读写，旧设置文件因此可无损读取，
-              只是不再产生作用。见 docs/design/biu-cplus-refactor-plan.md §13.1。 */}
+              只是不再产生作用。见 docs/design/lili-cplus-refactor-plan.md §13.1。 */}
           {/* 字体选择 */}
           <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
             <div className="mr-6 space-y-1">
@@ -321,6 +327,35 @@ export const SystemSettingsTab = ({
             <UpdateCheckButton />
           </div>
           <ImportExport />
+
+          {/* 上游署名与许可。改名不改变上游许可证的 Notices 条款：
+              Required Notice 行必须逐字出现在任何分发副本中，所以这里不做任何加工。 */}
+          <h2>上游与授权</h2>
+          <div className="flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
+            <div className="mr-6 space-y-1">
+              <div className="text-medium font-medium">基于 wood3n/biu 二次开发</div>
+              <div className="text-sm text-zinc-500">lili 是 Biu 音乐播放器的非官方二开版本，基础能力全部来自上游</div>
+            </div>
+            <Button
+              size="sm"
+              variant="flat"
+              startContent={<RiExternalLinkLine size={18} />}
+              onPress={() => window.electron.openExternal("https://github.com/wood3n/biu")}
+            >
+              上游仓库
+            </Button>
+          </div>
+          <div className="space-y-2">
+            <div>
+              <div className="text-medium font-medium">PolyForm Noncommercial License 1.0.0</div>
+              <div className="text-sm text-zinc-500">
+                沿用上游许可，仅限非商业用途。任何分发副本都须随附许可证原文，并完整保留下面的署名行
+              </div>
+            </div>
+            <code className="rounded-medium bg-default-100 block px-3 py-2 text-sm">
+              Required Notice: Copyright (c) 2022–2025 wood3n
+            </code>
+          </div>
         </>
       )}
     </Form>
