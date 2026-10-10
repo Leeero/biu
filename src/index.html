@@ -2,9 +2,22 @@
 <html lang="zh-CN" class="bg-background text-foreground">
   <head>
     <meta charset="utf-8" />
+    <!--
+      渲染层 CSP。
+
+      `script-src` 里的两个极验（Geetest）域是登录风控的必需项：`gt.js` 从
+      `static.geetest.com` 加载，它自己再按 `config.fallback_config` 从
+      `static.geetest.com` / `dn-staticdown.qbox.me` 拉取控件脚本。此前
+      `script-src` 只有 `'self'`，脚本被 CSP 拦掉，短信/密码登录一路报
+      「加载风控验证码出错」（扫码登录不走这条路，故不受影响）。
+      改动它必须同步 `tests/renderer-csp.test.ts` —— 那里拿
+      `src/common/utils/geetest.ts` 的脚本地址反查本文件，防两边漂移。
+      其余指令不动：`img-src` / `connect-src` 已用 `https:` 覆盖极验的
+      图片、`api.geetest.com` 与 `monitor.geetest.com` 回传。
+    -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http:; connect-src 'self' https: http: ws: wss:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'"
+      content="default-src 'self'; script-src 'self' https://static.geetest.com https://dn-staticdown.qbox.me; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http:; connect-src 'self' https: http: ws: wss:; font-src 'self' data:; frame-src 'self' https://static.geetest.com; object-src 'none'; base-uri 'self'; form-action 'self'"
     />
     <meta name="description" content="windows music application" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
