@@ -387,7 +387,7 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 - [x] **截图全部重截**：`screenshots/` 6 张已换为 4188 壳 + lili 品牌（`621018a`、`9c985a4`）；`logo.svg` 与 `electron/icons/**` 实测为纯图形**无字标**，不需重做；`audit-2026-09-30/` 作为历史审计证据**有意保留**
 - [x] 「退出 lili」菜单文案已改并由契约测试钉住（`tests/shell-menu.test.ts` 通过；**运行期目视仍待打包实测**）
 - [ ] **完整构建未验证** ⚠️ 改名后 `LILI_WEB_ONLY=1 pnpm build` 在本机连续两次 `write EPIPE`（tailwind 子进程被资源守卫杀），基线 worktree 复验也 exit 137 —— 属**环境限制而非代码回归**，但「改名后能构建出完整产物」这件事**至今没有正面证据**。打包实测会一并回答它
-- [ ] **CI 从未跑过** ⚠️ `Leeero/lili` 的 GitHub Actions 运行记录为 **0 条**（改名后都是直推 master，而 `pr-test-build.yml` 只在 PR 上触发）。`release.yml` 在 tag 上会跑 `pnpm test -- --run`（**全量**）+ `pnpm build` —— 也就是说**首次 CI 就是发版那一次**，全量测试与完整构建会在那时第一次合并受检。若想先把风险挪前，就造一个 PR 或对 workflow 手动 `workflow_dispatch` 试跑一次
+- [ ] **CI 从未跑过** ⚠️ `Leeero/lili` 的 GitHub Actions 运行记录为 **0 条**（改名后都是直推 master，而 `pr-test-build.yml` 只在 PR 上触发）。`release.yml` 在 tag 上会跑 `pnpm test -- --run`（**全量**）+ `pnpm build` —— 也就是说**首次 CI 就是发版那一次**，全量测试与完整构建会在那时第一次合并受检。**已有安全的空跑通道**：`release.yml` 带 `workflow_dispatch`，且其 `publish-release` 作业有 `if: startsWith(github.ref, 'refs/tags/v')` 守卫 —— **手动 dispatch 只跑 build 作业（三平台全量测试 + 完整构建），不会创建或改动 Release**
 - [ ] 打包实测：产物名 `lili-2.0.0-*`、应用显示名 `lili`、userData 目录为 `lili`、菜单栏/托盘文案运行期目视
 - [ ] 新 appId 下 GitHub Releases 自动更新能拉到新版本（依赖 `publish.repo` / `dev-app-update.yml` 已同步为新仓库名）
 - [ ] 首个 `v2.0.0` tag 发版，Release note 写明「与上游 Biu 非同一应用，需手动下载安装」
@@ -399,7 +399,7 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 | # | 动作 | 为什么排这个位置 |
 |---|---|---|
 | 1 | **本地跑一次 `pnpm build`**（正常终端，非本工具的沙箱） | 一次动作同时回答三件事：改名后能否构建、产物名是否为 `lili-2.0.0-*`、`electron-builder` 的 `productName` 是否落地。**这是当前唯一没有任何正面证据的环节** |
-| 2 | **让 CI 先空跑一次**（开个 PR，或在 Actions 里对 `release.yml` / `pr-test-build.yml` 手动 dispatch） | CI 至今 0 运行。全量测试（48 个文件，我只逐文件验了受影响的那 6 个）与完整构建会在 tag 上**第一次**受检；万一有非改名原因的红灯，不应发生在发版那一刻 |
+| 2 | **让 CI 先空跑一次**：GitHub → Actions → **Release** → `Run workflow`（分支选 `master`） | CI 至今 0 运行。全量测试（48 个文件，我只逐文件验了受影响的那 6 个）与完整构建会在 tag 上**第一次**受检；万一有非改名原因的红灯，不应发生在发版那一刻。**这条通道是安全的**：`publish-release` 作业有 `if: startsWith(github.ref, 'refs/tags/v')` 守卫，手动 dispatch 时 ref 是分支、不满足条件 → **只跑 build 作业，不碰 Release**（顺带比 PR 路线更省事：`pr-test-build.yml` 有 paths-filter，纯文档 PR 会走「No Build」分支而跳过构建，反而验不到） |
 | 3 | 起打包产物目视：显示名 `lili`、userData 目录 `lili`、菜单栏/托盘「退出 lili」 | `shell-menu` 契约测试已钉文案，但**运行期观感**测不到 |
 | 4 | 打 `v2.0.0` tag 发版（`pnpm release`） | 前 3 步绿了再打。Release note 必写「与上游 Biu 非同一应用，无自动升级路径，需手动下载安装」 |
 | 5 | 发版后验自动更新拉取 | 依赖 `publish.repo` / `dev-app-update.yml` 已同步为 `lili`，但真拉取要等有下一个版本才能验 |
