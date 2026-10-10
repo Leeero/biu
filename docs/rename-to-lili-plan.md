@@ -86,7 +86,7 @@ os-theme-biu              6 处
 非令牌 biu 命中（代码层）   52 处（src+electron+tests+plugins+shared）
 ```
 
-**术语口径（重要，容易混读）：** 本项目文档里的「**Biu 2.0 / lili 2.0**」指的是 2026-09 起的那次 C+ 重构**代次**，不是应用版本号；应用版本号由 `package.json` 承载，本次改名时由 `1.16.0` 重启为 `1.0.0`。所以「产品名 Biu→lili」只换名字，代次标签 `2.0` **保持不变**。
+**术语口径（重要，容易混读）：** 本项目文档里的「**Biu 2.0 / lili 2.0**」指的是 2026-09 起的那次 C+ 重构**代次**，不是应用版本号；应用版本号由 `package.json` 承载，本次改名时由 `1.16.0` 重启为 `2.0.0`。所以「产品名 Biu→lili」只换名字，代次标签 `2.0` **保持不变**。两者数值上都是 `2` 纯属巧合——代次是**重构批次**，版本号是**发行序号**，语义无关，不要互相推导。
 
 ---
 
@@ -244,22 +244,22 @@ Linux:   ~/.config/Biu/logs/main.log
 
 | 位置 | 原值 | 现值 |
 |---|---|---|
-| `package.json` | `"version": "1.16.0"`（继承上游版本线） | `1.0.0` |
+| `package.json` | `"version": "1.16.0"`（继承上游版本线） | `2.0.0` |
 | `CHANGELOG.md` | `v1.16.0` 段 + `wood3n/biu` 的 compare/commit 链接 | **不改**（顶部加了一段改名说明） |
 | `README.md` | 版本 badge | 指向 `Leeero/lili`（版本号在 badge 里不写死） |
 | `plugins/electron-build.ts` | `artifactName: ${productName}-${version}-*.${ext}` | 改 productName 后自动变 `lili-...` |
 
-**版本策略（已定）：从 `1.0.0` 重启。**
+**版本策略（已定）：从 `2.0.0` 重启。**
 
 | 方案 | 评价 |
 |---|---|
-| 2.0.0 | 语义上像破坏性变更，但会把「重构代次 2.0」和「应用版本 2.0」搅在一起，反而更乱 |
+| **2.0.0 重启 ✅ 采用** | 与「C+ 重构代次 2.0」在叙事上合流：这次改名本就是该代次的产品身份落地，版本号顺势对齐；配合 appId 变更，与旧版本线清晰断开 |
 | 1.17.0 | 延续上游版本线，但暗示「还是同一个应用」，与换了 appId 的事实矛盾 |
-| **1.0.0 重启 ✅ 采用** | 品牌独立，配合「appId 变更 = 与旧版无升级路径」的事实，语义最干净 |
+| ~~1.0.0 重启~~ | 初稿曾选此项（理由：品牌独立、语义最干净），**同日改为 2.0.0**。代价是数字与「重构代次 2.0」重合，需靠术语口径区分（见 §2 术语说明），不能混读 |
 
 **发布链路注意：**
 
-- `publish: "onTag"` + `release.yml` 由 `v*` tag 触发 → 首个改版发 `v1.0.0`
+- `publish: "onTag"` + `release.yml` 由 `v*` tag 触发 → 首个改版发 `v2.0.0`
 - **appId 变更 = 换了一个应用身份**：老版本 `com.biu.wood3n` **无法自动升级**到新 appId，签名与装机升级路径需重新规划。发版必须在 Release note 与应用内公告里说明「需手动重新下载安装」
 - **AUR `biu-bin` 不要动**：它由第三方 `@cjlworld` 维护、指向上游，不属于本仓；要发 Arch 包就另建 `lili-bin`
 
@@ -335,7 +335,7 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 |---|---|---|---|
 | 1 | 纯个人非商业，还是商业打算？ | **不含商业** | §0.4 的商业闸门关闭，方案成立；README / NOTICE 写明非商业限制 |
 | 2 | 现网是否已有真实用户？ | **没有真实用户** | userData 迁移**不做代码**，只在 README 给手动搬目录指引（§2.1 方案 3） |
-| 3 | 版本号走 2.0.0 / 1.17.0 / 1.0.0？ | **1.0.0 重启** | `package.json` → `1.0.0`；首次改版 tag 打 `v1.0.0`；`CHANGELOG.md` 加说明 |
+| 3 | 版本号走 2.0.0 / 1.17.0 / 1.0.0？ | **2.0.0 重启** | `package.json` → `2.0.0`；首次改版 tag 打 `v2.0.0`；`CHANGELOG.md` 加说明。初稿曾选 `1.0.0`，同日改为 `2.0.0`（与重构代次对齐） |
 | 4 | 产品名 / 仓库名？ | **产品名 `lili`；仓库改名为 `lili`（小写）** | `productName: "lili"`、产物名 `lili-<version>-*`；GitHub 仓库 `Leeero/biu` → `Leeero/lili`（实际落地为小写，与 `package.json` 的 `name` 一致）；保留上游署名 |
 | 5 | 上游署名怎么处理？ | **保留** | LICENSE 逐字不动；新增 `NOTICE`；README + 关于页补归属 |
 
@@ -384,7 +384,7 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 - [x] 全仓 `grep -riE 'biu'` 收敛到 §5 白名单
 - [x] **GitHub 仓库已改名为 `Leeero/lili`**，本地 remote 同步并 `git ls-remote` 实测可达
 - [ ] `pnpm test -- --run tests/design-tokens.test.ts`（单文件；**不要跑全量**，沙箱内会被资源守卫 SIGTERM，**空输出 + exit 137 是「被杀掉」，不是通过**）
-- [ ] 打包实测：产物名 `lili-1.0.0-*`、应用显示名 `lili`、userData 目录为 `lili`
+- [ ] 打包实测：产物名 `lili-2.0.0-*`、应用显示名 `lili`、userData 目录为 `lili`
 - [ ] macOS 菜单栏 + Windows 托盘「退出 lili」文案（契约测试已钉）
 - [ ] 新 appId 下 GitHub Releases 自动更新能拉到新版本（依赖 `publish.repo` / `dev-app-update.yml` 已同步为新仓库名）
 - [ ] 关于页 / README / `NOTICE` 三处都能看到 `Required Notice` 原文
