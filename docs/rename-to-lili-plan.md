@@ -374,21 +374,37 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 
 ## 8. 执行状态与验证清单
 
-**已完成：** 提交 `93d988f`（令牌）、`a979aa0`（品牌与打包）、`2c56547`（运行时路径）、`054b917`（文档与授权）、本次提交（仓库名口径收口）。
+**已完成：** 提交 `93d988f`（令牌）、`a979aa0`（品牌与打包）、`2c56547`（运行时路径）、`054b917`（文档与授权）、`bb9bee7`（仓库名口径收口）、`621018a`/`9c985a4`（截图）、`b2a0d34`（版本号 2.0.0）。
 
-- [x] `pnpm verify:phase-drift` — 改名后 0 新增漂移（用 `git worktree` 对照逐字证明，§2.3）
-- [x] `pnpm verify:literals` — 通过
-- [x] `tests/design-tokens.test.ts`、`tests/shell-menu.test.ts`、`tests/app-shell-interactions.test.ts` 等契约测试
-- [x] `docs/design-4188/phase1/tokens.json` 的 `contract.scope` 已改为 `.lili-theme-4188`，`verify-tokens.mjs` 报 `ok: true`
-- [x] `verify-source-lock.mjs` 报 `ok: true`——15 个哈希全对，机器侧证明「不重命名 `prototypes/biu-discover-option2`」是正确判断
+- [x] `pnpm verify:phase-drift` — 改名与改版本号后均 **0 新增漂移**（用 `git worktree` 对照逐字证明，§2.3）
+- [x] `pnpm verify:literals` — 通过（扫描 388 文件）
+- [x] `verify-tokens.mjs` — `ok: true`（`contract.scope` 已改为 `.lili-theme-4188`）
+- [x] `verify-source-lock.mjs` — `ok: true`，15 个哈希全对，机器侧证明「不重命名 `prototypes/biu-discover-option2`」是正确判断
+- [x] **受影响契约测试全绿（6 个文件 / 303 项）**：`design-tokens`(197)、`app-shell-interactions`(46)、`ui-components`(34)、`discover-list-view`(13)、`electron-security`(7)、`shell-menu`(6)——这 6 个就是全部引用 `lili` 的测试文件，构成「受改名影响的测试」的完备边界（含 `biu` 字面量的测试必然是这 6 个之一，已随改名一并改到 `lili`）
 - [x] 全仓 `grep -riE 'biu'` 收敛到 §5 白名单
 - [x] **GitHub 仓库已改名为 `Leeero/lili`**，本地 remote 同步并 `git ls-remote` 实测可达
-- [ ] `pnpm test -- --run tests/design-tokens.test.ts`（单文件；**不要跑全量**，沙箱内会被资源守卫 SIGTERM，**空输出 + exit 137 是「被杀掉」，不是通过**）
-- [ ] 打包实测：产物名 `lili-2.0.0-*`、应用显示名 `lili`、userData 目录为 `lili`
-- [ ] macOS 菜单栏 + Windows 托盘「退出 lili」文案（契约测试已钉）
+- [x] **「Required Notice」四处逐字一致**（SHA-256 `de0a06c4d667` 同值）：`LICENSE` / `NOTICE` / `README` / 应用内关于页
+- [x] **截图全部重截**：`screenshots/` 6 张已换为 4188 壳 + lili 品牌（`621018a`、`9c985a4`）；`logo.svg` 与 `electron/icons/**` 实测为纯图形**无字标**，不需重做；`audit-2026-09-30/` 作为历史审计证据**有意保留**
+- [x] 「退出 lili」菜单文案已改并由契约测试钉住（`tests/shell-menu.test.ts` 通过；**运行期目视仍待打包实测**）
+- [ ] **完整构建未验证** ⚠️ 改名后 `LILI_WEB_ONLY=1 pnpm build` 在本机连续两次 `write EPIPE`（tailwind 子进程被资源守卫杀），基线 worktree 复验也 exit 137 —— 属**环境限制而非代码回归**，但「改名后能构建出完整产物」这件事**至今没有正面证据**。打包实测会一并回答它
+- [ ] **CI 从未跑过** ⚠️ `Leeero/lili` 的 GitHub Actions 运行记录为 **0 条**（改名后都是直推 master，而 `pr-test-build.yml` 只在 PR 上触发）。`release.yml` 在 tag 上会跑 `pnpm test -- --run`（**全量**）+ `pnpm build` —— 也就是说**首次 CI 就是发版那一次**，全量测试与完整构建会在那时第一次合并受检。若想先把风险挪前，就造一个 PR 或对 workflow 手动 `workflow_dispatch` 试跑一次
+- [ ] 打包实测：产物名 `lili-2.0.0-*`、应用显示名 `lili`、userData 目录为 `lili`、菜单栏/托盘文案运行期目视
 - [ ] 新 appId 下 GitHub Releases 自动更新能拉到新版本（依赖 `publish.repo` / `dev-app-update.yml` 已同步为新仓库名）
-- [ ] 关于页 / README / `NOTICE` 三处都能看到 `Required Notice` 原文
-- [ ] **截图全部重截**（`screenshots/` 6 张 + `audit-2026-09-30/` 6 张）、`logo.svg` 与图标重做，README 里不再出现旧版界面与旧字标
+- [ ] 首个 `v2.0.0` tag 发版，Release note 写明「与上游 Biu 非同一应用，需手动下载安装」
+
+### 下一步（建议顺序，理由见下）
+
+在动 tag 之前，先把两个「从未正面验证过」的环节挪到台前——它们现在是全部剩余风险所在，且都被发版流程依赖。
+
+| # | 动作 | 为什么排这个位置 |
+|---|---|---|
+| 1 | **本地跑一次 `pnpm build`**（正常终端，非本工具的沙箱） | 一次动作同时回答三件事：改名后能否构建、产物名是否为 `lili-2.0.0-*`、`electron-builder` 的 `productName` 是否落地。**这是当前唯一没有任何正面证据的环节** |
+| 2 | **让 CI 先空跑一次**（开个 PR，或在 Actions 里对 `release.yml` / `pr-test-build.yml` 手动 dispatch） | CI 至今 0 运行。全量测试（48 个文件，我只逐文件验了受影响的那 6 个）与完整构建会在 tag 上**第一次**受检；万一有非改名原因的红灯，不应发生在发版那一刻 |
+| 3 | 起打包产物目视：显示名 `lili`、userData 目录 `lili`、菜单栏/托盘「退出 lili」 | `shell-menu` 契约测试已钉文案，但**运行期观感**测不到 |
+| 4 | 打 `v2.0.0` tag 发版（`pnpm release`） | 前 3 步绿了再打。Release note 必写「与上游 Biu 非同一应用，无自动升级路径，需手动下载安装」 |
+| 5 | 发版后验自动更新拉取 | 依赖 `publish.repo` / `dev-app-update.yml` 已同步为 `lili`，但真拉取要等有下一个版本才能验 |
+
+**可选、非阻塞**：`fullscreen.jpg` 换一首有歌词的歌重拍（现有图是「暂未匹配到歌词」空态），观感更好；不影响任何验收项。
 
 ---
 
