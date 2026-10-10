@@ -94,6 +94,10 @@ export async function buildElectronConfig(mode: "development" | "production" = "
       logger.warn(`[electron] icons source not found: ${ICONS_SRC_DIR}`);
       return;
     }
+    // 先清空目标目录再拷。`fs.cp` 是「合并」语义，不清的话上一轮构建留下的图标会继续
+    // 被打进产物 —— 改名后实测：`Resources/.electron/icons/` 里同时躺着 `biu.icon` 与
+    // `lili.icon`，旧的那个来自改名前的构建，属于「改名没改干净」的漏网。
+    await fs.rm(ICONS_DST_DIR, { recursive: true, force: true });
     await ensureDir(ICONS_DST_DIR);
 
     const platform = process.platform;

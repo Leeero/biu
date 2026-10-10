@@ -10,7 +10,9 @@ export async function buildElectron() {
     config: {
       appId: "com.leeero.lili",
       productName: "lili",
-      copyright: `Copyright © ${new Date().getFullYear()}`,
+      // 该字段会落到 macOS 关于面板的 NSHumanReadableCopyright（用户直接可见）。带上上游署名
+      // 不是许可证强制项（强制项是随包 NOTICE 里那行 `Required Notice`），而是二开版主动标明来源。
+      copyright: `Copyright © ${new Date().getFullYear()} Leeero · 基于 wood3n/biu (© 2022–2025 wood3n)`,
       nodeVersion: "current",
       buildVersion: pkg.version,
       asar: true,
@@ -25,7 +27,14 @@ export async function buildElectron() {
       directories: {
         output: "dist/artifacts",
       },
-      extraResources: [{ from: ELECTRON_ICON_BASE_PATH, to: ELECTRON_ICON_BASE_PATH }],
+      extraResources: [
+        { from: ELECTRON_ICON_BASE_PATH, to: ELECTRON_ICON_BASE_PATH },
+        // PolyForm Noncommercial 1.0.0 的 `Notices` 条款：拿到软件副本的人，必须同时拿到
+        // 许可证条款（或其 URL）与 `Required Notice:` 开头的原文。分发的 dmg/zip/安装包
+        // 就是「软件副本」，所以这两份文件必须随包发出 —— 只放在仓库里不算履行。
+        { from: "LICENSE", to: "LICENSE" },
+        { from: "NOTICE", to: "NOTICE" },
+      ],
       files: [`${ELECTRON_OUT_DIRNAME}/**`, "dist/web/**"],
       win: {
         target: [

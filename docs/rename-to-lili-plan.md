@@ -386,23 +386,38 @@ grep -rl 'os-theme-biu' src tests | xargs sed -i '' 's/os-theme-biu/os-theme-lil
 - [x] **「Required Notice」四处逐字一致**（SHA-256 `de0a06c4d667` 同值）：`LICENSE` / `NOTICE` / `README` / 应用内关于页
 - [x] **截图全部重截**：`screenshots/` 6 张已换为 4188 壳 + lili 品牌（`621018a`、`9c985a4`）；`logo.svg` 与 `electron/icons/**` 实测为纯图形**无字标**，不需重做；`audit-2026-09-30/` 作为历史审计证据**有意保留**
 - [x] 「退出 lili」菜单文案已改并由契约测试钉住（`tests/shell-menu.test.ts` 通过；**运行期目视仍待打包实测**）
-- [ ] **完整构建未验证** ⚠️ 改名后 `LILI_WEB_ONLY=1 pnpm build` 在本机连续两次 `write EPIPE`（tailwind 子进程被资源守卫杀），基线 worktree 复验也 exit 137 —— 属**环境限制而非代码回归**，但「改名后能构建出完整产物」这件事**至今没有正面证据**。打包实测会一并回答它
+- [x] ~~完整构建未验证~~ → **2026-10-10 已跑通并解包核验**（见下条与「打包实测暴露的问题」）。此前本机两次 `write EPIPE` / worktree 复验 exit 137 确系**资源守卫杀进程**，非代码回归——换个正常终端即成功
 - [ ] **CI 从未跑过** ⚠️ `Leeero/lili` 的 GitHub Actions 运行记录为 **0 条**（改名后都是直推 master，而 `pr-test-build.yml` 只在 PR 上触发）。`release.yml` 在 tag 上会跑 `pnpm test -- --run`（**全量**）+ `pnpm build` —— 也就是说**首次 CI 就是发版那一次**，全量测试与完整构建会在那时第一次合并受检。**已有安全的空跑通道**：`release.yml` 带 `workflow_dispatch`，且其 `publish-release` 作业有 `if: startsWith(github.ref, 'refs/tags/v')` 守卫 —— **手动 dispatch 只跑 build 作业（三平台全量测试 + 完整构建），不会创建或改动 Release**
-- [ ] 打包实测：产物名 `lili-2.0.0-*`、应用显示名 `lili`、userData 目录为 `lili`、菜单栏/托盘文案运行期目视
-- [ ] 新 appId 下 GitHub Releases 自动更新能拉到新版本（依赖 `publish.repo` / `dev-app-update.yml` 已同步为新仓库名）
+- [x] **完整构建已跑通**（2026-10-10，macOS 本地）：产物 `lili-2.0.0-mac-{x64,arm64}.{dmg,zip}`，解开 `.app` 核验真值——`CFBundleIdentifier=com.leeero.lili`、`CFBundleName`/`CFBundleDisplayName`/`CFBundleExecutable` 均 `lili`、`CFBundleShortVersionString`/`CFBundleVersion` 均 `2.0.0`；`Resources/app-update.yml` 为 `owner: Leeero / repo: lili / updaterCacheDirName: lili-updater`；`.electron/icons` 与 `electron/ffmpeg` 并存 → 证明 electron-builder 对 `extraResources` 是**合并**而非平台覆盖
+- [x] **打包暴露的三处问题已修**（下方「打包实测暴露」一节）：① `LICENSE`/`NOTICE` 未随包（**许可证合规缺口**）；② 图标暂存目录残留 `biu.icon`；③ README 未交代 Gatekeeper 拦截。**三处均待重建复验**
+- [ ] Windows / Linux 产物未构建（本次只跑了 macOS；`win-setup`/`win-portable`/`AppImage`/`deb`/`rpm` 的产物名与 `executableName` 待验）
+- [ ] 新 appId 下 GitHub Releases 自动更新能拉到新版本（feed 地址已在包内实测正确，但真拉取要等有下一个版本）
 - [ ] 首个 `v2.0.0` tag 发版，Release note 写明「与上游 Biu 非同一应用，需手动下载安装」
 
-### 下一步（建议顺序，理由见下）
+### 打包实测暴露的问题（2026-10-10，macOS）
 
-在动 tag 之前，先把两个「从未正面验证过」的环节挪到台前——它们现在是全部剩余风险所在，且都被发版流程依赖。
+一次真实构建抓出三处「仓库里对、发出去不对」的问题。共同点是**都只在产物里才看得见**——源码层的 grep、护栏、单测全部放行。
 
-| # | 动作 | 为什么排这个位置 |
+| # | 问题 | 性质 | 处置 |
+|---|---|---|---|
+| 1 | `LICENSE` / `NOTICE` **没有随包**：`app.asar` 与 `Contents/Resources/` 里都没有，`files` 只含 `.electron/**` + `dist/web/**` | **许可证合规缺口**。PolyForm 的 `Notices` 条款要求「拿到软件副本的人同时拿到许可证条款与 `Required Notice:` 原文」，分发出去的 dmg/zip 就是软件副本 | 已把两份文件加进顶层 `extraResources`（经 effective config 验证：顶层与平台段是**合并**关系，故对所有平台生效） |
+| 2 | 包内 `Resources/.electron/icons/` 同时存在 `biu.icon` 与 `lili.icon` | 改名漏网。根因是 `fs.cp(srcDir, ICONS_DST_DIR, {recursive:true})` 为**合并**语义，清不掉上一轮构建的旧目录 | 已在拷贝前 `fs.rm(ICONS_DST_DIR, {recursive:true, force:true})` |
+| 3 | 双击被 Gatekeeper 拦下，且 README 只有一句含糊的「可能需要在系统设置中允许来源」 | 面向用户的**实际阻塞**。实测 `spctl -a -vv lili.app` = `rejected`，`codesign` 为 `adhoc`、`TeamIdentifier=not set`、`notarize: false` | README 改写为可照做的三步解法（右键打开 / 系统设置「仍要打开」/ `xattr -dr com.apple.quarantine`），并写明「这是预期行为，不是包坏了」 |
+
+**另一处顺带修正**：`copyright` 会落到 macOS 关于面板（用户可见），原值只有 `Copyright © 2026`，与「保留上游署名」的决定不一致 → 改为 `Copyright © <year> Leeero · 基于 wood3n/biu (© 2022–2025 wood3n)`。这不是许可证强制项（强制项是随包 NOTICE 里那行），属主动标明来源。
+
+**由此得出一条纪律**：改名的验收不能停在源码层。**必须解开一次真实产物**去核验 `Info.plist`、`Resources/` 与随包文件——上面三处，任何一次 `grep`、任何一条护栏、任何单测都不会报。
+
+### 下一步（建议顺序）
+
+| # | 动作 | 状态 / 为什么要这么做 |
 |---|---|---|
-| 1 | **本地跑一次 `pnpm build`**（正常终端，非本工具的沙箱） | 一次动作同时回答三件事：改名后能否构建、产物名是否为 `lili-2.0.0-*`、`electron-builder` 的 `productName` 是否落地。**这是当前唯一没有任何正面证据的环节** |
-| 2 | **让 CI 先空跑一次**：GitHub → Actions → **Release** → `Run workflow`（分支选 `master`） | CI 至今 0 运行。全量测试（48 个文件，我只逐文件验了受影响的那 6 个）与完整构建会在 tag 上**第一次**受检；万一有非改名原因的红灯，不应发生在发版那一刻。**这条通道是安全的**：`publish-release` 作业有 `if: startsWith(github.ref, 'refs/tags/v')` 守卫，手动 dispatch 时 ref 是分支、不满足条件 → **只跑 build 作业，不碰 Release**（顺带比 PR 路线更省事：`pr-test-build.yml` 有 paths-filter，纯文档 PR 会走「No Build」分支而跳过构建，反而验不到） |
-| 3 | 起打包产物目视：显示名 `lili`、userData 目录 `lili`、菜单栏/托盘「退出 lili」 | `shell-menu` 契约测试已钉文案，但**运行期观感**测不到 |
-| 4 | 打 `v2.0.0` tag 发版（`pnpm release`） | 前 3 步绿了再打。Release note 必写「与上游 Biu 非同一应用，无自动升级路径，需手动下载安装」 |
-| 5 | 发版后验自动更新拉取 | 依赖 `publish.repo` / `dev-app-update.yml` 已同步为 `lili`，但真拉取要等有下一个版本才能验 |
+| 1 | ~~本地跑一次 `pnpm build`~~ | ✅ **已完成**（macOS）：产物名、`Info.plist`、更新 feed 全部实测正确。但**需再跑一次**复验本轮三处产物层修复（随包 LICENSE/NOTICE、清掉陈旧 `biu.icon`、copyright 带署名） |
+| 2 | **让 CI 先空跑一次**：GitHub → Actions → **Release** → `Run workflow`（分支选 `master`） | CI 至今 0 运行。全量测试（48 个文件，我只逐文件验了受影响的那 6 个）与完整构建会在 tag 上**第一次**受检：全量测试与完整构建会在 tag 上第一次合并受检。**这条通道是安全的**：`publish-release` 作业有 `if: startsWith(github.ref, 'refs/tags/v')` 守卫，手动 dispatch 时 ref 是分支 → **只跑 build 作业，不碰 Release**。别走 PR 路线：`pr-test-build.yml` 有 paths-filter，纯文档 PR 会落到「No Build」分支跳过构建，反而验不到 |
+| 3 | 运行期目视：应用图标/托盘图标、菜单栏「退出 lili」、userData 落点 | `shell-menu` 契约测试已钉文案，但**观感**测不到。userData 已初查：`~/Library/Application Support/lili` 已生成且为空，旧目录 `Biu`/`biu` 同样为空 → **无数据可迁，印证「无真实用户」的判断** |
+| 4 | 打 `v2.0.0` tag 发版（`pnpm release`） | 前 3 步绿了再打。Release note 必写「与上游 Biu 非同一应用，无自动升级路径，需手动下载安装」＋ **macOS 首次打开的放行步骤** |
+| 5 | 发版后验自动更新拉取 | feed 地址已在包内实测正确（`repo: lili`），但真拉取要等有下一个版本才能验 |
+| 6 | 补跑 Windows / Linux 构建 | 本次只构建了 macOS；其余平台的产物名与 `executableName: lili` 尚未验证 |
 
 **可选、非阻塞**：`fullscreen.jpg` 换一首有歌词的歌重拍（现有图是「暂未匹配到歌词」空态），观感更好；不影响任何验收项。
 

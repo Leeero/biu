@@ -217,6 +217,15 @@
   </tbody>
 </table>
 
+- **macOS 首次打开会被系统拦下**（构建未做 Apple 公证，签名是 ad-hoc）
+  - 现象：双击后提示「无法打开，因为 Apple 无法检查其是否包含恶意软件」，或提示「已损坏」。
+  - 原因：本项目没有 Apple Developer ID 证书，打包时 `codesign` 回落到 **ad-hoc 签名**、`notarize: false`。实测 `spctl -a -vv lili.app` 评估结果为 `rejected`——这是**预期行为，不是包坏了**。
+  - 解法（任选其一）：
+    - 在「访达」里 **右键点 `lili.app` → 打开 → 再点「打开」**（只需一次，之后正常双击）
+    - 或「系统设置 → 隐私与安全性」底部点 **「仍要打开」**
+    - 或命令行去掉隔离标记：`xattr -dr com.apple.quarantine /Applications/lili.app`
+  - Windows 的 SmartScreen 提示同理，点「更多信息 → 仍要运行」即可。
+
 - 系统要求（建议）
   - <img alt="Windows" src="https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows&logoColor=white" /> Windows 10 / 11（`x64` / `arm64`）
   - <img alt="macOS" src="https://img.shields.io/badge/macOS-12%2B-000000?logo=apple&logoColor=white" /> macOS 12+（`x64` / `arm64`）
