@@ -34,5 +34,5 @@ interface MediaGridProps {
  * 长标题会把列撑宽、把栅格挤变形。这是 grid 最常见的坑。
  */
 export const MediaGrid = ({ columns = 4, children, className }: MediaGridProps) => (
-  <div className={twMerge("grid gap-[var(--biu-layout-grid-gap)]", COLUMNS[columns], className)}>{children}</div>
+  <div className={twMerge("grid gap-[var(--lili-layout-grid-gap)]", COLUMNS[columns], className)}>{children}</div>
 );

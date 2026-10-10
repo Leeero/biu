@@ -75,21 +75,21 @@ interface SegmentedControlProps {
 }
 
 /**
- * 两档尺寸。**`item` 的字号都取 `--biu-type-chrome`(14)** —— 分段控件在设计稿里
+ * 两档尺寸。**`item` 的字号都取 `--lili-type-chrome`(14)** —— 分段控件在设计稿里
  * 只出现在顶栏（导航分段组与沉浸态「封面 / 歌词 / 视频」），它的字是 chrome 文字、不是
  * 列表正文（`body` 15）也不是标签徽标（`label` 13）。spec-lock 1.3.25 立档，理由与
- * 取证见 `src/ui/tokens/geometry.css` 的 `--biu-type-chrome` 与
+ * 取证见 `src/ui/tokens/geometry.css` 的 `--lili-type-chrome` 与
  * `docs/design/evidence/type-scale-audit.md`。`compact` 目前无业务消费方，
  * 一并跟到 chrome，免得留下一个没量过的孤档。
  */
 const SIZES: Record<SegmentedSize, { container: string; item: string }> = {
   default: {
-    container: "h-10 gap-0.5 bg-[var(--biu-veil-9)] px-2",
-    item: "h-10 px-[22px] text-[length:var(--biu-type-chrome-size)]",
+    container: "h-10 gap-0.5 bg-[var(--lili-veil-9)] px-2",
+    item: "h-10 px-[22px] text-[length:var(--lili-type-chrome-size)]",
   },
   compact: {
-    container: "h-10 gap-0.5 border border-[var(--biu-veil-8)] bg-[var(--biu-surface-hover)] px-2",
-    item: "h-8 px-[18px] text-[length:var(--biu-type-chrome-size)]",
+    container: "h-10 gap-0.5 border border-[var(--lili-veil-8)] bg-[var(--lili-surface-hover)] px-2",
+    item: "h-8 px-[18px] text-[length:var(--lili-type-chrome-size)]",
   },
 };
 
@@ -105,9 +105,9 @@ const SIZES: Record<SegmentedSize, { container: string; item: string }> = {
  * 焦点跟着选项走（roving tabindex），这样连续按方向键能一路切换过去。
  *
  * 几何与配色：
- *   激活项是**反色药丸** —— `--biu-inverse-surface` 底 + `--biu-inverse-ink` 字；
- *   未激活项的字色是 `--biu-text-chrome-label`（顶栏标签专用档），
- *   悬停铺 `--biu-veil-8`（与原型 `.tab:hover` 的 8% 完全一致）。
+ *   激活项是**反色药丸** —— `--lili-inverse-surface` 底 + `--lili-inverse-ink` 字；
+ *   未激活项的字色是 `--lili-text-chrome-label`（顶栏标签专用档），
+ *   悬停铺 `--lili-veil-8`（与原型 `.tab:hover` 的 8% 完全一致）。
  */
 export const SegmentedControl = ({
   items,
@@ -125,22 +125,22 @@ export const SegmentedControl = ({
 
   const itemClass = (isActive: boolean, isDisabled: boolean) =>
     twMerge(
-      "flex flex-none cursor-pointer items-center gap-1.5 rounded-[var(--biu-radius-pill)]",
-      "whitespace-nowrap transition-colors duration-[var(--biu-duration-fast)] ease-[var(--biu-ease-standard)]",
+      "flex flex-none cursor-pointer items-center gap-1.5 rounded-[var(--lili-radius-pill)]",
+      "whitespace-nowrap transition-colors duration-[var(--lili-duration-fast)] ease-[var(--lili-ease-standard)]",
       sizing.item,
       isActive
-        ? "bg-[rgb(var(--biu-inverse-surface))] font-semibold text-[rgb(var(--biu-inverse-ink))]"
-        : "text-[rgb(var(--biu-text-chrome-label))] hover:bg-[var(--biu-veil-8)]",
+        ? "bg-[rgb(var(--lili-inverse-surface))] font-semibold text-[rgb(var(--lili-inverse-ink))]"
+        : "text-[rgb(var(--lili-text-chrome-label))] hover:bg-[var(--lili-veil-8)]",
       isActive
-        ? "biu-theme-4188:bg-[var(--biu-4188-action)] biu-theme-4188:text-[var(--biu-4188-text-primary)]"
-        : "biu-theme-4188:text-[var(--biu-4188-text-secondary)] biu-theme-4188:hover:bg-[var(--biu-4188-surface-hover)]",
+        ? "lili-theme-4188:bg-[var(--lili-4188-action)] lili-theme-4188:text-[var(--lili-4188-text-primary)]"
+        : "lili-theme-4188:text-[var(--lili-4188-text-secondary)] lili-theme-4188:hover:bg-[var(--lili-4188-surface-hover)]",
       isDisabled && "cursor-not-allowed opacity-40 hover:bg-transparent",
     );
 
   const countClass = (isActive: boolean) =>
     twMerge(
       "tabular-nums",
-      isActive ? "text-[rgb(var(--biu-text-disabled))]" : "text-[rgb(var(--biu-text-quaternary))]",
+      isActive ? "text-[rgb(var(--lili-text-disabled))]" : "text-[rgb(var(--lili-text-quaternary))]",
     );
 
   /** 计数尾巴：「· N」。分隔符与数字是一个整体，一起出现、一起消失。 */
@@ -220,21 +220,21 @@ export const SegmentedControl = ({
   });
 
   const containerClass = twMerge(
-    "flex flex-none items-center rounded-[var(--biu-radius-pill)]",
+    "flex flex-none items-center rounded-[var(--lili-radius-pill)]",
     sizing.container,
     className,
   );
 
   /**
    * 末端说明。左内边距与分段项一致（22），这样它与未选中分段落在同一条
-   * 字线上；字色也取未选中分段那一档（`--biu-text-chrome-label`），
+   * 字线上；字色也取未选中分段那一档（`--lili-text-chrome-label`），
    * 因为它与它们同处容器底、属于同一层信息。
    *
-   * 字号跟分段项同档（`--biu-type-chrome`）：设计稿里二者就在同一行、同一容器内，
+   * 字号跟分段项同档（`--lili-type-chrome`）：设计稿里二者就在同一行、同一容器内，
    * 实测也是同一个值（分段标签 13.96 / 末端说明 13.75）。
    */
   const noteBody = note ? (
-    <span className="flex-none px-[22px] text-[length:var(--biu-type-chrome-size)] text-[rgb(var(--biu-text-chrome-label))]">
+    <span className="flex-none px-[22px] text-[length:var(--lili-type-chrome-size)] text-[rgb(var(--lili-text-chrome-label))]">
       {note}
     </span>
   ) : null;

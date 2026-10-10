@@ -12,7 +12,7 @@
 }
 
 .queue4188-head > div > span {
-  color: var(--biu-4188-action);
+  color: var(--lili-4188-action);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -26,7 +26,7 @@
 
 .queue4188-head p {
   margin: 0;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 14px;
 }
 
@@ -44,10 +44,10 @@
   align-items: center;
   height: 34px;
   padding: 0 14px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-pill);
-  color: var(--biu-4188-text-secondary);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-pill);
+  color: var(--lili-4188-text-secondary);
+  background: var(--lili-4188-surface);
   font-size: 12px;
 }
 
@@ -57,13 +57,13 @@
 
 .queue4188-actions button:hover,
 .queue4188-actions button.is-primary {
-  color: var(--biu-4188-text-primary);
-  border-color: var(--biu-4188-action);
-  background: var(--biu-4188-action-soft);
+  color: var(--lili-4188-text-primary);
+  border-color: var(--lili-4188-action);
+  background: var(--lili-4188-action-soft);
 }
 
 .queue4188-list {
-  border-top: 1px solid var(--biu-4188-border);
+  border-top: 1px solid var(--lili-4188-border);
 }
 
 .queue4188-row {
@@ -74,19 +74,19 @@
   gap: 10px;
   min-height: 78px;
   padding: 8px 10px;
-  border-bottom: 1px solid var(--biu-4188-border);
+  border-bottom: 1px solid var(--lili-4188-border);
   border-radius: 10px;
-  color: var(--biu-4188-text-secondary);
-  transition: background var(--biu-4188-duration-normal) var(--biu-4188-ease-standard);
+  color: var(--lili-4188-text-secondary);
+  transition: background var(--lili-4188-duration-normal) var(--lili-4188-ease-standard);
 }
 
 .queue4188-row:hover {
-  background: var(--biu-4188-surface-hover);
+  background: var(--lili-4188-surface-hover);
 }
 
 .queue4188-row.is-current {
-  background: var(--biu-4188-playback-soft);
-  box-shadow: inset 3px 0 0 var(--biu-4188-playback);
+  background: var(--lili-4188-playback-soft);
+  box-shadow: inset 3px 0 0 var(--lili-4188-playback);
 }
 
 .queue4188-row img,
@@ -94,7 +94,7 @@
   width: 56px;
   height: 56px;
   border-radius: 8px;
-  background: var(--biu-4188-surface-elevated);
+  background: var(--lili-4188-surface-elevated);
   object-fit: cover;
 }
 
@@ -103,7 +103,7 @@
   display: grid;
   place-items: center;
   border: 0;
-  color: var(--biu-4188-text-muted);
+  color: var(--lili-4188-text-muted);
   background: transparent;
   cursor: pointer;
 }
@@ -114,7 +114,7 @@
 }
 
 .queue4188-row.is-current .queue4188-index {
-  color: var(--biu-4188-playback);
+  color: var(--lili-4188-playback);
 }
 
 .queue4188-copy {
@@ -131,7 +131,7 @@
 }
 
 .queue4188-copy strong {
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 14px;
 }
 
@@ -160,8 +160,8 @@
 }
 
 .queue4188-row-actions button:hover {
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-surface-pressed);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-surface-pressed);
 }
 
 .queue4188-empty {
@@ -170,11 +170,11 @@
   align-content: center;
   gap: 8px;
   min-height: 320px;
-  color: var(--biu-4188-text-muted);
+  color: var(--lili-4188-text-muted);
 }
 
 .queue4188-empty strong {
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
 }
 
 @media (width <= 900px) {

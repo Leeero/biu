@@ -8,20 +8,20 @@ import { Badge, type BadgeVariant } from "@/ui/primitives/badge";
 export type AudioFormat = "flac" | "wav" | "aiff" | "m4a" | "mp3" | "wma" | "aac" | "ogg";
 
 /**
- * 格式 → 文字色。每个格式一个色板条目（`--biu-fmt-*`），
+ * 格式 → 文字色。每个格式一个色板条目（`--lili-fmt-*`），
  * 不是「无损 vs 有损」两档 —— 设计稿给了六种各自的颜色，就照六种来。
  * 注意 m4a 与 mp3/wma 的取值关系：mp3 与 wma **取值相同**，
  * 色板里按角色登记了两条，合并会让「改 mp3 的颜色」顺带改掉 wma。
  */
 const FORMAT_COLOR: Record<AudioFormat, string> = {
-  flac: "text-[rgb(var(--biu-fmt-flac))]",
-  wav: "text-[rgb(var(--biu-fmt-wav))]",
-  aiff: "text-[rgb(var(--biu-fmt-aiff))]",
-  m4a: "text-[rgb(var(--biu-fmt-m4a))]",
-  mp3: "text-[rgb(var(--biu-fmt-mp3))]",
-  wma: "text-[rgb(var(--biu-fmt-wma))]",
-  aac: "text-[rgb(var(--biu-fmt-m4a))]",
-  ogg: "text-[rgb(var(--biu-fmt-wav))]",
+  flac: "text-[rgb(var(--lili-fmt-flac))]",
+  wav: "text-[rgb(var(--lili-fmt-wav))]",
+  aiff: "text-[rgb(var(--lili-fmt-aiff))]",
+  m4a: "text-[rgb(var(--lili-fmt-m4a))]",
+  mp3: "text-[rgb(var(--lili-fmt-mp3))]",
+  wma: "text-[rgb(var(--lili-fmt-wma))]",
+  aac: "text-[rgb(var(--lili-fmt-m4a))]",
+  ogg: "text-[rgb(var(--lili-fmt-wav))]",
 };
 
 interface FormatCardProps {
@@ -70,17 +70,17 @@ export const FormatCard = ({
     <>
       <div
         className={twMerge(
-          "font-[family-name:var(--biu-font-numeric)] text-[30px] leading-9 font-bold tracking-[-0.6px]",
+          "font-[family-name:var(--lili-font-numeric)] text-[30px] leading-9 font-bold tracking-[-0.6px]",
           FORMAT_COLOR[format],
         )}
       >
         {formatLabel ?? format.toUpperCase()}
       </div>
-      <div className="mt-[2px] text-[22px] leading-[30px] font-semibold tracking-[-0.3px] text-[rgb(var(--biu-text-primary))]">
+      <div className="mt-[2px] text-[22px] leading-[30px] font-semibold tracking-[-0.3px] text-[rgb(var(--lili-text-primary))]">
         {title}
       </div>
       {meta !== undefined && meta !== null && (
-        <div className="text-[length:var(--biu-type-label-size)] leading-5 text-[rgb(var(--biu-text-quaternary))]">
+        <div className="text-[length:var(--lili-type-label-size)] leading-5 text-[rgb(var(--lili-text-quaternary))]">
           {meta}
         </div>
       )}
@@ -90,7 +90,7 @@ export const FormatCard = ({
   return (
     <article
       className={twMerge(
-        "relative h-[130px] rounded-[var(--biu-radius-md)] border border-[var(--biu-border-weak)] bg-[var(--biu-surface-raised)]",
+        "relative h-[130px] rounded-[var(--lili-radius-md)] border border-[var(--lili-border-weak)] bg-[var(--lili-surface-raised)]",
         "px-7 pt-[22px] pb-5",
         className,
       )}
@@ -106,7 +106,7 @@ export const FormatCard = ({
         <button
           type="button"
           onClick={onPress}
-          className="block w-full cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--biu-accent))]"
+          className="block w-full cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--lili-accent))]"
         >
           {body}
         </button>
@@ -129,5 +129,5 @@ interface FormatGridProps {
 
 /** 格式卡栅格（原型 `.format-grid`）：2 列、间距 20、上边距 36。 */
 export const FormatGrid = ({ children, className }: FormatGridProps) => (
-  <div className={twMerge("mt-9 grid grid-cols-2 gap-[var(--biu-layout-grid-gap)]", className)}>{children}</div>
+  <div className={twMerge("mt-9 grid grid-cols-2 gap-[var(--lili-layout-grid-gap)]", className)}>{children}</div>
 );

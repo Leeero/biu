@@ -502,15 +502,15 @@ describe("顶栏分段组消费的是原型登记的那几个令牌", () => {
 
     const group = container.querySelector("nav");
     expect(group).not.toBeNull();
-    expect(group?.className).toContain("--biu-veil-9");
+    expect(group?.className).toContain("--lili-veil-9");
     // 整条顶栏是可拖动窗口区域，分段组必须自己挡住拖动才点得到。
     expect(group?.className).toContain("window-no-drag");
     // 导航型：激活态走 aria-current，未激活项才是「标签色 + 8% 悬停」。
     expect(container.querySelector('a[aria-current="page"]')).toHaveTextContent("我的音乐库");
 
     const inactive = Array.from(container.querySelectorAll("a")).find(node => node.textContent === "发现音乐");
-    expect(inactive?.className).toContain("--biu-text-chrome-label");
-    expect(inactive?.className).toContain("--biu-veil-8");
+    expect(inactive?.className).toContain("--lili-text-chrome-label");
+    expect(inactive?.className).toContain("--lili-veil-8");
   });
 
   /**

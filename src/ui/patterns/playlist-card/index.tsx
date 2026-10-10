@@ -12,7 +12,7 @@ interface PlaylistCardProps {
 
 export const PlaylistCard = ({ playlist, onPress, onPlay }: PlaylistCardProps) => (
   <article className="group min-w-0">
-    <div className="relative aspect-square overflow-hidden rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface-raised))] shadow-[var(--biu-shadow-card)] transition-transform duration-[var(--biu-duration-normal)] group-hover:-translate-y-0.5">
+    <div className="relative aspect-square overflow-hidden rounded-[var(--lili-radius-lg)] bg-[rgb(var(--lili-color-surface-raised))] shadow-[var(--lili-shadow-card)] transition-transform duration-[var(--lili-duration-normal)] group-hover:-translate-y-0.5">
       <button type="button" aria-label={`打开歌单 ${playlist.title}`} className="h-full w-full" onClick={onPress}>
         <Image
           removeWrapper
@@ -31,7 +31,7 @@ export const PlaylistCard = ({ playlist, onPress, onPlay }: PlaylistCardProps) =
             event.stopPropagation();
             onPlay();
           }}
-          className="bg-primary text-primary-foreground absolute right-3 bottom-3 flex h-11 w-11 translate-y-2 items-center justify-center rounded-full opacity-0 shadow-[var(--biu-shadow-floating)] transition-[opacity,transform] duration-[var(--biu-duration-normal)] group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100"
+          className="bg-primary text-primary-foreground absolute right-3 bottom-3 flex h-11 w-11 translate-y-2 items-center justify-center rounded-full opacity-0 shadow-[var(--lili-shadow-floating)] transition-[opacity,transform] duration-[var(--lili-duration-normal)] group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100"
         >
           <RiPlayFill size={24} />
         </button>
@@ -39,7 +39,7 @@ export const PlaylistCard = ({ playlist, onPress, onPlay }: PlaylistCardProps) =
     </div>
     <button type="button" className="mt-3 block w-full text-left" onClick={onPress}>
       <strong className="block truncate text-sm font-medium">{playlist.title}</strong>
-      <span className="mt-1 block truncate text-xs text-[rgb(var(--biu-color-text-secondary))]">
+      <span className="mt-1 block truncate text-xs text-[rgb(var(--lili-color-text-secondary))]">
         {[playlist.creator?.name, playlist.trackCount === undefined ? undefined : `${playlist.trackCount} 首`]
           .filter(Boolean)
           .join(" · ")}

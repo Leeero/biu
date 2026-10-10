@@ -8,7 +8,7 @@ interface ProgressBarProps {
   /**
    * 轨道宽度像素或 CSS 长度。原型：行内 190、下载列 220。
    * 播放栏不在此列 —— 设计稿实测 380（原型 392），由调用方传
-   * `--biu-playbar-progress-w`，本组件不预设。
+   * `--lili-playbar-progress-w`，本组件不预设。
    */
   width?: number | string;
   /** 轨道高度像素。原型：3（迷你）、4（行内 / 下载 / 播放栏）。 */
@@ -23,10 +23,10 @@ interface ProgressBarProps {
 /**
  * 进度条。
  *
- * 轨道底与填充色都取自令牌：轨道 `--biu-veil-18`，填充 `--biu-accent`。
+ * 轨道底与填充色都取自令牌：轨道 `--lili-veil-18`，填充 `--lili-accent`。
  *
  * 这里**只实现 18% 这一档轨道**：播放栏的槽底在 1.3.9 已按设计稿实测登记为 **18%**
- * （`--biu-veil-18`，见 spec-lock `material.playbar.progressTrack` —— 原型
+ * （`--lili-veil-18`，见 spec-lock `material.playbar.progressTrack` —— 原型
  * `.pb-progress` 的 22% 是原型档，本轮已订正，本组件不需要第二档）。剩下的
  * 沉浸态原型写 24%，那一档等 P5 重建时按实测补录 —— 现在就把两档塞进同一个 API，
  * 等于凭猜测发明一档没有依据的默认值。
@@ -55,8 +55,8 @@ export const ProgressBar = ({
       aria-valuemax={100}
       aria-valuenow={Math.round(percent)}
       className={twMerge(
-        "flex-none overflow-hidden bg-[var(--biu-veil-18)]",
-        "biu-theme-4188:bg-[var(--biu-4188-surface-pressed)]",
+        "flex-none overflow-hidden bg-[var(--lili-veil-18)]",
+        "lili-theme-4188:bg-[var(--lili-4188-surface-pressed)]",
         radius === "sm" ? "rounded-[2px]" : "rounded-none",
         className,
       )}
@@ -66,10 +66,10 @@ export const ProgressBar = ({
         className={twMerge(
           "block h-full",
           radius === "sm" ? "rounded-[2px]" : "rounded-none",
-          tone === "accent" ? "bg-[rgb(var(--biu-accent))]" : "bg-[rgb(var(--biu-inverse-surface))]",
+          tone === "accent" ? "bg-[rgb(var(--lili-accent))]" : "bg-[rgb(var(--lili-inverse-surface))]",
           tone === "accent"
-            ? "biu-theme-4188:bg-[var(--biu-4188-playback)]"
-            : "biu-theme-4188:bg-[var(--biu-4188-text-primary)]",
+            ? "lili-theme-4188:bg-[var(--lili-4188-playback)]"
+            : "lili-theme-4188:bg-[var(--lili-4188-text-primary)]",
         )}
         style={{ width: `${percent}%` }}
       />

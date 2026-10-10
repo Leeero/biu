@@ -41,11 +41,11 @@ interface FilterBarProps {
 /**
  * 筛选条（原型 `.filterbar`）。
  *
- * 几何是 L1 硬锚点：条高 **48**（`--biu-layout-filterbar-h`）、内边距 6、
- * 药丸间隔 4、药丸高 36（`--biu-layout-pill-h`）。这三个值参与自动比对，
+ * 几何是 L1 硬锚点：条高 **48**（`--lili-layout-filterbar-h`）、内边距 6、
+ * 药丸间隔 4、药丸高 36（`--lili-layout-pill-h`）。这三个值参与自动比对，
  * 不要改成别的数。
  *
- * 底色是 `--biu-surface-sunken`（白 13%），比药丸自身的底色深一档，
+ * 底色是 `--lili-surface-sunken`（白 13%），比药丸自身的底色深一档，
  * 这样未选中的药丸在条内才看得出层次 —— 两者同色的话筛选条会糊成一块。
  *
  * 用 `role="group"` 而不是 `role="toolbar"`：toolbar 承诺方向键在按钮间移动，
@@ -56,8 +56,8 @@ export const FilterBar = ({ label, gap = "base", gapPx, children, className }: F
     role="group"
     aria-label={label}
     className={twMerge(
-      "inline-flex h-[var(--biu-layout-filterbar-h)] items-center gap-[var(--biu-layout-pill-gap)]",
-      "rounded-[var(--biu-radius-pill)] bg-[var(--biu-surface-sunken)] px-[var(--biu-layout-pill-pad)]",
+      "inline-flex h-[var(--lili-layout-filterbar-h)] items-center gap-[var(--lili-layout-pill-gap)]",
+      "rounded-[var(--lili-radius-pill)] bg-[var(--lili-surface-sunken)] px-[var(--lili-layout-pill-pad)]",
       gapPx === undefined && GAPS[gap],
       className,
     )}

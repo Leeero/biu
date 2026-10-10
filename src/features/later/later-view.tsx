@@ -80,7 +80,7 @@ export interface LaterViewProps {
  */
 export const laterColumns = (labels: readonly string[]): TrackTableColumn[] => [
   { key: "index", label: labels[0] },
-  { key: "content", label: labels[1], inset: "var(--biu-layout-head-title-inset)" },
+  { key: "content", label: labels[1], inset: "var(--lili-layout-head-title-inset)" },
   { key: "owner", label: labels[2] },
   { key: "progress", label: labels[3], align: "end" },
 ];

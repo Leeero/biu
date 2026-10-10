@@ -5,11 +5,11 @@
 
      palette.css    原始色板   --c-*     唯一允许字面色值
           ↓ var()
-     semantic.css   语义令牌   --biu-*   唯一允许被业务代码引用
+     semantic.css   语义令牌   --lili-*   唯一允许被业务代码引用
           ↓ var()
-     geometry.css   非色彩令牌 --biu-*   长度 / 排版 / 圆角 / 层级 / 动效
+     geometry.css   非色彩令牌 --lili-*   长度 / 排版 / 圆角 / 层级 / 动效
           ↓
-     业务组件                   Tailwind  只允许 var(--biu-*)
+     业务组件                   Tailwind  只允许 var(--lili-*)
 
    引入顺序即层级顺序，不要调整：palette → semantic → geometry。
    本文件自身只保留 @import 与无障碍覆盖，不放任何具体令牌。
@@ -27,8 +27,8 @@
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --biu-duration-fast: 0ms;
-    --biu-duration-normal: 0ms;
-    --biu-duration-slow: 0ms;
+    --lili-duration-fast: 0ms;
+    --lili-duration-normal: 0ms;
+    --lili-duration-slow: 0ms;
   }
 }

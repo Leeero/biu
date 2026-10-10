@@ -74,7 +74,7 @@ const PALETTE_REF = /var\(\s*--c-/;
 const HERUI_THEME = /var\(\s*--heroui-/;
 
 /**
- * 合法写法：令牌引用，如 rgb(var(--biu-surface-canvas)) / rgb(var(--biu-x) / 0.88)
+ * 合法写法：令牌引用，如 rgb(var(--lili-surface-canvas)) / rgb(var(--lili-x) / 0.88)
  * 这类调用不含字面数值，不构成违规。
  */
 const TOKEN_CHANNEL_CALL = /\b(?:rgba?|hsla?)\(\s*var\(--[\w-]+\)(?:\s*\/\s*[\d.]+%?)?\s*\)/gi;
@@ -120,7 +120,7 @@ function listFiles({ staged }) {
 function stripAllowed(text) {
   let out = text;
   for (const pattern of ALLOWED_PATTERNS) out = out.replace(pattern, " ");
-  // 合法的令牌引用整体抹掉，避免 rgb(var(--biu-*)) 被误判为字面颜色函数
+  // 合法的令牌引用整体抹掉，避免 rgb(var(--lili-*)) 被误判为字面颜色函数
   out = out.replace(TOKEN_CHANNEL_CALL, " ");
   return out;
 }

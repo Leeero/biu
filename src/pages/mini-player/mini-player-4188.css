@@ -1,15 +1,15 @@
 .mini4188-window {
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-panel);
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-surface-player);
-  box-shadow: var(--biu-4188-shadow-modal);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-panel);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-surface-player);
+  box-shadow: var(--lili-4188-shadow-modal);
 }
 
 .mini4188-cover {
   width: 108px;
   height: 108px;
-  border-radius: var(--biu-4188-radius-card);
+  border-radius: var(--lili-4188-radius-card);
 }
 
 .mini4188-content {
@@ -33,13 +33,13 @@
 }
 
 .mini4188-control:hover {
-  background: var(--biu-4188-surface-hover) !important;
+  background: var(--lili-4188-surface-hover) !important;
 }
 
 .mini4188-control:focus-visible,
 .system4188-icon-button:focus-visible,
 .system4188-expand:focus-visible {
-  outline: 2px solid var(--biu-4188-focus);
+  outline: 2px solid var(--lili-4188-focus);
   outline-offset: 2px;
 }
 
@@ -53,9 +53,9 @@
   width: auto !important;
   height: auto !important;
   min-height: 164px;
-  border-color: var(--biu-4188-border) !important;
-  border-radius: var(--biu-4188-radius-card) !important;
-  background: var(--biu-4188-surface) !important;
+  border-color: var(--lili-4188-border) !important;
+  border-radius: var(--lili-4188-radius-card) !important;
+  background: var(--lili-4188-surface) !important;
 }
 
 .system4188-actions {
@@ -79,7 +79,7 @@
     height: auto !important;
     flex-wrap: wrap;
     padding-block: 6px;
-    border-radius: var(--biu-4188-radius-card) !important;
+    border-radius: var(--lili-4188-radius-card) !important;
   }
 
   .system4188-table > div:first-child {
@@ -92,7 +92,7 @@
     min-height: 112px;
     padding: 10px 8px !important;
     gap: 4px 12px;
-    border-bottom: 1px solid var(--biu-4188-border);
+    border-bottom: 1px solid var(--lili-4188-border);
   }
 
   .system4188-row > :first-child {

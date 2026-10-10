@@ -18,8 +18,8 @@ interface LyricsPanelProps {
  * 歌词面板（原型 `.lyrics` / `.lyrics-head` / `.lyrics-line`）。
  *
  * 材质是**凹槽**而非玻璃：白 **13%** 底 + 玻璃描边 + 模糊 20。
- * 13% 是 `--biu-surface-sunken`。这里容易犯错 —— 看到「有描边 + 有模糊」
- * 就当成玻璃材质去用 `--biu-surface-glass`（16%），面板会比设计稿亮一档。
+ * 13% 是 `--lili-surface-sunken`。这里容易犯错 —— 看到「有描边 + 有模糊」
+ * 就当成玻璃材质去用 `--lili-surface-glass`（16%），面板会比设计稿亮一档。
  * 判据是底色的深浅：凹槽比玻璃深，读起来像「内容沉在下面」，
  * 玻璃读起来像「浮在上面」。
  *
@@ -27,20 +27,20 @@ interface LyricsPanelProps {
  * 让高亮行的切换看起来是「移动」而不是「重排」。这是原型尾部覆盖值
  * （app.css:2011），此前一处写的是 `1.7`。
  *
- * 非当前行的颜色是 `--biu-text-lyrics-dim`（白 56%）——**整值令牌**，
- * 不要再套 `rgb(var(--biu-text-primary) / 56%)`：那样得到的是二次调暗的
+ * 非当前行的颜色是 `--lili-text-lyrics-dim`（白 56%）——**整值令牌**，
+ * 不要再套 `rgb(var(--lili-text-primary) / 56%)`：那样得到的是二次调暗的
  * 半透明，与设计稿的 56% 白不是一回事。
  */
 export const LyricsPanel = ({ head, lines, currentIndex, onSeek, className }: LyricsPanelProps) => (
   <div
     className={twMerge(
-      "mt-5 rounded-[var(--biu-radius-lg)] border border-[var(--biu-glass-border)]",
-      "bg-[var(--biu-surface-sunken)] px-[26px] pt-6 pb-[17px] backdrop-blur-[var(--biu-blur-glass)]",
+      "mt-5 rounded-[var(--lili-radius-lg)] border border-[var(--lili-glass-border)]",
+      "bg-[var(--lili-surface-sunken)] px-[26px] pt-6 pb-[17px] backdrop-blur-[var(--lili-blur-glass)]",
       className,
     )}
   >
     {head !== undefined && head !== null && (
-      <div className="mb-6 text-[length:var(--biu-type-small-size)] leading-6 text-[rgb(var(--biu-text-quaternary))]">
+      <div className="mb-6 text-[length:var(--lili-type-small-size)] leading-6 text-[rgb(var(--lili-text-quaternary))]">
         {head}
       </div>
     )}
@@ -49,7 +49,7 @@ export const LyricsPanel = ({ head, lines, currentIndex, onSeek, className }: Ly
       const isCurrent = index === currentIndex;
       const lineClass = twMerge(
         "text-[22px] leading-[43px]",
-        isCurrent ? "font-semibold text-[rgb(var(--biu-text-primary))]" : "text-[color:var(--biu-text-lyrics-dim)]",
+        isCurrent ? "font-semibold text-[rgb(var(--lili-text-primary))]" : "text-[color:var(--lili-text-lyrics-dim)]",
       );
 
       // 无 onSeek 时用 <p>：歌词只是文本，挂一堆不可交互的 <button> 会让
@@ -70,7 +70,7 @@ export const LyricsPanel = ({ head, lines, currentIndex, onSeek, className }: Ly
           onClick={() => onSeek(index)}
           className={twMerge(
             "block w-full cursor-pointer text-left",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--biu-accent))]",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--lili-accent))]",
             lineClass,
           )}
         >

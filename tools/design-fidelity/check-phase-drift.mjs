@@ -4,11 +4,11 @@
  *
  * 为什么需要它：1:1 重构的每个阶段都会声称「渲染不变 / 只增不改」。这句话不能靠
  * 人眼比对，也不能靠"我改的时候很小心"。P0 收尾时实测出 6 个遗留令牌的解析文本变了
- * （圆角四条 + 缓动两条）；其中只有 --biu-radius-lg 真的改变了有效值（16px → 20px），
+ * （圆角四条 + 缓动两条）；其中只有 --lili-radius-lg 真的改变了有效值（16px → 20px），
  * 另外三条是「派生表达式 → 字面值」的同值改写。没有这个工具，这两种情况只能靠嘴说。
  *
  * 两个关键能力，缺一个就会误判：
- *   1. 主题变量补齐。基线里 --biu-radius-md: var(--heroui-radius-medium) 无法只靠
+ *   1. 主题变量补齐。基线里 --lili-radius-md: var(--heroui-radius-medium) 无法只靠
  *      令牌文件解析，必须补入 HeroUI 的主题值（构建产物优先，组件库默认值兜底），
  *      否则会把「同值改写」误报成违规。
  *   2. 长度表达式求值。calc(12px + 4px) 与 16px 必须判为相等，否则 4 条圆角全报违规。
@@ -134,6 +134,21 @@ const evaluateLength = expression => {
 
 /* -------------------------------------------------------------- 令牌与主题 */
 
+/**
+ * 命名空间归一：令牌身份不含品牌前缀。
+ *
+ * 2026-10-10 产品由 biu 改名为 lili，`--biu-*` 全量改为 `--lili-*`。这是一次
+ * **纯同值改写** —— 名字变了，值一个没动。
+ *
+ * 不做归一会直接废掉本闸门：基线侧 368 个令牌的名字在工作区里全部找不到，
+ * 会被逐条判成「令牌消失」，护栏一次性报出 368 处假偏差。归一之后两侧按同一
+ * 身份比对，改名本身判为零偏差，而真正的值漂移照旧能被抓到 —— 这正是本工具
+ * 存在的理由，不该被一次改名冲掉。
+ *
+ * 归一放在**名字**这一层、不碰值，所以「同一个令牌改名前后的值」始终可比。
+ */
+const normalizeName = name => name.replace(/^--(?:biu|lili)-/, "--lili-");
+
 const collectDeclarations = ref => {
   const out = new Map();
   for (const name of fs.readdirSync(TOKEN_DIR).filter(name => name.endsWith(".css"))) {
@@ -142,7 +157,7 @@ const collectDeclarations = ref => {
     if (!css) continue;
     const stripped = css.replace(/\/\*[\s\S]*?\*\//g, "");
     for (const match of stripped.matchAll(/(--[\w-]+)\s*:\s*([^;{}]+);/g)) {
-      out.set(match[1], match[2].replace(/\s+/g, " ").trim());
+      out.set(normalizeName(match[1]), match[2].replace(/\s+/g, " ").trim());
     }
   }
   return out;
@@ -185,20 +200,28 @@ const collectThemeVars = () => {
   return { vars: out, sources };
 };
 
-/** 解 var() 链；仍解不动的引用原样保留，以便识别为「无法判定」。 */
+/**
+ * 解 var() 链；仍解不动的引用原样保留，以便识别为「无法判定」。
+ *
+ * 两侧都要过 `normalizeName`：表里的 key 归一了，值里的 `var()` 引用也必须归一，
+ * 否则基线里 `rgb(var(--biu-accent))` 会因为查不到 `--biu-accent` 而判成「无法求值」，
+ * 与工作区的 `rgb(41 151 255)` 一比就成了假的「表达式改写」。只归一 key 不归一引用，
+ * 等于把一次纯改名报成三处消费型偏差。
+ */
 const resolve = (name, tables, chain = []) => {
-  if (chain.includes(name)) return { value: undefined, unresolved: true };
+  const key = normalizeName(name);
+  if (chain.includes(key)) return { value: undefined, unresolved: true };
   let raw;
   for (const table of tables) {
-    if (table.has(name)) {
-      raw = table.get(name);
+    if (table.has(key)) {
+      raw = table.get(key);
       break;
     }
   }
   if (raw === undefined) return { value: undefined, unresolved: true };
   let unresolved = false;
   const value = raw.replace(/var\(\s*(--[\w-]+)\s*\)/g, (all, ref) => {
-    const inner = resolve(ref, tables, [...chain, name]);
+    const inner = resolve(normalizeName(ref), tables, [...chain, key]);
     if (inner.unresolved || inner.value === undefined) {
       unresolved = true;
       return all;
@@ -228,7 +251,7 @@ const collectConsumed = () => {
       const full = path.join(ROOT, relative);
       if (!fs.existsSync(full)) continue;
       const text = fs.readFileSync(full, "utf8");
-      for (const match of text.matchAll(/var\(\s*(--biu-[\w-]+)/g)) consumed.add(match[1]);
+      for (const match of text.matchAll(/var\(\s*(--(?:biu|lili)-[\w-]+)/g)) consumed.add(normalizeName(match[1]));
     }
   }
   return consumed;

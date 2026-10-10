@@ -41,7 +41,7 @@ const ListItem = ({ data, isActive, onPressItem, hideCover, className, titleClas
         onPressItem?.();
       }}
       className={twMerge(
-        "group flex h-auto min-h-auto w-full min-w-auto items-center justify-between rounded-[var(--biu-radius-md)] p-2",
+        "group flex h-auto min-h-auto w-full min-w-auto items-center justify-between rounded-[var(--lili-radius-md)] p-2",
         className,
       )}
     >

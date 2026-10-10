@@ -1,14 +1,14 @@
 {
   "phase": "P7",
   "baselineRef": "e6226e7",
-  "baselineNote": "基线 = P3-S4 提交 e6226e7（feat(discover): 屏 08 发现音乐 · 列表态过 --target app 比对）。**该 hash 于 2026-09-28 重指过**：原为 `11e51c4`，因推送受 PAT `workflow` scope 限制而用 filter-branch 摘除 `.github/workflows/pr-test-build.yml` 的改动，**37 个提交的 hash 全部改写**，`11e51c4` 随之变为 `e6226e7`（同一提交、同一改动内容，仅 hash 不同）。不改的话基线会只挂在备份分支 `backup-before-workflow-strip` 上 —— 那个分支一旦删除，`git cat-file -e` 就会失败、护栏直接废掉。**P3 至此收口**：方案 §6 的 P3 出口标准是「四屏（01 / 02 / 06 / 07+08）各出保真报告 PASS + 能力对齐表完整」，五屏均已 PASS。P3-S4 期间新增了 --biu-type-section-title 与 --biu-type-note 两组四原子（各 5 条）—— 新增令牌不在基线集合内，不构成偏差；阶段内的**有效值变更**是 --biu-type-lead-size 由 22px 改为 20px（spec-lock 1.3.24 订正的字阶第 10 处分歧）及其简写侧 --biu-type-lead-leading / --biu-type-lead，已随本次基线推进归档到 history。P4（屏 03 稍后播放 / 04 本地音乐 / 05 下载管理）以 e6226e7 为起点。",
+  "baselineNote": "基线 = P3-S4 提交 e6226e7（feat(discover): 屏 08 发现音乐 · 列表态过 --target app 比对）。**该 hash 于 2026-09-28 重指过**：原为 `11e51c4`，因推送受 PAT `workflow` scope 限制而用 filter-branch 摘除 `.github/workflows/pr-test-build.yml` 的改动，**37 个提交的 hash 全部改写**，`11e51c4` 随之变为 `e6226e7`（同一提交、同一改动内容，仅 hash 不同）。不改的话基线会只挂在备份分支 `backup-before-workflow-strip` 上 —— 那个分支一旦删除，`git cat-file -e` 就会失败、护栏直接废掉。**P3 至此收口**：方案 §6 的 P3 出口标准是「四屏（01 / 02 / 06 / 07+08）各出保真报告 PASS + 能力对齐表完整」，五屏均已 PASS。P3-S4 期间新增了 --lili-type-section-title 与 --lili-type-note 两组四原子（各 5 条）—— 新增令牌不在基线集合内，不构成偏差；阶段内的**有效值变更**是 --lili-type-lead-size 由 22px 改为 20px（spec-lock 1.3.24 订正的字阶第 10 处分歧）及其简写侧 --lili-type-lead-leading / --lili-type-lead，已随本次基线推进归档到 history。P4（屏 03 稍后播放 / 04 本地音乐 / 05 下载管理）以 e6226e7 为起点。",
   "rule": "登记本阶段有意偏离基线的令牌。先声明、再改代码。任何被业务代码消费的偏差（有效值变更 / 两侧无法求值的表达式改写 / 令牌消失）都必须额外标 visualImpact: true 显式确认「这会掉像素」；未登记的偏差同样让退出码为 1。",
   "intendedChanges": {
-    "--biu-layout-immersive-art-w": {
+    "--lili-layout-immersive-art-w": {
       "visualImpact": true,
       "reason": "P5 屏 10 沉浸播放器按最终设计稿把封面由 639px 订正为 649px；spec-lock 1.3.31 的 immersiveGeometry 与页面实现均使用 649 × 365，12 屏总视觉回归中屏 10 PASS（L3 11.91）。"
     },
-    "--biu-layout-immersive-art-h": {
+    "--lili-layout-immersive-art-h": {
       "visualImpact": true,
       "reason": "P5 屏 10 沉浸播放器按最终设计稿把封面由 359px 订正为 365px；与宽度变更属于同一项有意视觉调整，已由沉浸态结构带和全屏亮度闸门共同验证。"
     }
@@ -18,15 +18,15 @@
       "phase": "P3-S4",
       "note": "基线已推进到 P3-S4 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明 —— 判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
       "changes": {
-        "--biu-type-lead-size": {
+        "--lili-type-lead-size": {
           "visualImpact": true,
           "reason": "P3-S4 屏 08：导语字号由 22px 改为 20px（spec-lock 1.3.24，原型—设计稿第 10 处分歧）。原型的 22 是 tokens.css 自述的「派生字号（同族，按 1.15 阶梯收敛）」—— 不是从设计稿量出来的。设计稿实测 20.0 且跨十页一致（第 02 / 03 / 04 / 06 / 07 / 08 / 09 / 10 / 12 / 13 页）。方法：汉字 advance 恒等于 font-size，取一行横向墨迹的「最长等步进段」，报告步进 d 与段数（段数越多越可信，排除 ASCII / 空格造成的杂步进）。这是影响面最大的一处字号错误：每一屏都有导语，22px 让所有页面的导语比设计稿宽 10%（第 09 页整行 1053 对 970），而 `lead` 是**结构带**、只判 y 起点 —— 这条偏差此前从未被任何闸门量到过。**这是有意掉像素**：掉的是「导语比设计稿宽 10%」这个错误本身。行盒不受影响：`PageLead` 用 `leading-7`（28px）、搜索页的导语同样 `leading-7`，行盒由像素类名给定、与字身解耦，故改字号不挪任何 y（已由屏 08 与屏 01 / 02 / 06 / 07 的 `--target app` 复跑确认，五屏全 PASS）。消费方：PageLead、pages/search、pages/now-playing、设计系统展页。"
         },
-        "--biu-type-lead-leading": {
+        "--lili-type-lead-leading": {
           "visualImpact": false,
-          "reason": "随字号订正回填：1.27 → 1.4，使 font 简写给出 28px，与 `PageLead` 的 `leading-7` 一致（此前 1.27 会让简写给出 22 × 1.27 = 27.94，与像素类名的 28 自相矛盾）。本令牌**无业务代码消费方**（只被 `--biu-type-lead` 简写引用，而该简写亦无消费方），故无可视影响。"
+          "reason": "随字号订正回填：1.27 → 1.4，使 font 简写给出 28px，与 `PageLead` 的 `leading-7` 一致（此前 1.27 会让简写给出 22 × 1.27 = 27.94，与像素类名的 28 自相矛盾）。本令牌**无业务代码消费方**（只被 `--lili-type-lead` 简写引用，而该简写亦无消费方），故无可视影响。"
         },
-        "--biu-type-lead": {
+        "--lili-type-lead": {
           "visualImpact": false,
           "reason": "同上：简写由四个原子令牌拼出，随 `-size` / `-leading` 变化而变，**无业务代码消费方**。"
         }
@@ -36,7 +36,7 @@
       "phase": "P3-S2",
       "note": "基线已推进到 P3-S2 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明 —— 判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
       "changes": {
-        "--biu-layout-track-gap": {
+        "--lili-layout-track-gap": {
           "visualImpact": true,
           "reason": "P3-S2 屏 02：行内「封面右缘 → 曲目文本左缘」的间隙由 31px 改为 21px。取自设计稿实测而非原型 —— 原型 `--track-gap: 31px`，是原型—设计稿的第 8 处分歧（spec-lock 1.3.5 勘定）。取证：封面列两侧完全相同（画布 x120–219，CDP 实测 art 盒 x120 w100），而副标题两侧同为 13px、字形左承载在相减中抵消，故两侧副标题墨迹左缘之差**恰等于盒位之差**：设计稿 241、渲染 251 ⇒ 差 10px ⇒ 设计稿间隙 21px。跨页复核：设计稿第 03/04/06/09/10 页一致为 20–21px，无一页出现 31。改后 CDP 实测 .track-text 盒左缘 241，屏 02 `--target app` 的 list 内容带覆盖率由 88% 升到 100%，L3 11.22。消费方只有 TrackMain（屏 02 与设计系统展页）。"
         }
@@ -51,33 +51,33 @@
       "phase": "P1",
       "note": "基线已推进到 P1 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明——判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
       "changes": {
-        "--biu-topbar-height": {
+        "--lili-topbar-height": {
           "visualImpact": true,
-          "reason": "P1 壳层几何：由 64px 重指到冻结的 --biu-layout-topbar-h = 71px（设计稿实测）。消费方为 AppShell 顶栏与侧栏 Logo——侧栏随本次删除，顶栏在本次重绘。P1 出口标准的 L1 硬锚点即「顶栏 71」。真机走查已在 14 条路由上实测确认 71px。"
+          "reason": "P1 壳层几何：由 64px 重指到冻结的 --lili-layout-topbar-h = 71px（设计稿实测）。消费方为 AppShell 顶栏与侧栏 Logo——侧栏随本次删除，顶栏在本次重绘。P1 出口标准的 L1 硬锚点即「顶栏 71」。真机走查已在 14 条路由上实测确认 71px。"
         },
-        "--biu-player-height": {
+        "--lili-player-height": {
           "visualImpact": true,
-          "reason": "P1 壳层几何：由 84px 重指到冻结的 --biu-layout-player-h = 88px（设计稿实测）。消费方为 AppShell 播放区与播放列表抽屉的底部偏移。P1 出口标准的 L1 硬锚点即「播放栏 88」。真机走查已在 14 条路由上实测确认 88px，且跨路由跳转节点未重建。"
+          "reason": "P1 壳层几何：由 84px 重指到冻结的 --lili-layout-player-h = 88px（设计稿实测）。消费方为 AppShell 播放区与播放列表抽屉的底部偏移。P1 出口标准的 L1 硬锚点即「播放栏 88」。真机走查已在 14 条路由上实测确认 88px，且跨路由跳转节点未重建。"
         },
-        "--biu-content-max-width": {
+        "--lili-content-max-width": {
           "visualImpact": true,
-          "reason": "决策 1「满幅剧场」：由 1440px 改为 none，内容不再居中收窄。消费方为发现音乐、搜索结果、设计系统三页的 max-w-[]。这是 P1 有意引入的可视变更——页面随后在 P3/P4 逐屏重写时按 --biu-layout-gutter 留白。"
+          "reason": "决策 1「满幅剧场」：由 1440px 改为 none，内容不再居中收窄。消费方为发现音乐、搜索结果、设计系统三页的 max-w-[]。这是 P1 有意引入的可视变更——页面随后在 P3/P4 逐屏重写时按 --lili-layout-gutter 留白。"
         },
-        "--biu-sidebar-width": {
+        "--lili-sidebar-width": {
           "visualImpact": false,
           "reason": "决策 3「移除侧栏」：令牌删除。经机械枚举确认无业务代码引用（侧栏宽度实际由状态 sideMenuWidth 以行内 style 提供），删除它不会使任何消费方拿到无效值。sideMenuCollapsed / sideMenuWidth 两个设置字段保留，只是不再暴露入口。"
         },
-        "--biu-color-brand": {
+        "--lili-color-brand": {
           "visualImpact": true,
-          "reason": "决策 2「移除自定义主色」：由 hsl(var(--heroui-primary)) 改为 rgb(var(--biu-accent))，即 C+ 强调色 #2997FF。原值跟随用户在设置里选的 primaryColor（默认 #EC4141 红），因此这是一处真实配色变更，消费方为 app.css 与 menu-item 的选中指示条。"
+          "reason": "决策 2「移除自定义主色」：由 hsl(var(--heroui-primary)) 改为 rgb(var(--lili-accent))，即 C+ 强调色 #2997FF。原值跟随用户在设置里选的 primaryColor（默认 #EC4141 红），因此这是一处真实配色变更，消费方为 app.css 与 menu-item 的选中指示条。"
         },
-        "--biu-color-focus": {
+        "--lili-color-focus": {
           "visualImpact": true,
           "reason": "同上：焦点环颜色由 72% 透明度的自定义主色改为 72% 透明度的 C+ 强调色。消费方为无障碍跳转链接与搜索框焦点态。"
         },
-        "--biu-color-danger": {
+        "--lili-color-danger": {
           "visualImpact": false,
-          "reason": "由 hsl(var(--heroui-danger)) 改为 rgb(var(--biu-danger))，对齐色板登记的危险色 #FF6B6B。当前无任何业务代码消费该令牌，故无可视影响；此改动只为消除「状态色回退 HeroUI 主题」的越层引用。--biu-color-warning / -success 有意保留原值：C+ 色板没有这两种语义色，发明它们会违反「颜色必须有设计稿出处」。"
+          "reason": "由 hsl(var(--heroui-danger)) 改为 rgb(var(--lili-danger))，对齐色板登记的危险色 #FF6B6B。当前无任何业务代码消费该令牌，故无可视影响；此改动只为消除「状态色回退 HeroUI 主题」的越层引用。--lili-color-warning / -success 有意保留原值：C+ 色板没有这两种语义色，发明它们会违反「颜色必须有设计稿出处」。"
         }
       }
     },
@@ -85,27 +85,27 @@
       "phase": "P0",
       "note": "基线已推进到 P0 提交，故以下声明不再生效，仅作留档。若后续阶段再次改动同名令牌，必须重新声明——判定要求 visualImpact === true 才认可可视变更，旧记录不会掩盖新改动。",
       "changes": {
-        "--biu-radius-lg": {
+        "--lili-radius-lg": {
           "visualImpact": true,
           "reason": "P0 起圆角不再由 --heroui-radius-medium(12px) 派生，改用冻结的 C+ 固定值。有效值由 16px 变为 20px，且本令牌被 8 个组件消费（mini-player、full-screen-player、music-recommend、video-collection、playlist-card、navbar/search、design-system）。这是 P0 唯一有意引入的可视变更，已随重构方案 §13 声明。"
         },
-        "--biu-radius-sm": {
+        "--lili-radius-sm": {
           "visualImpact": false,
           "reason": "由 max(4px, calc(12px - 4px)) 改写为字面值 8px，有效值不变（求值均为 8px）。当前无消费方。"
         },
-        "--biu-radius-md": {
+        "--lili-radius-md": {
           "visualImpact": false,
           "reason": "由 var(--heroui-radius-medium) 改写为字面值 12px，有效值不变。被 6 个组件消费，但取值一致，无可视影响。"
         },
-        "--biu-radius-xl": {
+        "--lili-radius-xl": {
           "visualImpact": false,
           "reason": "由 calc(12px + 8px) 改写为字面值 20px，有效值不变。被 2 个组件消费，但取值一致，无可视影响。"
         },
-        "--biu-ease-standard": {
+        "--lili-ease-standard": {
           "visualImpact": false,
           "reason": "对齐 C+ 真值 cubic-bezier(0.32, 0.72, 0, 1)（原 0.2, 0, 0, 1）。当前无消费方，无可视影响；P1 起由新动效令牌承接。"
         },
-        "--biu-ease-emphasized": {
+        "--lili-ease-emphasized": {
           "visualImpact": false,
           "reason": "对齐 C+ 真值 cubic-bezier(0.32, 0.72, 0, 1)（原 0.2, 0.8, 0.2, 1）。当前无消费方，无可视影响；注意此刻两条缓动取值相同，建动效体系时应重新区分主次。"
         }

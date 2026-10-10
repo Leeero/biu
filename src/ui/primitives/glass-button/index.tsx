@@ -24,7 +24,7 @@ export type GlassTone = "glass" | "plain" | "bare" | "inverse";
  * 但设计稿第 2/3 页的两条操作带实测圆片比带底亮（带底 R=42、圆片 R=69，等价于
  * 13% 白叠在带底上）—— 也就是说圆片自己还有一层。若照原型写成透明，
  * 读起来是「图标浮在带子上」，设计稿读的是「一组圆片排在带子上」。
- * 取值出口是 `--biu-surface-sunken`（13%），不是 `--biu-veil-14`：13% 档因已有
+ * 取值出口是 `--lili-surface-sunken`（13%），不是 `--lili-veil-14`：13% 档因已有
  * 语义槽而不在 `veil-*` 叠加梯度里登记（见 palette.css 的梯度说明）。
  * 登记处：spec-lock `material.rowActionBand.circleFillToken`（1.3.7 按像素反解订正）。
  *
@@ -36,11 +36,11 @@ export type GlassTone = "glass" | "plain" | "bare" | "inverse";
  */
 const TONES: Record<GlassTone, string> = {
   glass:
-    "border border-[var(--biu-glass-border)] bg-[var(--biu-surface-glass)] backdrop-blur-[var(--biu-blur-glass)] text-[rgb(var(--biu-text-primary))] hover:bg-[var(--biu-veil-18)]",
-  plain: "bg-[var(--biu-surface-sunken)] text-[rgb(var(--biu-text-primary))] hover:bg-[var(--biu-veil-18)]",
-  bare: "bg-[var(--biu-surface-sunken)] text-[rgb(var(--biu-text-primary))]",
+    "border border-[var(--lili-glass-border)] bg-[var(--lili-surface-glass)] backdrop-blur-[var(--lili-blur-glass)] text-[rgb(var(--lili-text-primary))] hover:bg-[var(--lili-veil-18)]",
+  plain: "bg-[var(--lili-surface-sunken)] text-[rgb(var(--lili-text-primary))] hover:bg-[var(--lili-veil-18)]",
+  bare: "bg-[var(--lili-surface-sunken)] text-[rgb(var(--lili-text-primary))]",
   inverse:
-    "bg-[rgb(var(--biu-inverse-surface))] text-[rgb(var(--biu-inverse-ink))] hover:bg-[rgb(var(--biu-inverse-surface-hover))]",
+    "bg-[rgb(var(--lili-inverse-surface))] text-[rgb(var(--lili-inverse-ink))] hover:bg-[rgb(var(--lili-inverse-surface-hover))]",
 };
 
 interface GlassButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children" | "disabled"> {
@@ -80,8 +80,8 @@ export const GlassButton = ({
     title={label}
     disabled={disabled}
     className={twMerge(
-      "grid flex-none cursor-pointer place-items-center rounded-[var(--biu-radius-round)]",
-      "transition-colors duration-[var(--biu-duration-fast)] ease-[var(--biu-ease-standard)]",
+      "grid flex-none cursor-pointer place-items-center rounded-[var(--lili-radius-round)]",
+      "transition-colors duration-[var(--lili-duration-fast)] ease-[var(--lili-ease-standard)]",
       "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent",
       TONES[tone],
       className,

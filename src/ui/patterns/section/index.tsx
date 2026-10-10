@@ -32,7 +32,7 @@ interface SectionProps {
    */
   gapPx?: number;
   /**
-   * **屏级**标题下距覆写（像素）。缺省读 `--biu-layout-section-head-mb`（8）。
+   * **屏级**标题下距覆写（像素）。缺省读 `--lili-layout-section-head-mb`（8）。
    * 第 07 屏是 3（spec-lock `screens[06].rhythmImplementation.sectionHeadMarginBottom`）。
    */
   headMbPx?: number;
@@ -46,13 +46,13 @@ interface SectionProps {
  * 标题是 `<h2>` 而不是 `<div>`：页面已有 `<h1>`（PageHeader），分组用 h2
  * 才能让读屏的标题大纲成立 —— 全是 div 时，用标题跳转的导航方式就失效了。
  *
- * **字号 16 走独立档 `--biu-type-section-title-size`，不借 `--biu-type-small-size`（17）**
+ * **字号 16 走独立档 `--lili-type-section-title-size`，不借 `--lili-type-small-size`（17）**
  * —— spec-lock 1.3.24（原型—设计稿第 11 处分歧）。设计稿的段标题实测 16.0（汉字
  * advance = 1em，第 09 页连续 8 段步进 16），而 small 档的角色是「歌词与浮层小字」，
  * 另有歌词面板 / 信息面板 / 专辑卡 / 对话框四处消费方 —— 借档改字就等于替那四处
  * 一并做了决定。行盒仍是 `leading-6`（24px），与令牌的 leading 1.5 一致，改字号不挪 y。
  *
- * 标题与栅格的间距 8px 来自设计稿第 2 页实测（`--biu-layout-section-head-mb`，
+ * 标题与栅格的间距 8px 来自设计稿第 2 页实测（`--lili-layout-section-head-mb`，
  * spec-lock geometry.sectionHead）：标题墨迹下缘 → 瓦片顶缘两处一致 12px，
  * 扣墨迹—盒缘偏移 4px 即 margin 8。原型 .section-head 的 4px 是原型—设计稿
  * 第 4 处分歧，实现按设计稿。
@@ -69,14 +69,14 @@ export const Section = ({ title, note, gap = "base", gapPx, headMbPx, children, 
   >
     {title && (
       <header
-        className="mb-[var(--biu-layout-section-head-mb)] flex items-baseline justify-between gap-4"
+        className="mb-[var(--lili-layout-section-head-mb)] flex items-baseline justify-between gap-4"
         style={headMbPx === undefined ? undefined : { marginBottom: headMbPx }}
       >
-        <h2 className="m-0 text-[length:var(--biu-type-section-title-size)] leading-6 font-semibold text-[rgb(var(--biu-text-primary))]">
+        <h2 className="m-0 text-[length:var(--lili-type-section-title-size)] leading-6 font-semibold text-[rgb(var(--lili-text-primary))]">
           {title}
         </h2>
         {note && (
-          <span className="text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-quaternary))]">
+          <span className="text-[length:var(--lili-type-label-size)] text-[rgb(var(--lili-text-quaternary))]">
             {note}
           </span>
         )}

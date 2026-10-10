@@ -25,19 +25,19 @@ export type TrackTableVariant = "base" | "download" | "settings" | "mini" | "sea
  *    等真有屏需要时再补，避免发明一条没有出处的列宽。
  * 2. `220 / 121 / 300` 三个宽度**保持字面量**。原型自己也没有把它们令牌化
  *    （它只令牌化了 col4 / col5），所以字面量才是忠实还原。这里特意**不**复用
- *    `--biu-layout-col-4`（同为 220px）：两个 220px 的角色不同（收藏列 vs
+ *    `--lili-layout-col-4`（同为 220px）：两个 220px 的角色不同（收藏列 vs
  *    下载状态列），同值不同角色必须分开写 —— 与色板里「格式色 mp3」和
  *    「顶栏标签色」同值却按角色登记两次，是同一条规则。
  *    共用会让「改下载列宽」顺带改掉收藏列。
- * 3. `--biu-layout-col-4 / -5` 用令牌：它们是设计稿点名的两根固定列，
+ * 3. `--lili-layout-col-4 / -5` 用令牌：它们是设计稿点名的两根固定列，
  *    也是验收时的比对锚点。
  */
 export const COLUMN_TEMPLATES: Record<TrackTableVariant, string> = {
-  base: "56px minmax(0, 1fr) var(--biu-layout-col-4) var(--biu-layout-col-5)",
-  download: "56px minmax(0, 1fr) 220px var(--biu-layout-col-5)",
-  settings: "56px 121px minmax(0, 1fr) var(--biu-layout-col-4) var(--biu-layout-col-5)",
-  mini: "56px minmax(0, 1fr) 300px var(--biu-layout-col-5)",
-  search: "minmax(0, 1fr) var(--biu-layout-col-4) var(--biu-layout-col-5)",
+  base: "56px minmax(0, 1fr) var(--lili-layout-col-4) var(--lili-layout-col-5)",
+  download: "56px minmax(0, 1fr) 220px var(--lili-layout-col-5)",
+  settings: "56px 121px minmax(0, 1fr) var(--lili-layout-col-4) var(--lili-layout-col-5)",
+  mini: "56px minmax(0, 1fr) 300px var(--lili-layout-col-5)",
+  search: "minmax(0, 1fr) var(--lili-layout-col-4) var(--lili-layout-col-5)",
 };
 
 export interface TrackTableColumn {
@@ -53,7 +53,7 @@ export interface TrackTableColumn {
    * 差 121px。测得的五页（第 03 / 04 / 09 / 10 / 13 页）一致，故不是某一屏的
    * 特例，而是 `.track-head` 的性质（真值 `geometry.listHead`，spec-lock 1.3.22）。
    *
-   * 值**不给数字、给令牌**（`var(--biu-layout-head-title-inset)`）：121 是
+   * 值**不给数字、给令牌**（`var(--lili-layout-head-title-inset)`）：121 是
    * 「封面宽 100 + 图文间距 21」的派生量，令牌与派生的两个令牌同处
    * `geometry.css`，由 `tests/design-tokens.test.ts` 断言三者相等。
    * 在调用方写死 121 会让这条推导关系无从检查。

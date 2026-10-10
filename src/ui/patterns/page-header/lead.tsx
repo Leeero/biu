@@ -47,7 +47,7 @@ export const PageLead = ({ offset = "base", offsetPx, children, className }: Pag
   <p
     className={twMerge(
       offsetPx === undefined && OFFSETS[offset],
-      "text-[length:var(--biu-type-lead-size)] leading-7 tracking-[-0.2px] text-[rgb(var(--biu-text-secondary))]",
+      "text-[length:var(--lili-type-lead-size)] leading-7 tracking-[-0.2px] text-[rgb(var(--lili-text-secondary))]",
       className,
     )}
     style={offsetPx === undefined ? undefined : { marginTop: offsetPx }}

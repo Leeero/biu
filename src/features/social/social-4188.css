@@ -29,7 +29,7 @@
 .social4188-head > span,
 .social4188-head > div > span,
 .social4188-local-result > span {
-  color: var(--biu-4188-action);
+  color: var(--lili-4188-action);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -37,7 +37,7 @@
 
 .social4188-head h1 {
   margin: 6px 0 8px;
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 36px;
   line-height: 1.1;
   letter-spacing: -1px;
@@ -47,7 +47,7 @@
 .social4188-local-result p {
   max-width: 720px;
   margin: 0;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 14px;
 }
 
@@ -57,8 +57,8 @@
   max-width: 100%;
   gap: 4px;
   padding: 4px;
-  border-radius: var(--biu-4188-radius-pill);
-  background: var(--biu-4188-surface);
+  border-radius: var(--lili-4188-radius-pill);
+  background: var(--lili-4188-surface);
   overflow-x: auto;
 }
 
@@ -70,8 +70,8 @@
   min-height: 34px;
   padding: 0 17px;
   border: 0;
-  border-radius: var(--biu-4188-radius-pill);
-  color: var(--biu-4188-text-secondary);
+  border-radius: var(--lili-4188-radius-pill);
+  color: var(--lili-4188-text-secondary);
   background: transparent;
   font-size: 12px;
   white-space: nowrap;
@@ -80,14 +80,14 @@
 
 .social4188-tabs button:hover,
 .social4188-tabs a:hover {
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-surface-hover);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-surface-hover);
 }
 
 .social4188-tabs .is-active,
 .social4188-tabs [aria-selected="true"] {
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-action);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-action);
 }
 
 .search4188-page > .social4188-tabs {
@@ -100,7 +100,7 @@
 
 .social4188-section > h2 {
   margin: 0 0 14px;
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 20px;
 }
 
@@ -116,9 +116,9 @@
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-md);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-md);
+  background: var(--lili-4188-surface);
 }
 
 .social4188-avatar {
@@ -127,8 +127,8 @@
   height: 56px;
   place-items: center;
   border-radius: 50%;
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-surface-elevated);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-surface-elevated);
   font-size: 18px;
 }
 
@@ -146,7 +146,7 @@
 }
 
 .social4188-creator-grid small {
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
 }
 
 .social4188-creator-grid button,
@@ -154,10 +154,10 @@
 .social4188-local-result button {
   min-height: 34px;
   padding: 0 15px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-pill);
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-surface-elevated);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-pill);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-surface-elevated);
   cursor: pointer;
 }
 
@@ -168,9 +168,9 @@
 .social4188-local-result {
   max-width: 680px;
   padding: 30px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-card);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-card);
+  background: var(--lili-4188-surface);
 }
 
 .social4188-local-result h2 {
@@ -189,15 +189,15 @@
 
 .social4188-follow > div:first-child,
 .social4188-feed > div:first-child {
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-md);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-md);
+  background: var(--lili-4188-surface);
 }
 
 .social4188-person-card {
-  border-color: var(--biu-4188-border) !important;
-  border-radius: var(--biu-4188-radius-md) !important;
-  background: var(--biu-4188-surface) !important;
+  border-color: var(--lili-4188-border) !important;
+  border-radius: var(--lili-4188-radius-md) !important;
+  background: var(--lili-4188-surface) !important;
   box-shadow: none !important;
 }
 
@@ -211,9 +211,9 @@
   min-height: 260px;
   padding: 34px;
   overflow: hidden;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-card);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-card);
+  background: var(--lili-4188-surface);
 }
 
 .social4188-creator-cover {

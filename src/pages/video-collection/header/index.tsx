@@ -40,7 +40,7 @@ const Header = memo(({ loading, type, attr, cover, title, desc, upMid, mediaCoun
   if (loading) {
     return (
       <div className="mb-6 flex space-x-5">
-        <Skeleton className="h-44 w-44 rounded-[var(--biu-radius-lg)]" />
+        <Skeleton className="h-44 w-44 rounded-[var(--lili-radius-lg)]" />
         <div className="flex min-w-0 flex-col items-start space-y-4">
           <Skeleton className="h-[24px] w-[200px] rounded-md" />
           <Skeleton className="h-[16px] w-[200px] rounded-md" />
@@ -65,7 +65,7 @@ const Header = memo(({ loading, type, attr, cover, title, desc, upMid, mediaCoun
               {
                 "border-content3 border": !cover,
               },
-              "h-44 w-44 object-cover shadow-[var(--biu-shadow-card)]",
+              "h-44 w-44 object-cover shadow-[var(--lili-shadow-card)]",
             )}
           />
           {typeof onEdit === "function" && (
@@ -85,14 +85,14 @@ const Header = memo(({ loading, type, attr, cover, title, desc, upMid, mediaCoun
           )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col items-start pb-1">
-          <span className="mb-2 text-xs font-medium tracking-wide text-[rgb(var(--biu-color-text-tertiary))]">
+          <span className="mb-2 text-xs font-medium tracking-wide text-[rgb(var(--lili-color-text-tertiary))]">
             播放列表
           </span>
           <h1 className="line-clamp-2 text-3xl font-bold tracking-[-0.03em]">{title}</h1>
           {Boolean(desc) && (
-            <p className="mt-3 line-clamp-2 max-w-3xl text-sm text-[rgb(var(--biu-color-text-secondary))]">{desc}</p>
+            <p className="mt-3 line-clamp-2 max-w-3xl text-sm text-[rgb(var(--lili-color-text-secondary))]">{desc}</p>
           )}
-          <div className="mt-3 flex items-center space-x-1 text-sm text-[rgb(var(--biu-color-text-tertiary))]">
+          <div className="mt-3 flex items-center space-x-1 text-sm text-[rgb(var(--lili-color-text-tertiary))]">
             <span>
               {type === CollectionType.Favorite
                 ? `${attr ? (isPrivateFav(attr as number) ? "私密" : "公开") : ""}收藏夹`

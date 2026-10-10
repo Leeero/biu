@@ -87,7 +87,7 @@ describe("壳层状态", () => {
 
     expect(shellCss).toContain("@media (width <= 900px)");
     expect(shellCss).toContain("@media (width <= 640px)");
-    expect(shellCss).toContain("--biu-4188-sidebar-compact-width");
+    expect(shellCss).toContain("--lili-4188-sidebar-compact-width");
     expect(shellCss).toContain("width: calc(100% - 55px)");
     // 4188 设计稿顶栏只有返回/前进/搜索；账户入口唯一落在侧栏账户区。
     expect(topbarSource).not.toContain("<AvatarMenu");
@@ -104,24 +104,26 @@ describe("壳层状态", () => {
     const searchField = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/search-field.tsx"), "utf8");
 
     expect(appCss).toContain("*::-webkit-scrollbar-thumb");
-    expect(appCss).toContain(".os-theme-biu");
-    expect(scrollContainer).toContain('theme: "os-theme-biu"');
-    expect(searchField).toContain('theme: "os-theme-biu"');
+    expect(appCss).toContain(".os-theme-lili");
+    expect(scrollContainer).toContain('theme: "os-theme-lili"');
+    expect(searchField).toContain('theme: "os-theme-lili"');
   });
 
   test("搜索下拉层使用不透明表面且不会侵入播放器区域", () => {
     const searchField = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/search-field.tsx"), "utf8");
     const shellCss = readFileSync(path.resolve(process.cwd(), "src/app/shell/shell-4188.css"), "utf8");
 
-    expect(searchField).toContain("bg-[rgb(var(--biu-color-surface-raised))]");
-    expect(searchField).toContain("max-h-[calc(100dvh-var(--biu-layout-topbar-h)-var(--biu-layout-player-h)-0.5rem)]");
+    expect(searchField).toContain("bg-[rgb(var(--lili-color-surface-raised))]");
+    expect(searchField).toContain(
+      "max-h-[calc(100dvh-var(--lili-layout-topbar-h)-var(--lili-layout-player-h)-0.5rem)]",
+    );
     expect(searchField).toContain("absolute top-full right-0");
     expect(searchField).not.toContain("absolute top-full left-0");
     expect(searchField).toContain("overscroll-contain");
-    expect(searchField).not.toContain("bg-[var(--biu-surface-sunken)]");
+    expect(searchField).not.toContain("bg-[var(--lili-surface-sunken)]");
     // 高度规则只能命中 HeroUI Input 自己的槽位。两个坑都有真实事故：
     // 1. 曾用 `.shell4188-search > div`，把同为直接子 div 的建议浮层钉成
-    //    搜索框高度（--biu-4188-search-height），浮层只剩 48px 一条；
+    //    搜索框高度（--lili-4188-search-height），浮层只剩 48px 一条；
     // 2. 曾把 base 写成后代选择器 `.shell4188-search [data-slot="base"]`，
     //    而下拉内部的 HeroUI Listbox 包装层**同样渲染 data-slot="base"**，
     //    于是它被钉成 48px、overflow:clip 裁掉列表内容，还被 :focus-within

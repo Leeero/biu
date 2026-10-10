@@ -51,7 +51,7 @@ const Operations = ({
   });
 
   return (
-    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[rgb(var(--biu-color-border)/0.08)] pb-4">
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[rgb(var(--lili-color-border)/0.08)] pb-4">
       <div className="flex items-center space-x-2">
         <AsyncButton
           color="primary"

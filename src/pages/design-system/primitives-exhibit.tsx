@@ -51,9 +51,9 @@ export const PrimitivesExhibit = () => {
       >
         <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-4 lg:grid-cols-6">
           {ICON_NAMES.map(name => (
-            <li key={name} className="flex items-center gap-2 text-[rgb(var(--biu-text-secondary))]">
+            <li key={name} className="flex items-center gap-2 text-[rgb(var(--lili-text-secondary))]">
               <Icon name={name} size={20} />
-              <code className="truncate font-[family-name:var(--biu-font-numeric)] text-[length:var(--biu-type-micro-size)]">
+              <code className="truncate font-[family-name:var(--lili-font-numeric)] text-[length:var(--lili-type-micro-size)]">
                 {name}
               </code>
             </li>
@@ -65,7 +65,7 @@ export const PrimitivesExhibit = () => {
         name="药丸"
         proto=".pill 各变体"
         page={7}
-        note="几何：高 36（--biu-layout-pill-h）、圆角 999、左右内边距 18、图标 15、间隔 7。原型只写了这些几何与 transition，没有定义任何交互态 —— 交互态由 Button 承接，见下。"
+        note="几何：高 36（--lili-layout-pill-h）、圆角 999、左右内边距 18、图标 15、间隔 7。原型只写了这些几何与 transition，没有定义任何交互态 —— 交互态由 Button 承接，见下。"
       >
         <ExhibitRow>
           {PILL_VARIANTS.map(variant => (
@@ -135,37 +135,37 @@ export const PrimitivesExhibit = () => {
         <ExhibitRow className="gap-6">
           <div className="flex flex-col items-center gap-2">
             <GlassButton tone="glass" size={34} label="播放" icon="play" />
-            <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               glass 34
             </span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <GlassButton tone="plain" size={34} label="下一首" icon="next" />
-            <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               plain 34
             </span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <GlassButton tone="bare" size={30} label="加入队列" icon="queue-add" iconSize={15} />
-            <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               bare 30
             </span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <GlassButton tone="inverse" size={48} label="播放" icon="play" />
-            <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               inverse 48
             </span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <GlassButton tone="inverse" size={62} label="播放" icon="play" iconSize={26} />
-            <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               inverse 62
             </span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <GlassButton tone="glass" size={34} label="不可用" icon="play" disabled />
-            <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               disabled
             </span>
           </div>
@@ -191,7 +191,7 @@ export const PrimitivesExhibit = () => {
         name="属性标签"
         proto=".tag 各变体"
         page={14}
-        note="高 22、圆角 **6**（--biu-radius-tag）—— 与徽标的 8 是相邻但不同的两档，不要互换。有意未实现 .tag--ok：原型定义了它但 12 屏无一使用，且 C+ 色板没有 success 语义色（其取值的身份是「WAV 格式色」，借来当成功色会让改格式色顺带改掉成功提示）。"
+        note="高 22、圆角 **6**（--lili-radius-tag）—— 与徽标的 8 是相邻但不同的两档，不要互换。有意未实现 .tag--ok：原型定义了它但 12 屏无一使用，且 C+ 色板没有 success 语义色（其取值的身份是「WAV 格式色」，借来当成功色会让改格式色顺带改掉成功提示）。"
       >
         <ExhibitRow>
           {TAG_VARIANTS.map(variant => (
@@ -219,7 +219,7 @@ export const PrimitivesExhibit = () => {
             <div key={size} className="flex items-center gap-3">
               <Avatar alt="" size={size} />
               <Avatar alt="" size={size} artKey="creator-1" />
-              <code className="font-[family-name:var(--biu-font-numeric)] text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+              <code className="font-[family-name:var(--lili-font-numeric)] text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
                 {size}
               </code>
             </div>
@@ -326,7 +326,7 @@ export const PrimitivesExhibit = () => {
         name="大搜索框"
         proto=".searchfield"
         page={7}
-        note="高 70、圆角 **18**（--biu-radius-field-lg）、输入字号 30/600、图标 30。与顶栏搜索是两个不同的控件，只是名字都叫「搜索」：设计稿在搜索结果页把搜索框放大，是为了让「当前在搜什么」成为这一屏的视觉主体。用原生 input 而非 HeroUI Input —— 70px 高度下的 30px 字号行内对齐需要精确控制，而 HeroUI 内部有一层固定尺寸 wrapper，覆写成本高于自写。"
+        note="高 70、圆角 **18**（--lili-radius-field-lg）、输入字号 30/600、图标 30。与顶栏搜索是两个不同的控件，只是名字都叫「搜索」：设计稿在搜索结果页把搜索框放大，是为了让「当前在搜什么」成为这一屏的视觉主体。用原生 input 而非 HeroUI Input —— 70px 高度下的 30px 字号行内对齐需要精确控制，而 HeroUI 内部有一层固定尺寸 wrapper，覆写成本高于自写。"
       >
         <SearchField
           value={fieldQuery}

@@ -2,130 +2,130 @@
    C+ 设计令牌 · 第 2 层「语义令牌」
    ----------------------------------------------------------------------------
    边界：
-     · 本文件**只能**引用 var(--c-*) 与 var(--biu-*)，不得出现任何字面色值。
-     · 业务代码**只能**引用 var(--biu-*)，不得直接引用 var(--c-*)。
+     · 本文件**只能**引用 var(--c-*) 与 var(--lili-*)，不得出现任何字面色值。
+     · 业务代码**只能**引用 var(--lili-*)，不得直接引用 var(--c-*)。
    命名约定：
-     · 三通道令牌（不透明色）：`--biu-surface-*` / `--biu-text-*` / `--biu-accent` 等，
-       业务侧写成 `rgb(var(--biu-surface-canvas))` 或 `rgb(var(--biu-accent) / 0.4)`。
-     · 整值令牌（透明叠加层）：`--biu-surface-glass` / `--biu-border` 等，直接 `var(...)`。
-     · 易混淆点：`--biu-text-primary` 是**文字颜色**；
-       字号字重一行见 geometry.css 的 `--biu-type-*`。
+     · 三通道令牌（不透明色）：`--lili-surface-*` / `--lili-text-*` / `--lili-accent` 等，
+       业务侧写成 `rgb(var(--lili-surface-canvas))` 或 `rgb(var(--lili-accent) / 0.4)`。
+     · 整值令牌（透明叠加层）：`--lili-surface-glass` / `--lili-border` 等，直接 `var(...)`。
+     · 易混淆点：`--lili-text-primary` 是**文字颜色**；
+       字号字重一行见 geometry.css 的 `--lili-type-*`。
    ========================================================================== */
 
 :root {
   /* ---- 1. 表面与底板（三通道） ----------------------------------------- */
-  --biu-surface-image: var(--c-image-bed-rgb); /* 影像底 */
-  --biu-surface-canvas: var(--c-app-bg-rgb); /* 应用底板 */
-  --biu-surface-topbar: var(--c-topbar-rgb); /* 顶栏底 */
-  --biu-surface-player: var(--c-playbar-rgb); /* 播放栏底 */
+  --lili-surface-image: var(--c-image-bed-rgb); /* 影像底 */
+  --lili-surface-canvas: var(--c-app-bg-rgb); /* 应用底板 */
+  --lili-surface-topbar: var(--c-topbar-rgb); /* 顶栏底 */
+  --lili-surface-player: var(--c-playbar-rgb); /* 播放栏底 */
 
   /* ---- 2. 文字色阶（三通道） ------------------------------------------- */
-  --biu-text-primary: var(--c-text-rgb); /* 18.9 : 1 */
-  --biu-text-secondary: var(--c-text-2-rgb); /* 12.1 : 1 */
-  --biu-text-tertiary: var(--c-text-3-rgb); /* 7.5 : 1 */
-  --biu-text-quaternary: var(--c-text-4-rgb); /* 5.9 : 1 —— 注解带 */
-  --biu-text-disabled: var(--c-text-5-rgb); /* 3.6 : 1 —— 仅限非正文 */
+  --lili-text-primary: var(--c-text-rgb); /* 18.9 : 1 */
+  --lili-text-secondary: var(--c-text-2-rgb); /* 12.1 : 1 */
+  --lili-text-tertiary: var(--c-text-3-rgb); /* 7.5 : 1 */
+  --lili-text-quaternary: var(--c-text-4-rgb); /* 5.9 : 1 —— 注解带 */
+  --lili-text-disabled: var(--c-text-5-rgb); /* 3.6 : 1 —— 仅限非正文 */
 
   /* 输入框占位符与歌词非当前行：不接受二次调透明度，直接整值 */
-  --biu-text-placeholder: var(--c-text-placeholder);
-  --biu-text-lyrics-dim: var(--c-text-lyrics-dim);
+  --lili-text-placeholder: var(--c-text-placeholder);
+  --lili-text-lyrics-dim: var(--c-text-lyrics-dim);
 
   /* ---- 3. 反色对与能力色 ----------------------------------------------- */
-  --biu-inverse-surface: var(--c-inverse-surface-rgb); /* 激活药丸 / 主操作 */
-  --biu-inverse-surface-hover: var(--c-inverse-surface-hover-rgb);
-  --biu-inverse-ink: var(--c-inverse-ink-rgb); /* 反色底上的文字 */
-  --biu-accent: var(--c-accent-rgb); /* 强调 / 目录徽标 / 注解标记 / 进度 */
-  --biu-accent-ink: var(--c-accent-ink-rgb);
-  --biu-quality: var(--c-quality-rgb); /* 音质徽标 */
-  --biu-dir: var(--c-dir-rgb); /* 本地目录徽标 */
-  --biu-film: var(--c-film-rgb); /* 胶片灰 */
-  --biu-danger: var(--c-danger-rgb); /* 危险操作 */
+  --lili-inverse-surface: var(--c-inverse-surface-rgb); /* 激活药丸 / 主操作 */
+  --lili-inverse-surface-hover: var(--c-inverse-surface-hover-rgb);
+  --lili-inverse-ink: var(--c-inverse-ink-rgb); /* 反色底上的文字 */
+  --lili-accent: var(--c-accent-rgb); /* 强调 / 目录徽标 / 注解标记 / 进度 */
+  --lili-accent-ink: var(--c-accent-ink-rgb);
+  --lili-quality: var(--c-quality-rgb); /* 音质徽标 */
+  --lili-dir: var(--c-dir-rgb); /* 本地目录徽标 */
+  --lili-film: var(--c-film-rgb); /* 胶片灰 */
+  --lili-danger: var(--c-danger-rgb); /* 危险操作 */
 
   /* ---- 4. 本地格式色 --------------------------------------------------- */
-  --biu-fmt-flac: var(--c-fmt-flac-rgb);
-  --biu-fmt-wav: var(--c-fmt-wav-rgb);
-  --biu-fmt-aiff: var(--c-fmt-aiff-rgb);
-  --biu-fmt-m4a: var(--c-fmt-m4a-rgb);
-  --biu-fmt-mp3: var(--c-fmt-mp3-rgb);
-  --biu-fmt-wma: var(--c-fmt-wma-rgb);
+  --lili-fmt-flac: var(--c-fmt-flac-rgb);
+  --lili-fmt-wav: var(--c-fmt-wav-rgb);
+  --lili-fmt-aiff: var(--c-fmt-aiff-rgb);
+  --lili-fmt-m4a: var(--c-fmt-m4a-rgb);
+  --lili-fmt-mp3: var(--c-fmt-mp3-rgb);
+  --lili-fmt-wma: var(--c-fmt-wma-rgb);
 
   /* ---- 5. 透明表面与描边（整值） --------------------------------------- */
-  --biu-surface-glass: var(--c-glass); /* 玻璃圆片底 */
-  --biu-surface-glass-strong: var(--c-glass-strong); /* 玻璃按下态 */
-  --biu-glass-border: var(--c-glass-border); /* 玻璃描边 */
-  --biu-surface-raised: var(--c-surface); /* 抬升面板 */
-  --biu-surface-hover: var(--c-surface-hover); /* 悬停 */
-  --biu-surface-sunken: var(--c-surface-sunken); /* 凹槽 / 歌词面板 */
-  --biu-surface-field: var(--c-surface-field); /* 输入框 / 药丸底 */
-  --biu-surface-search: var(--c-surface-search); /* 顶栏搜索位底 */
-  --biu-surface-current: var(--c-surface-current); /* 列表当前行 */
-  --biu-border: var(--c-line); /* 标准描边 */
-  --biu-border-weak: var(--c-line-weak); /* 弱分隔 */
-  --biu-border-strong: var(--c-line-strong); /* 强调描边 */
-  --biu-accent-soft: var(--c-accent-soft); /* 已生效筛选条件底 */
-  --biu-danger-soft: var(--c-danger-soft);
-  --biu-danger-line: var(--c-danger-line);
+  --lili-surface-glass: var(--c-glass); /* 玻璃圆片底 */
+  --lili-surface-glass-strong: var(--c-glass-strong); /* 玻璃按下态 */
+  --lili-glass-border: var(--c-glass-border); /* 玻璃描边 */
+  --lili-surface-raised: var(--c-surface); /* 抬升面板 */
+  --lili-surface-hover: var(--c-surface-hover); /* 悬停 */
+  --lili-surface-sunken: var(--c-surface-sunken); /* 凹槽 / 歌词面板 */
+  --lili-surface-field: var(--c-surface-field); /* 输入框 / 药丸底 */
+  --lili-surface-search: var(--c-surface-search); /* 顶栏搜索位底 */
+  --lili-surface-current: var(--c-surface-current); /* 列表当前行 */
+  --lili-border: var(--c-line); /* 标准描边 */
+  --lili-border-weak: var(--c-line-weak); /* 弱分隔 */
+  --lili-border-strong: var(--c-line-strong); /* 强调描边 */
+  --lili-accent-soft: var(--c-accent-soft); /* 已生效筛选条件底 */
+  --lili-danger-soft: var(--c-danger-soft);
+  --lili-danger-line: var(--c-danger-line);
 
   /* 桌面端滚动条：常态克制、悬停可见、拖拽时给出明确反馈。原生滚动容器与
      OverlayScrollbars 共用这三个角色，避免页面、弹层和歌词区各自成套。 */
-  --biu-scrollbar-thumb: var(--c-veil-20);
-  --biu-scrollbar-thumb-hover: var(--c-veil-28);
-  --biu-scrollbar-thumb-active: var(--c-line-strong);
+  --lili-scrollbar-thumb: var(--c-veil-20);
+  --lili-scrollbar-thumb-hover: var(--c-veil-28);
+  --lili-scrollbar-thumb-active: var(--c-line-strong);
 
   /* ---- 5b. 白色叠加梯度补档（P2） ------------------------------------- */
 
   /* 与 palette.css §8 一一对应，命名同样按实际不透明度。
      已具备语义角色的档位不在此重复（surface-* / glass-* / border-*）。
-     业务侧直接 `var(--biu-veil-N)`：它们是**整值**叠加层，
+     业务侧直接 `var(--lili-veil-N)`：它们是**整值**叠加层，
      再套一层 alpha 只会得到「二次调暗的半透明」，不属于设计意图。 */
-  --biu-veil-4: var(--c-veil-4);
-  --biu-veil-5-5: var(--c-veil-5-5);
-  --biu-veil-8: var(--c-veil-8);
-  --biu-veil-9: var(--c-veil-9);
-  --biu-veil-12: var(--c-veil-12);
-  --biu-veil-14: var(--c-veil-14);
-  --biu-veil-18: var(--c-veil-18);
-  --biu-veil-20: var(--c-veil-20);
-  --biu-veil-22: var(--c-veil-22);
-  --biu-veil-28: var(--c-veil-28);
+  --lili-veil-4: var(--c-veil-4);
+  --lili-veil-5-5: var(--c-veil-5-5);
+  --lili-veil-8: var(--c-veil-8);
+  --lili-veil-9: var(--c-veil-9);
+  --lili-veil-12: var(--c-veil-12);
+  --lili-veil-14: var(--c-veil-14);
+  --lili-veil-18: var(--c-veil-18);
+  --lili-veil-20: var(--c-veil-20);
+  --lili-veil-22: var(--c-veil-22);
+  --lili-veil-28: var(--c-veil-28);
 
   /* 顶栏分段项 / 键帽标签文字。与格式色 mp3 同值但角色不同（见 palette.css §8）。 */
-  --biu-text-chrome-label: var(--c-chrome-label-rgb);
+  --lili-text-chrome-label: var(--c-chrome-label-rgb);
 
   /* 弹层底与影像底板 */
-  --biu-surface-modal: var(--c-modal-surface);
-  --biu-surface-art-bed: var(--c-art-bed-rgb);
+  --lili-surface-modal: var(--c-modal-surface);
+  --lili-surface-art-bed: var(--c-art-bed-rgb);
 
   /* ---- 5c. 弹层投影（P2 补档） ----------------------------------------- */
 
-  /* 浮动弹层的投影。与上面的 --biu-shadow-card / -floating 是**不同的两套**：
+  /* 浮动弹层的投影。与上面的 --lili-shadow-card / -floating 是**不同的两套**：
      那两个是上一轮遗留的卡片阴影（P7 随兼容层删除），这一条来自原型的 .modal。
      投影里含颜色函数，按分层规则必须落在令牌层 —— 业务代码里写
      `shadow-[0_24px_60px_rgb(...)]` 会被 check-literals 当作字面色值拦下。 */
-  --biu-shadow-modal: 0 24px 60px rgb(var(--c-shadow-umbra-rgb) / 50%);
+  --lili-shadow-modal: 0 24px 60px rgb(var(--c-shadow-umbra-rgb) / 50%);
 
   /* ---- 6. 遮罩（整值） ------------------------------------------------- */
-  --biu-scrim: var(--c-scrim);
-  --biu-scrim-veil: var(--c-scrim-veil);
+  --lili-scrim: var(--c-scrim);
+  --lili-scrim-veil: var(--c-scrim-veil);
 
   /* 瓦片来源徽标芯片。黑 45% 与蓝 84% 都是设计稿实测（见 material.badge），
-     不是从 --biu-veil-14 挑的近似档。dir 芯片上的文字用反色墨，不走 --biu-dir。 */
-  --biu-scrim-badge: var(--c-scrim-badge);
-  --biu-dir-chip: var(--c-dir-chip);
+     不是从 --lili-veil-14 挑的近似档。dir 芯片上的文字用反色墨，不走 --lili-dir。 */
+  --lili-scrim-badge: var(--c-scrim-badge);
+  --lili-dir-chip: var(--c-dir-chip);
 
   /* ---- 7. 复合背景 ----------------------------------------------------- */
 
   /* 应用底板：两层极弱环境光叠在底板色上 */
-  --biu-app-bg:
+  --lili-app-bg:
     radial-gradient(120% 90% at 12% 0%, var(--c-app-sheen-a), transparent 58%),
     radial-gradient(110% 80% at 92% 100%, var(--c-app-sheen-b), transparent 62%), var(--c-app-bg);
 
   /* 顶栏：合成渐变，不是纯色 */
-  --biu-topbar-bg: linear-gradient(to bottom, var(--c-topbar-top) 0%, var(--c-topbar) 46%, var(--c-topbar-bottom) 100%);
+  --lili-topbar-bg: linear-gradient(to bottom, var(--c-topbar-top) 0%, var(--c-topbar) 46%, var(--c-topbar-bottom) 100%);
 
   /* 沉浸态背景：左缘竖向紫雾 + 顶部横向冷蓝雾，右上/右下为纯暗底。
      参数与来历见 palette.css §7，不得凭直觉改写。 */
-  --biu-immersive-bg:
+  --lili-immersive-bg:
     radial-gradient(20% 22% at 0% 0%, var(--c-immersive-haze-a), transparent 64%),
     radial-gradient(21% 73% at 0% 43%, var(--c-immersive-haze-b), transparent 77%),
     radial-gradient(97% 54% at 33% 6%, var(--c-immersive-haze-c), transparent 84%), var(--c-immersive-base);
@@ -133,33 +133,33 @@
   /* —— 遗留：品牌与状态色（P1 已收敛到 C+ 色板，P7 删除） —— */
 
   /* 决策 2「移除自定义主色」：品牌色不再读 HeroUI 主题变量，直接取 C+ 强调色。
-     写成 rgb(var(--biu-accent)) 而非 var(--biu-accent)——后者是三通道
+     写成 rgb(var(--lili-accent)) 而非 var(--lili-accent)——后者是三通道
      （`41 151 255`），不能直接当颜色用。 */
-  --biu-color-brand: rgb(var(--biu-accent));
-  --biu-color-focus: rgb(var(--biu-accent) / 72%);
-  --biu-color-danger: rgb(var(--biu-danger));
+  --lili-color-brand: rgb(var(--lili-accent));
+  --lili-color-focus: rgb(var(--lili-accent) / 72%);
+  --lili-color-danger: rgb(var(--lili-danger));
 
   /* C+ 色板暂无 warning / success 语义（原型未出现这两种状态），
      保留原值，避免凭直觉发明设计稿里没有的颜色。二者当前无消费方，P7 随兼容层删除。 */
-  --biu-color-warning: hsl(var(--heroui-warning));
-  --biu-color-success: hsl(var(--heroui-success));
+  --lili-color-warning: hsl(var(--heroui-warning));
+  --lili-color-success: hsl(var(--heroui-success));
 
   /* —— 遗留：表面与文字（P1 收敛为深色单一皮肤，P7 删除） —— */
 
   /* C+ 只有深色一套皮肤（决策 2）。原 `:root, .light` 浅色分支已删除，
      深色值直接落在 :root——旧设置文件即便把 .light 类留在根元素上，
      也只会回落到这里的深色值：不白屏，且不需要迁移脚本。 */
-  --biu-color-canvas: 18 18 20;
-  --biu-color-surface: 28 28 31;
-  --biu-color-surface-raised: 35 35 39;
-  --biu-color-surface-hover: 43 43 47;
-  --biu-color-surface-pressed: 51 51 56;
-  --biu-color-border: 255 255 255;
-  --biu-color-text-primary: 250 250 250;
-  --biu-color-text-secondary: 161 161 170;
-  --biu-color-text-tertiary: 113 113 122;
-  --biu-shadow-card: 0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 24%), 0 12px 32px rgb(var(--c-shadow-umbra-rgb) / 22%);
-  --biu-shadow-floating: 0 18px 54px rgb(var(--c-shadow-umbra-rgb) / 42%);
+  --lili-color-canvas: 18 18 20;
+  --lili-color-surface: 28 28 31;
+  --lili-color-surface-raised: 35 35 39;
+  --lili-color-surface-hover: 43 43 47;
+  --lili-color-surface-pressed: 51 51 56;
+  --lili-color-border: 255 255 255;
+  --lili-color-text-primary: 250 250 250;
+  --lili-color-text-secondary: 161 161 170;
+  --lili-color-text-tertiary: 113 113 122;
+  --lili-shadow-card: 0 1px 2px rgb(var(--c-shadow-umbra-rgb) / 24%), 0 12px 32px rgb(var(--c-shadow-umbra-rgb) / 22%);
+  --lili-shadow-floating: 0 18px 54px rgb(var(--c-shadow-umbra-rgb) / 42%);
 }
 
 /* ============================================================================
@@ -169,12 +169,12 @@
    P1 已完成的收敛：
      · 删除浅色分支：`:root, .light` 与 `.dark` 合并进唯一的 `:root`。
        （保持单一 :root 也是 stylelint no-duplicate-selectors 的要求）
-     · --biu-color-brand / -focus / -danger 改为引用 C+ 色板，不再回退 HeroUI 主题。
+     · --lili-color-brand / -focus / -danger 改为引用 C+ 色板，不再回退 HeroUI 主题。
    尚未收敛（**有意保留**）：
-     · --biu-color-canvas / surface-* / text-* 仍用上一轮的深色取值。
+     · --lili-color-canvas / surface-* / text-* 仍用上一轮的深色取值。
        这些令牌被约 20 个尚未重写的页面消费，取值替换属于**各屏自身的视觉重写**，
        随 P3–P6 逐屏迁移，不在 P1 的「壳层重建」范围内。
-       （新壳层不复用它们，直接用 C+ 的 --biu-surface-* / --biu-text-*。）
-   终局：P7 全部删除，业务代码只剩 --biu-surface-* / --biu-text-* / --biu-type-*。
+       （新壳层不复用它们，直接用 C+ 的 --lili-surface-* / --lili-text-*。）
+   终局：P7 全部删除，业务代码只剩 --lili-surface-* / --lili-text-* / --lili-type-*。
    过渡期禁止在此新增任何令牌。
    ========================================================================== */

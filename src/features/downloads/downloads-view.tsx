@@ -43,7 +43,7 @@ export interface DownloadPillViewModel {
 
 export const downloadColumns = (labels: readonly string[]): TrackTableColumn[] => [
   { key: "index", label: labels[0] },
-  { key: "file", label: labels[1], inset: "var(--biu-layout-head-title-inset)" },
+  { key: "file", label: labels[1], inset: "var(--lili-layout-head-title-inset)" },
   { key: "status", label: labels[2] },
   { key: "size", label: labels[3], align: "end" },
 ];
@@ -196,7 +196,7 @@ export const DownloadsView = ({
                     <TrackIndex value={row.index} />
                     <button
                       type="button"
-                      className="relative z-[1] flex min-w-0 items-center gap-[var(--biu-layout-track-gap)] text-left"
+                      className="relative z-[1] flex min-w-0 items-center gap-[var(--lili-layout-track-gap)] text-left"
                       onClick={() => onRowPress(row.id)}
                     >
                       <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />

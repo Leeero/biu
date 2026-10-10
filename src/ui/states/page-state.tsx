@@ -37,15 +37,15 @@ export const PageState = ({
     aria-live="polite"
     className={twMerge("flex min-h-64 flex-col items-center justify-center px-6 text-center", className)}
   >
-    <div className="biu-theme-4188:bg-[var(--biu-4188-surface-elevated)] biu-theme-4188:text-[var(--biu-4188-text-secondary)] biu-theme-4188:shadow-none mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--biu-color-surface-raised))] text-[rgb(var(--biu-color-text-secondary))] shadow-[var(--biu-shadow-card)]">
+    <div className="lili-theme-4188:bg-[var(--lili-4188-surface-elevated)] lili-theme-4188:text-[var(--lili-4188-text-secondary)] lili-theme-4188:shadow-none mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--lili-color-surface-raised))] text-[rgb(var(--lili-color-text-secondary))] shadow-[var(--lili-shadow-card)]">
       {kind === "loading" ? (
-        <RiLoader4Line aria-hidden="true" className="size-6 animate-spin text-[var(--biu-4188-action)]" />
+        <RiLoader4Line aria-hidden="true" className="size-6 animate-spin text-[var(--lili-4188-action)]" />
       ) : (
         (icon ?? (kind === "error" ? <RiErrorWarningLine /> : <RiInbox2Line />))
       )}
     </div>
-    <h2 className="biu-theme-4188:text-[var(--biu-4188-text-primary)] text-base font-semibold">{title}</h2>
-    <p className="biu-theme-4188:text-[var(--biu-4188-text-muted)] mt-1 max-w-sm text-sm text-[rgb(var(--biu-color-text-secondary))]">
+    <h2 className="lili-theme-4188:text-[var(--lili-4188-text-primary)] text-base font-semibold">{title}</h2>
+    <p className="lili-theme-4188:text-[var(--lili-4188-text-muted)] mt-1 max-w-sm text-sm text-[rgb(var(--lili-color-text-secondary))]">
       {description}
     </p>
     {actionLabel && onAction && (

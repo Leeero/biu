@@ -11,11 +11,11 @@ export const useStyle = () => {
 
     const rootEl: HTMLDivElement | null = document.querySelector("#root");
     if (rootEl) {
-      rootEl.style.background = "rgb(var(--biu-color-surface) / 0.96)";
+      rootEl.style.background = "rgb(var(--lili-color-surface) / 0.96)";
       rootEl.style.overflow = "hidden";
       rootEl.style.borderRadius = `${Math.max(useSettings.getState().borderRadius, 12)}px`;
-      rootEl.style.border = "1px solid rgb(var(--biu-color-border) / 0.08)";
-      rootEl.style.boxShadow = "var(--biu-shadow-floating)";
+      rootEl.style.border = "1px solid rgb(var(--lili-color-border) / 0.08)";
+      rootEl.style.boxShadow = "var(--lili-shadow-floating)";
     }
 
     return () => {

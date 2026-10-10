@@ -85,7 +85,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
           onPress={onPress}
           aria-label={title}
           className={clx(
-            "w-full min-w-0 justify-center rounded-[var(--biu-radius-md)] px-0 py-1",
+            "w-full min-w-0 justify-center rounded-[var(--lili-radius-md)] px-0 py-1",
             className,
             dndClassName,
             {
@@ -112,8 +112,8 @@ const MenuItem: React.FC<MenuItemProps> = ({
       onPress={onPress}
       startContent={iconContent}
       className={twMerge(
-        "relative h-10 justify-start gap-3 rounded-[var(--biu-radius-md)] px-3 text-sm text-[rgb(var(--biu-color-text-secondary))] transition-[background-color,color] duration-[var(--biu-duration-fast)] before:absolute before:top-1/2 before:left-0 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded-r-full before:bg-transparent data-[hover=true]:bg-[rgb(var(--biu-color-surface-hover))] data-[hover=true]:text-[rgb(var(--biu-color-text-primary))] data-[selected=true]:before:bg-[var(--biu-color-brand)]",
-        isActive && "font-medium text-[rgb(var(--biu-color-text-primary))] before:bg-[var(--biu-color-brand)]",
+        "relative h-10 justify-start gap-3 rounded-[var(--lili-radius-md)] px-3 text-sm text-[rgb(var(--lili-color-text-secondary))] transition-[background-color,color] duration-[var(--lili-duration-fast)] before:absolute before:top-1/2 before:left-0 before:h-4 before:w-[3px] before:-translate-y-1/2 before:rounded-r-full before:bg-transparent data-[hover=true]:bg-[rgb(var(--lili-color-surface-hover))] data-[hover=true]:text-[rgb(var(--lili-color-text-primary))] data-[selected=true]:before:bg-[var(--lili-color-brand)]",
+        isActive && "font-medium text-[rgb(var(--lili-color-text-primary))] before:bg-[var(--lili-color-brand)]",
         className,
         dndClassName,
       )}

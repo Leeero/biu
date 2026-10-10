@@ -4,17 +4,17 @@ import { twMerge } from "tailwind-merge";
 
 import { PLACEHOLDER_RADIALS, pickPlaceholderGradient, type PlaceholderRadial } from "@/ui/fixtures/placeholder-art";
 
-/** 圆角档位。`art` 是列表行内缩略图专用的 6px（`--biu-layout-art-radius`）。 */
+/** 圆角档位。`art` 是列表行内缩略图专用的 6px（`--lili-layout-art-radius`）。 */
 export type ArtworkRadius = "none" | "art" | "sm" | "md" | "lg" | "round" | "pill";
 
 const RADIUS: Record<ArtworkRadius, string> = {
-  none: "rounded-[var(--biu-radius-image)]",
-  art: "rounded-[var(--biu-layout-art-radius)]",
-  sm: "rounded-[var(--biu-radius-sm)]",
-  md: "rounded-[var(--biu-radius-md)]",
-  lg: "rounded-[var(--biu-radius-lg)]",
-  round: "rounded-[var(--biu-radius-round)]",
-  pill: "rounded-[var(--biu-radius-pill)]",
+  none: "rounded-[var(--lili-radius-image)]",
+  art: "rounded-[var(--lili-layout-art-radius)]",
+  sm: "rounded-[var(--lili-radius-sm)]",
+  md: "rounded-[var(--lili-radius-md)]",
+  lg: "rounded-[var(--lili-radius-lg)]",
+  round: "rounded-[var(--lili-radius-round)]",
+  pill: "rounded-[var(--lili-radius-pill)]",
 };
 
 interface ArtworkProps {
@@ -85,7 +85,7 @@ export const Artwork = ({
 
   return (
     <span
-      className={twMerge("relative block overflow-hidden bg-[var(--biu-surface-art-bed)]", RADIUS[radius], className)}
+      className={twMerge("relative block overflow-hidden bg-[var(--lili-surface-art-bed)]", RADIUS[radius], className)}
       style={{ ...style, backgroundImage: showImage ? undefined : background }}
     >
       {showImage && (

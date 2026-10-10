@@ -31,7 +31,7 @@ const CoverView = memo(() => {
   const cover = usePlayState(s => s.cover);
   if (!cover) return null;
   return (
-    <div className="mini4188-cover relative m-2 h-24 w-24 flex-shrink-0 overflow-hidden rounded-[var(--biu-radius-lg)]">
+    <div className="mini4188-cover relative m-2 h-24 w-24 flex-shrink-0 overflow-hidden rounded-[var(--lili-radius-lg)]">
       <Image
         removeWrapper
         radius="lg"
@@ -43,7 +43,7 @@ const CoverView = memo(() => {
         decoding="async"
         style={{ transform: "translateZ(0)", backfaceVisibility: "hidden", willChange: "transform", contain: "paint" }}
       />
-      <div className="pointer-events-none absolute inset-0 z-10 rounded-[var(--biu-radius-lg)] ring-1 ring-black/5 ring-inset" />
+      <div className="pointer-events-none absolute inset-0 z-10 rounded-[var(--lili-radius-lg)] ring-1 ring-black/5 ring-inset" />
     </div>
   );
 });
@@ -100,7 +100,7 @@ const CompactMiniPlayer = () => {
   }, []);
 
   return (
-    <div className="mini4188-window window-drag flex h-screen w-screen flex-col overflow-hidden rounded-[var(--biu-radius-lg)] bg-[rgb(var(--biu-color-surface)/0.96)] text-[rgb(var(--biu-color-text-primary))] select-none">
+    <div className="mini4188-window window-drag flex h-screen w-screen flex-col overflow-hidden rounded-[var(--lili-radius-lg)] bg-[rgb(var(--lili-color-surface)/0.96)] text-[rgb(var(--lili-color-text-primary))] select-none">
       <div className="flex h-full items-center">
         <CoverView />
         <div className="mini4188-content flex min-w-0 flex-1 flex-col gap-1.5 py-2 pr-2">
@@ -108,14 +108,16 @@ const CompactMiniPlayer = () => {
             {title ? (
               <>
                 <span className="truncate text-sm font-semibold">{title}</span>
-                <span className="truncate text-xs text-[rgb(var(--biu-color-text-secondary))]">{artist || "未知"}</span>
+                <span className="truncate text-xs text-[rgb(var(--lili-color-text-secondary))]">
+                  {artist || "未知"}
+                </span>
               </>
             ) : (
-              <span className="text-sm text-[rgb(var(--biu-color-text-tertiary))]">暂无播放内容</span>
+              <span className="text-sm text-[rgb(var(--lili-color-text-tertiary))]">暂无播放内容</span>
             )}
           </div>
           <div className="mini4188-progress window-no-drag flex items-center gap-2">
-            <span className="w-7 text-right text-[10px] text-[rgb(var(--biu-color-text-tertiary))] tabular-nums">
+            <span className="w-7 text-right text-[10px] text-[rgb(var(--lili-color-text-tertiary))] tabular-nums">
               {title ? formatDuration(currentTime) : "-:--"}
             </span>
             <Slider
@@ -137,7 +139,7 @@ const CompactMiniPlayer = () => {
                 }),
               }}
             />
-            <span className="w-7 text-[10px] text-[rgb(var(--biu-color-text-tertiary))] tabular-nums">
+            <span className="w-7 text-[10px] text-[rgb(var(--lili-color-text-tertiary))] tabular-nums">
               {title ? formatDuration(duration) : "-:--"}
             </span>
           </div>
@@ -148,7 +150,7 @@ const CompactMiniPlayer = () => {
               variant="light"
               disableAnimation
               onPress={actions.togglePlayMode}
-              className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
+              className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--lili-color-text-secondary))]"
               aria-label="播放模式"
             >
               {playModeIcon}
@@ -198,7 +200,7 @@ const CompactMiniPlayer = () => {
               disableAnimation
               onPress={toggleMiniMode}
               aria-label="返回完整播放器"
-              className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--biu-color-text-secondary))]"
+              className="mini4188-control window-no-drag hover:text-primary h-7 w-7 min-w-7 text-[rgb(var(--lili-color-text-secondary))]"
             >
               <RiExpandDiagonalLine size={16} />
             </Button>

@@ -60,7 +60,7 @@ export const DISCOVER_LIST_RHYTHM = {
  * 不是列起点。121 是派生量，恒等式由 `tests/design-tokens.test.ts` 钉住。
  * 详见 `TrackTableColumn.inset` 与 spec-lock `geometry.listHead`（1.3.22）。
  */
-const TITLE_INSET = "var(--biu-layout-head-title-inset)";
+const TITLE_INSET = "var(--lili-layout-head-title-inset)";
 
 /** 列表行：夹具与真实路径汇成的同一视图模型。 */
 export interface DiscoverListTrackRow {

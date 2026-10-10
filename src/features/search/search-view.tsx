@@ -208,7 +208,7 @@ export const SearchView = ({
  * local-link 药丸（搜索框右端的「在本地音乐中搜索…」入口）。
  *
  * 材质取设计稿第 7 页实测（spec-lock `geometry.searchField.localLink`，1.3.13）：
- * 高 32、内距 15、间隙 8、白 10% 底（`--biu-surface-hover`）、**无描边**、强调蓝文字 +
+ * 高 32、内距 15、间隙 8、白 10% 底（`--lili-surface-hover`）、**无描边**、强调蓝文字 +
  * `arrow-right` 图标。**不贴盒右缘**，右侧留 158px 空白（`rightInset`）—— 与原型
  * 「贴右 16px」分歧，实现按设计稿。这不是 `Button` / `Pill` 的既有变体
  * （`outline` 是 14% 底 + 12% 描边，`ghost` 文字是灰不是强调蓝），故单独成件。
@@ -218,12 +218,12 @@ const LocalLink = ({ label, onPress }: { label: string; onPress: () => void }) =
     type="button"
     onClick={onPress}
     className={twMerge(
-      "mr-[var(--biu-layout-searchfield-link-right-inset)] inline-flex h-[var(--biu-layout-searchfield-link-h)]",
-      "flex-none cursor-pointer items-center gap-[var(--biu-layout-searchfield-link-gap)]",
-      "rounded-[var(--biu-radius-pill)] border-0 bg-[var(--biu-surface-hover)]",
-      "px-[var(--biu-layout-searchfield-link-pad)] text-[length:var(--biu-type-label-size)]",
-      "whitespace-nowrap text-[rgb(var(--biu-accent-ink))] transition-colors",
-      "hover:bg-[var(--biu-surface-sunken)]",
+      "mr-[var(--lili-layout-searchfield-link-right-inset)] inline-flex h-[var(--lili-layout-searchfield-link-h)]",
+      "flex-none cursor-pointer items-center gap-[var(--lili-layout-searchfield-link-gap)]",
+      "rounded-[var(--lili-radius-pill)] border-0 bg-[var(--lili-surface-hover)]",
+      "px-[var(--lili-layout-searchfield-link-pad)] text-[length:var(--lili-type-label-size)]",
+      "whitespace-nowrap text-[rgb(var(--lili-accent-ink))] transition-colors",
+      "hover:bg-[var(--lili-surface-sunken)]",
     )}
   >
     {label}

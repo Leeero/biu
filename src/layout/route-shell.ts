@@ -320,7 +320,7 @@ export const resolveSearchPlaceholder = (pathname: string): string => {
  *
  * `/` 上的「已下线: 流行 / 鬼畜」标注该页**已下线的分区**。真值见 spec-lock
  * `globalChrome.topbarNote`（1.3.18 订正了它的材质：**无独立底色**，与未选中
- * 分段同处 `--biu-veil-9` 容器底、字色 `--biu-text-chrome-label`；1.3.16 记的
+ * 分段同处 `--lili-veil-9` 容器底、字色 `--lili-text-chrome-label`；1.3.16 记的
  * 「自带底的片」是墨迹污染的读数）。它**不是交互元素**，渲染成 `<span>`。
  *
  * 与搜索占位一样，这里只声明「哪个路由有什么说明」；怎么画是组件的事。

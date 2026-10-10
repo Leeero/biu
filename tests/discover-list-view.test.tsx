@@ -90,7 +90,8 @@ const fixtureProps = (): DiscoverListViewProps => {
   };
 };
 
-const rowNodes = (container: HTMLElement) => Array.from(container.querySelectorAll('div[class*="--biu-layout-row-h"]'));
+const rowNodes = (container: HTMLElement) =>
+  Array.from(container.querySelectorAll('div[class*="--lili-layout-row-h"]'));
 
 /**
  * 把渐变里的十六进制色值写成 jsdom 会回读出来的形式。
@@ -144,7 +145,7 @@ describe("表头列位", () => {
     const columns = discoverListColumns(["#", "标题", "播放 · 点赞 · 弹幕", "时长"]);
 
     expect(columns.map(column => column.key)).toEqual(["index", "content", "stats", "duration"]);
-    expect(columns[1]?.inset).toBe("var(--biu-layout-head-title-inset)");
+    expect(columns[1]?.inset).toBe("var(--lili-layout-head-title-inset)");
     expect(columns[0]?.inset).toBeUndefined();
     expect(columns[2]?.inset).toBeUndefined();
     expect(columns[3]?.inset).toBeUndefined();
@@ -166,7 +167,7 @@ describe("表头列位", () => {
         {null}
       </TrackTable>,
     );
-    const head = container.querySelector<HTMLElement>('div[class*="--biu-layout-head-h"]');
+    const head = container.querySelector<HTMLElement>('div[class*="--lili-layout-head-h"]');
 
     expect(head).not.toBeNull();
     const cells = Array.from(head!.children) as HTMLElement[];
@@ -177,7 +178,7 @@ describe("表头列位", () => {
 
   test("本屏表头四列的文字与夹具一致", async () => {
     const container = await render(<DiscoverListView {...fixtureProps()} />);
-    const head = container.querySelector<HTMLElement>('div[class*="--biu-layout-head-h"]');
+    const head = container.querySelector<HTMLElement>('div[class*="--lili-layout-head-h"]');
 
     expect(head).not.toBeNull();
     expect(Array.from(head!.children).map(cell => cell.textContent)).toEqual(
@@ -236,8 +237,8 @@ describe("屏 08 呈现结构", () => {
     const rows = rowNodes(container);
     expect(rows).toHaveLength(5);
 
-    // 缩略图是 `Artwork`（根元素是 `span`，不是 `div`），尺寸走 `--biu-layout-art-*`。
-    const arts = Array.from(container.querySelectorAll<HTMLElement>('span[class*="--biu-layout-art-w"]'));
+    // 缩略图是 `Artwork`（根元素是 `span`，不是 `div`），尺寸走 `--lili-layout-art-*`。
+    const arts = Array.from(container.querySelectorAll<HTMLElement>('span[class*="--lili-layout-art-w"]'));
     expect(arts).toHaveLength(5);
     // 占位底图**逐行**取夹具指名的档位，且是**等值渐变**（起止同色）——
     // 渐变的远端一旦偏离，缩略图顶部会被内容带探针判成墨迹（屏 07 的教训）。
@@ -274,7 +275,7 @@ describe("屏 08 呈现结构", () => {
 
     const band = buttons[0]?.parentElement as HTMLElement;
     // 走**缺省**右偏移公式（屏 02 同款）：屏 06 才需要 `right-[224px]` 覆写。
-    expect(band.className).toContain("--biu-layout-col-4");
+    expect(band.className).toContain("--lili-layout-col-4");
     expect(band.className).not.toContain("224px");
 
     const row4 = rowNodes(container)[3] as HTMLElement;

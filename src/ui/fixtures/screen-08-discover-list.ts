@@ -110,7 +110,7 @@ export const SCREEN_08_DISCOVER_LIST_FIXTURE: DiscoverListFixture = {
     /**
      * 表头四列。第二列「标题」的墨迹落在 x240，即**行内文字列**（x241）而不是列
      * 起点（x120）—— 落地靠 `TrackTableColumn.inset`，值取令牌
-     * `--biu-layout-head-title-inset`（= 封面宽 100 + 图文间距 21 = 121）。
+     * `--lili-layout-head-title-inset`（= 封面宽 100 + 图文间距 21 = 121）。
      * 同款读数在设计稿另四页（第 03 / 04 / 10 / 13 页）一致为 240 / 240 / 240 / 241，
      * 故不是本屏特例（spec-lock `geometry.listHead`，1.3.22）。
      */

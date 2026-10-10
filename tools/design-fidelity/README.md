@@ -195,11 +195,11 @@ tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf
 
 | 规则 | 允许的地方 | 拦截示例 |
 | --- | --- | --- |
-| 字面色值（`#hex` / `rgb(` / `hsl(` / `oklch(`） | **仅** `src/ui/tokens/palette.css` | 组件里写 `bg-[#1a1a1c]`；`semantic.css` 里写 `--biu-x: #ff0000` |
+| 字面色值（`#hex` / `rgb(` / `hsl(` / `oklch(`） | **仅** `src/ui/tokens/palette.css` | 组件里写 `bg-[#1a1a1c]`；`semantic.css` 里写 `--lili-x: #ff0000` |
 | 原始色板引用 `var(--c-*)` | `palette.css` 与 `semantic.css` | `geometry.css` 或组件里写 `var(--c-accent)` |
 | HeroUI 主题回退 `var(--heroui-*)` | `src/ui/tokens/` 内 | 组件里写 `bg-[rgb(var(--heroui-primary))]` |
 
-另允许四类不构成违规的写法：`rgba(255,255,255,0)`、`transparent`、`currentColor`、`inherit`，以及 `rgb(var(--biu-*))` 这类**不含字面数值**的令牌调用。
+另允许四类不构成违规的写法：`rgba(255,255,255,0)`、`transparent`、`currentColor`、`inherit`，以及 `rgb(var(--lili-*))` 这类**不含字面数值**的令牌调用。
 
 ### 存量白名单：18 个文件 / 30 处
 
@@ -227,7 +227,7 @@ tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf
 
 不处理这两点，护栏会满屏假警报，然后被人关掉：
 
-1. **补入外部主题变量。** 基线的 `--biu-radius-md: var(--heroui-radius-medium)` 只靠令牌文件解析不出来，会与工作区的 `12px` 判为「不同」。工具因此补入 HeroUI 的主题值（`@heroui/theme` 默认布局打底，构建产物优先，可覆盖项目主题），实际取到 `--heroui-radius-medium: 12px`。
+1. **补入外部主题变量。** 基线的 `--lili-radius-md: var(--heroui-radius-medium)` 只靠令牌文件解析不出来，会与工作区的 `12px` 判为「不同」。工具因此补入 HeroUI 的主题值（`@heroui/theme` 默认布局打底，构建产物优先，可覆盖项目主题），实际取到 `--heroui-radius-medium: 12px`。
 2. **对长度表达式求值。** `calc(12px + 4px)` 与 `16px` 必须判为相等。工具内置了 `calc()` / `max()` / `min()` / 四则运算的求值器，把 `max(4px, calc(12px - 4px))` 与 `8px` 判为同一个值。缺这一步，四条圆角全会误报违规。
 
 ### 判定分类
@@ -245,14 +245,14 @@ tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf
 
 | 令牌 | 变化 | 被消费 | 处理 |
 | --- | --- | --- | --- |
-| `--biu-radius-lg` | 16px → 20px | ✅ 8 个组件 | **已确认可视变更**（P0 唯一处） |
-| `--biu-radius-sm` | `max(4px, calc(12px - 4px))` → `8px` | ❌ | 同值改写 |
-| `--biu-radius-md` | `var(--heroui-radius-medium)` → `12px` | ✅ 6 个组件 | **有效值相同（均 12px）**，无可视影响 |
-| `--biu-radius-xl` | `calc(12px + 8px)` → `20px` | ✅ 2 个组件 | 有效值相同（均 20px） |
-| `--biu-ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` → C+ 值 | ❌ | 无消费方；P1 由新动效令牌承接 |
-| `--biu-ease-emphasized` | `cubic-bezier(0.2, 0.8, 0.2, 1)` → C+ 值 | ❌ | 同上；注意此刻两条缓动取值相同，P1 应重新区分主次 |
+| `--lili-radius-lg` | 16px → 20px | ✅ 8 个组件 | **已确认可视变更**（P0 唯一处） |
+| `--lili-radius-sm` | `max(4px, calc(12px - 4px))` → `8px` | ❌ | 同值改写 |
+| `--lili-radius-md` | `var(--heroui-radius-medium)` → `12px` | ✅ 6 个组件 | **有效值相同（均 12px）**，无可视影响 |
+| `--lili-radius-xl` | `calc(12px + 8px)` → `20px` | ✅ 2 个组件 | 有效值相同（均 20px） |
+| `--lili-ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` → C+ 值 | ❌ | 无消费方；P1 由新动效令牌承接 |
+| `--lili-ease-emphasized` | `cubic-bezier(0.2, 0.8, 0.2, 1)` → C+ 值 | ❌ | 同上；注意此刻两条缓动取值相同，P1 应重新区分主次 |
 
-`--biu-radius-md/xl` 这两行正是「假警报」与「真结论」的分界：只比文本会说它们变了，求值后才知道没变。**P0 引入的可视变更只有一处**，且已被方案 §13 声明在先。
+`--lili-radius-md/xl` 这两行正是「假警报」与「真结论」的分界：只比文本会说它们变了，求值后才知道没变。**P0 引入的可视变更只有一处**，且已被方案 §13 声明在先。
 
 ---
 

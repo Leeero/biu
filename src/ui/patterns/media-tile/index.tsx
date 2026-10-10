@@ -47,9 +47,9 @@ export const TileActionBand = ({ actions, className }: TileActionBandProps) => (
   <div
     className={twMerge(
       // z-index 3：压过瓦片遮罩（after 的默认层）与文案（z-2）。原型同此。
-      "absolute top-1/2 left-1/2 z-[3] inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-[var(--biu-layout-action-gap)]",
-      "rounded-[var(--biu-radius-pill)] border border-[var(--biu-veil-20)] bg-[var(--biu-surface-glass)]",
-      "p-[var(--biu-layout-action-pad)] backdrop-blur-[var(--biu-blur-glass)]",
+      "absolute top-1/2 left-1/2 z-[3] inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-[var(--lili-layout-action-gap)]",
+      "rounded-[var(--lili-radius-pill)] border border-[var(--lili-veil-20)] bg-[var(--lili-surface-glass)]",
+      "p-[var(--lili-layout-action-pad)] backdrop-blur-[var(--lili-blur-glass)]",
       className,
     )}
   >
@@ -110,7 +110,7 @@ interface MediaTileProps {
  * 四层结构，顺序不能换：
  *   `Artwork` 铺底 → `::after` 底部渐隐遮罩 → 徽标 → 文案
  *
- * 遮罩（`--biu-scrim-veil`）不是装饰：瓦片上的标题压在封面图上，
+ * 遮罩（`--lili-scrim-veil`）不是装饰：瓦片上的标题压在封面图上，
  * 封面可能是任意亮度，没有这层渐隐，浅色封面上的白字会读不出来。
  * 它用 `::after` 而不是额外一个 `<div>`：`::after` 不参与可访问性树，
  * 也不会被误当成内容节点。
@@ -140,8 +140,8 @@ export const MediaTile = ({
       aria-current={current ? "true" : undefined}
       className={twMerge(
         "group/tile relative isolate aspect-video cursor-pointer overflow-hidden",
-        "rounded-[var(--biu-radius-md)] bg-[rgb(var(--biu-surface-art-bed))]",
-        "after:pointer-events-none after:absolute after:inset-0 after:bg-[var(--biu-scrim-veil)] after:content-['']",
+        "rounded-[var(--lili-radius-md)] bg-[rgb(var(--lili-surface-art-bed))]",
+        "after:pointer-events-none after:absolute after:inset-0 after:bg-[var(--lili-scrim-veil)] after:content-['']",
         className,
       )}
     >
@@ -164,7 +164,7 @@ export const MediaTile = ({
         <TileActionBand
           actions={actions}
           className={twMerge(
-            "transition-opacity duration-[var(--biu-duration-fast)]",
+            "transition-opacity duration-[var(--lili-duration-fast)]",
             bandVisible ? "opacity-100" : "opacity-0 group-hover/tile:opacity-100",
           )}
         />
@@ -178,7 +178,7 @@ export const MediaTile = ({
           type="button"
           aria-label={typeof title === "string" ? title : undefined}
           onClick={onPress}
-          className="absolute inset-0 z-[1] cursor-pointer rounded-[var(--biu-radius-md)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--biu-accent))]"
+          className="absolute inset-0 z-[1] cursor-pointer rounded-[var(--lili-radius-md)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--lili-accent))]"
         />
       )}
 
@@ -188,12 +188,12 @@ export const MediaTile = ({
           `pointer-events-none` 是重构新增的，原型不需要（原型没有交互）：
           文案叠在铺满整块的透明按钮之上，若它可以接收指针事件，标题那一条就点不动了。
           代价是封面标题不可选中 —— 标题本身在领域数据里，需要复制时从详情页取。 */}
-      <div className="pointer-events-none absolute right-[var(--biu-layout-tile-copy-x)] bottom-[var(--biu-layout-tile-copy-bottom)] left-[var(--biu-layout-tile-copy-x)] z-[2]">
-        <div className="text-[24px] leading-[1.2] font-semibold tracking-[-0.3px] text-[rgb(var(--biu-text-primary))]">
+      <div className="pointer-events-none absolute right-[var(--lili-layout-tile-copy-x)] bottom-[var(--lili-layout-tile-copy-bottom)] left-[var(--lili-layout-tile-copy-x)] z-[2]">
+        <div className="text-[24px] leading-[1.2] font-semibold tracking-[-0.3px] text-[rgb(var(--lili-text-primary))]">
           {title}
         </div>
         {meta !== undefined && meta !== null && (
-          <div className="text-[length:var(--biu-type-body-size)] text-[rgb(var(--biu-text-secondary))]">{meta}</div>
+          <div className="text-[length:var(--lili-type-body-size)] text-[rgb(var(--lili-text-secondary))]">{meta}</div>
         )}
       </div>
     </article>

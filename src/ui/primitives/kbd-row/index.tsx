@@ -7,7 +7,7 @@ interface KbdRowProps {
   label: ReactNode;
   /**
    * 键位，例如「Space」「⌘ ⇧ P」。
-   * 原型用 `--biu-font-numeric` 渲染键位：等宽感让多行键位能对齐。
+   * 原型用 `--lili-font-numeric` 渲染键位：等宽感让多行键位能对齐。
    */
   keys: ReactNode;
   /**
@@ -31,8 +31,8 @@ interface KbdRowProps {
 export const KbdRow = ({ label, keys, conflict = false, className }: KbdRowProps) => (
   <dl
     className={twMerge(
-      "flex h-[22px] items-baseline text-[length:var(--biu-type-label-size)]",
-      conflict ? "text-[rgb(var(--biu-danger))]" : "text-[rgb(var(--biu-text-secondary))]",
+      "flex h-[22px] items-baseline text-[length:var(--lili-type-label-size)]",
+      conflict ? "text-[rgb(var(--lili-danger))]" : "text-[rgb(var(--lili-text-secondary))]",
       className,
     )}
     data-conflict={conflict || undefined}
@@ -40,8 +40,8 @@ export const KbdRow = ({ label, keys, conflict = false, className }: KbdRowProps
     <dt className="min-w-0 truncate">{label}</dt>
     <dd
       className={twMerge(
-        "ml-3 font-[family-name:var(--biu-font-numeric)]",
-        conflict ? "text-[rgb(var(--biu-danger))]" : "text-[rgb(var(--biu-text-tertiary))]",
+        "ml-3 font-[family-name:var(--lili-font-numeric)]",
+        conflict ? "text-[rgb(var(--lili-danger))]" : "text-[rgb(var(--lili-text-tertiary))]",
       )}
     >
       {keys}

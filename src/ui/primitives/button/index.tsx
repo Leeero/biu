@@ -12,11 +12,11 @@ import { PILL_ICON_SIZE, pillClass, type PillVariant } from "@/ui/primitives/pil
  * 因此除「悬停 = 白 8% 叠层」这一步取自 `.tab:hover` 的同一个档位外，其余都是**新增**，
  * 在这里显式声明，而不是悄悄发明：
  *
- *   hover      白 8% 叠层（`--biu-veil-8`）。用叠层而不是换底色，是为了让七个变体
+ *   hover      白 8% 叠层（`--lili-veil-8`）。用叠层而不是换底色，是为了让七个变体
  *              共用同一条规则 —— 替每个变体各定一个 hover 底色，等于凭空发明六种颜色。
  *              `primary` 例外：它底色近白，再叠白看不出变化，改用色板里已有的
- *              `--biu-inverse-surface-hover`（按下更暗，方向正确）。
- *   pressed    白 14% 叠层（`--biu-veil-14`），比 hover 深一档。
+ *              `--lili-inverse-surface-hover`（按下更暗，方向正确）。
+ *   pressed    白 14% 叠层（`--lili-veil-14`），比 hover 深一档。
  *   focus-visible 不自带描边，交给 app.css 里的全局 `:focus-visible` 规则统一处理 ——
  *              每个组件各画一套焦点环，迟早会出现五颜六色的焦点样式。
  *   disabled   40% 不透明度 + 禁用光标。原型未定义，属新增。
@@ -61,17 +61,17 @@ export const Button = ({
       className={pillClass(
         variant,
         twMerge(
-          "relative cursor-pointer transition-colors duration-[var(--biu-duration-fast)] ease-[var(--biu-ease-standard)]",
+          "relative cursor-pointer transition-colors duration-[var(--lili-duration-fast)] ease-[var(--lili-ease-standard)]",
           HOVER_OVERLAY,
           variant === "primary"
-            ? "hover:bg-[rgb(var(--biu-inverse-surface-hover))]"
-            : "hover:after:bg-[var(--biu-veil-8)]",
-          "active:after:bg-[var(--biu-veil-14)]",
+            ? "hover:bg-[rgb(var(--lili-inverse-surface-hover))]"
+            : "hover:after:bg-[var(--lili-veil-8)]",
+          "active:after:bg-[var(--lili-veil-14)]",
           "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:after:bg-transparent",
-          "biu-theme-4188:duration-[var(--biu-4188-duration-fast)] biu-theme-4188:ease-[var(--biu-4188-ease-standard)]",
-          "biu-theme-4188:hover:brightness-110 biu-theme-4188:active:scale-[var(--biu-4188-press-scale)]",
-          "aria-[pressed=true]:border-[var(--biu-4188-action)] aria-[pressed=true]:bg-[var(--biu-4188-action-soft)] aria-[pressed=true]:text-[var(--biu-4188-text-primary)]",
-          "aria-[invalid=true]:border-[var(--biu-4188-error)] aria-[invalid=true]:text-[var(--biu-4188-error)]",
+          "lili-theme-4188:duration-[var(--lili-4188-duration-fast)] lili-theme-4188:ease-[var(--lili-4188-ease-standard)]",
+          "lili-theme-4188:hover:brightness-110 lili-theme-4188:active:scale-[var(--lili-4188-press-scale)]",
+          "aria-[pressed=true]:border-[var(--lili-4188-action)] aria-[pressed=true]:bg-[var(--lili-4188-action-soft)] aria-[pressed=true]:text-[var(--lili-4188-text-primary)]",
+          "aria-[invalid=true]:border-[var(--lili-4188-error)] aria-[invalid=true]:text-[var(--lili-4188-error)]",
           "data-[loading=true]:opacity-70",
           block && "w-full justify-center",
           className,

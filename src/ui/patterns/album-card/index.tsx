@@ -67,13 +67,13 @@ export const AlbumCard = ({
 }: AlbumCardProps) => (
   <article
     className={twMerge(
-      "relative flex h-[var(--biu-layout-album-h)] gap-[var(--biu-layout-album-gap)]",
-      "rounded-[var(--biu-radius-lg)] border border-[var(--biu-border-weak)] bg-[var(--biu-surface-raised)]",
-      "p-[var(--biu-layout-album-pad)]",
+      "relative flex h-[var(--lili-layout-album-h)] gap-[var(--lili-layout-album-gap)]",
+      "rounded-[var(--lili-radius-lg)] border border-[var(--lili-border-weak)] bg-[var(--lili-surface-raised)]",
+      "p-[var(--lili-layout-album-pad)]",
       className,
     )}
   >
-    <div className="relative isolate h-[var(--biu-layout-album-art)] w-[var(--biu-layout-album-art)] flex-none overflow-hidden rounded-[var(--biu-radius-md)]">
+    <div className="relative isolate h-[var(--lili-layout-album-art)] w-[var(--lili-layout-album-art)] flex-none overflow-hidden rounded-[var(--lili-radius-md)]">
       <Artwork
         src={art}
         artKey={artKey}
@@ -85,26 +85,26 @@ export const AlbumCard = ({
       {badge && (
         <Badge
           variant={badgeVariant}
-          className="absolute top-[var(--biu-layout-album-badge-inset)] left-[var(--biu-layout-album-badge-inset)] z-[2]"
+          className="absolute top-[var(--lili-layout-album-badge-inset)] left-[var(--lili-layout-album-badge-inset)] z-[2]"
         >
           {badge}
         </Badge>
       )}
     </div>
 
-    <div className="flex min-w-0 flex-col pt-[var(--biu-layout-album-body-pt)]">
+    <div className="flex min-w-0 flex-col pt-[var(--lili-layout-album-body-pt)]">
       {tag && <div className="mb-3">{tag}</div>}
       {/*
-        标题 17px / 行盒 28（= `--biu-type-small` 档的尺寸），meta 13px / 行盒 20。
+        标题 17px / 行盒 28（= `--lili-type-small` 档的尺寸），meta 13px / 行盒 20。
         字号由**字形段起点间距**定（spec-lock 1.3.19）：1.3.16 记的 22 是从墨迹盒高
         反推的产物。行盒 28 与三个竖直量（上边距 30、metaGap 2、footGap 36）的锚点
         是「标题盒顶 672」，与盒内字号无关，故一字未改。
       */}
-      <h3 className="m-0 line-clamp-2 text-[length:var(--biu-type-small-size)] leading-7 font-semibold tracking-[-0.3px] text-[rgb(var(--biu-text-primary))]">
+      <h3 className="m-0 line-clamp-2 text-[length:var(--lili-type-small-size)] leading-7 font-semibold tracking-[-0.3px] text-[rgb(var(--lili-text-primary))]">
         {title}
       </h3>
       {meta !== undefined && meta !== null && (
-        <p className="m-0 mt-[var(--biu-layout-album-meta-gap)] text-[length:var(--biu-type-label-size)] leading-5 text-[rgb(var(--biu-text-quaternary))]">
+        <p className="m-0 mt-[var(--lili-layout-album-meta-gap)] text-[length:var(--lili-type-label-size)] leading-5 text-[rgb(var(--lili-text-quaternary))]">
           {meta}
         </p>
       )}
@@ -113,7 +113,7 @@ export const AlbumCard = ({
         只有 138，页脚下方留 22px 空卡底。用 `mt-auto` 会把它压到内容盒底（780–802），
         比设计稿的 758–780 低 22。见 spec-lock `geometry.albumCard.footGap`。
       */}
-      {footer && <div className="mt-[var(--biu-layout-album-foot-gap)] flex gap-2">{footer}</div>}
+      {footer && <div className="mt-[var(--lili-layout-album-foot-gap)] flex gap-2">{footer}</div>}
     </div>
   </article>
 );
@@ -130,5 +130,5 @@ interface AlbumGridProps {
  * 专辑卡本身有 20px 内边距，23 的间距是为了让卡与卡的**内容**看起来等距。
  */
 export const AlbumGrid = ({ children, className }: AlbumGridProps) => (
-  <div className={twMerge("grid grid-cols-3 gap-[var(--biu-layout-album-grid-gap)]", className)}>{children}</div>
+  <div className={twMerge("grid grid-cols-3 gap-[var(--lili-layout-album-grid-gap)]", className)}>{children}</div>
 );

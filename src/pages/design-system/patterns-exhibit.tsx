@@ -114,22 +114,22 @@ export const PatternsExhibit = () => {
         note="标题用 <h2> 而非 <div>：页面已有 <h1>（PageHeader），分组用 h2 才能让读屏的标题大纲成立 —— 全是 div 时「按标题跳转」这种导航方式就失效了。段间 27px 用 [&+&] 复刻，它比单类的 gap 特异性更高，会覆盖首段间距；这是有意的：原型里「标题到首段」与「段与段之间」本来就是两个值。"
       >
         <Section title="我的收藏夹" note="214 个内容" gap="base">
-          <p className="m-0 text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-quaternary))]">
+          <p className="m-0 text-[length:var(--lili-type-label-size)] text-[rgb(var(--lili-text-quaternary))]">
             首段。段间间距 27 由 Section 自持，不在这里写外边距。
           </p>
         </Section>
         <Section title="最近播放" note="gap = tight（12）">
-          <p className="m-0 text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-quaternary))]">
+          <p className="m-0 text-[length:var(--lili-type-label-size)] text-[rgb(var(--lili-text-quaternary))]">
             第 06 屏搜索结果的分组贴得更近。
           </p>
         </Section>
         <Section title="为你推荐" note="gap = push（23）">
-          <p className="m-0 text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-quaternary))]">
+          <p className="m-0 text-[length:var(--lili-type-label-size)] text-[rgb(var(--lili-text-quaternary))]">
             第 07 屏首屏分组整体低 9px。
           </p>
         </Section>
         <Section>
-          <p className="m-0 text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-quaternary))]">
+          <p className="m-0 text-[length:var(--lili-type-label-size)] text-[rgb(var(--lili-text-quaternary))]">
             不传 title 时只渲染容器，用于纯布局。
           </p>
         </Section>
@@ -169,8 +169,8 @@ export const PatternsExhibit = () => {
               onClick={() => setFilter(item.key)}
               className={
                 filter === item.key
-                  ? "h-[var(--biu-layout-pill-h)] cursor-pointer rounded-[var(--biu-radius-pill)] bg-[rgb(var(--biu-inverse-surface))] px-[18px] text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-inverse-ink))]"
-                  : "h-[var(--biu-layout-pill-h)] cursor-pointer rounded-[var(--biu-radius-pill)] px-[18px] text-[length:var(--biu-type-label-size)] text-[rgb(var(--biu-text-tertiary))] hover:bg-[var(--biu-veil-8)]"
+                  ? "h-[var(--lili-layout-pill-h)] cursor-pointer rounded-[var(--lili-radius-pill)] bg-[rgb(var(--lili-inverse-surface))] px-[18px] text-[length:var(--lili-type-label-size)] text-[rgb(var(--lili-inverse-ink))]"
+                  : "h-[var(--lili-layout-pill-h)] cursor-pointer rounded-[var(--lili-radius-pill)] px-[18px] text-[length:var(--lili-type-label-size)] text-[rgb(var(--lili-text-tertiary))] hover:bg-[var(--lili-veil-8)]"
               }
             >
               {item.label}
@@ -181,11 +181,11 @@ export const PatternsExhibit = () => {
           {(["tight", "base", "flat", "loose"] as const).map(gap => (
             <div key={gap} className="flex items-center gap-4">
               <FilterBar label={`间距变体 ${gap}`} gap="base">
-                <span className="px-[18px] text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-tertiary))]">
+                <span className="px-[18px] text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-tertiary))]">
                   gap = {gap}
                 </span>
               </FilterBar>
-              <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+              <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
                 tight 12 / base 20 / flat 15 / loose 24
               </span>
             </div>
@@ -208,7 +208,7 @@ export const PatternsExhibit = () => {
           />
           <PageHeader title="发现音乐" lead="按榜单与合集发现内容。" baseline="flat" leadOffset="low" />
           <div>
-            <p className="m-0 mb-2 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <p className="m-0 mb-2 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               无 h1 的屏（第 06 屏搜索结果）直接用 PageLead：
             </p>
             <PageLead offset="flat">搜索音乐视频与创作者，本地库为跨页入口。</PageLead>
@@ -222,7 +222,7 @@ export const PatternsExhibit = () => {
         page={2}
         note="这不是调试信息，而是设计方案的组成部分：设计稿把「这一屏能做什么」写在界面底部，让能力可读。6 个 y 值已登记在真值里（598 / 653 / 693 / 694 / 698 / 704），不要自己算。非 inline 档是绝对定位且左右各留一个 gutter，叠在内容之上不占高度；pointer-events-none 是重构新增的（原型无交互）—— 去掉它，列表滚到该区域时那些行会点不动。"
       >
-        <div className="relative h-[180px] overflow-hidden rounded-[var(--biu-radius-md)] border border-[var(--biu-border-weak)] bg-[var(--biu-surface-sunken)]">
+        <div className="relative h-[180px] overflow-hidden rounded-[var(--lili-radius-md)] border border-[var(--lili-border-weak)] bg-[var(--lili-surface-sunken)]">
           <div className="absolute inset-x-0 top-6">
             <AnnotationBand anchor="inline">
               叠在内容之上的注解带（inline 档随内容排布，这里只是放进容器演示；其余五档用绝对 y 定位）。
@@ -234,7 +234,7 @@ export const PatternsExhibit = () => {
             </AnnotationBand>
           </div>
         </div>
-        <p className="m-0 mt-3 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+        <p className="m-0 mt-3 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
           位置变体：high 598（第 06 屏）、基准 653、low 693（第 01 屏）、lower 694（第 04 屏）、lowest 698（第 07
           屏）、footer 704（第 12 屏）。
         </p>
@@ -248,7 +248,7 @@ export const PatternsExhibit = () => {
       >
         <div className="flex flex-col gap-8">
           <div>
-            <p className="m-0 mb-3 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <p className="m-0 mb-3 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               variant = base（56 / 1fr / 220 / 152），带表头
             </p>
             <TrackTable
@@ -268,7 +268,7 @@ export const PatternsExhibit = () => {
           </div>
 
           <div>
-            <p className="m-0 mb-3 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <p className="m-0 mb-3 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               actions-visible：行内悬浮操作带（绝对定位，不占列 —— 原型里它是 4 列行的第 5 个子元素）
             </p>
             <TrackTable variant="base" currentId="t4">
@@ -286,7 +286,7 @@ export const PatternsExhibit = () => {
           </div>
 
           <div>
-            <p className="m-0 mb-3 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <p className="m-0 mb-3 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               variant = download（第三列 220，状态列带进度）
             </p>
             <TrackTable
@@ -346,7 +346,7 @@ export const PatternsExhibit = () => {
           </div>
 
           <div>
-            <p className="m-0 mb-3 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <p className="m-0 mb-3 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               variant = search（无表头、无序号列，3 列）
             </p>
             <TrackTable variant="search">
@@ -372,7 +372,7 @@ export const PatternsExhibit = () => {
           </div>
 
           <div>
-            <p className="m-0 mb-3 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+            <p className="m-0 mb-3 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
               variant = mini（第三列 300）/ variant = settings（5 列，无行高亮）
             </p>
             <TrackTable
@@ -435,7 +435,7 @@ export const PatternsExhibit = () => {
             />
           )}
         />
-        <p className="m-0 mt-4 text-[length:var(--biu-type-micro-size)] leading-[1.7] text-[rgb(var(--biu-text-quaternary))]">
+        <p className="m-0 mt-4 text-[length:var(--lili-type-micro-size)] leading-[1.7] text-[rgb(var(--lili-text-quaternary))]">
           上面一列里第 6 格（loading）强制露出操作带用来演示 actions-visible，第 5 格（disabled）以 current
           演示「选中即常驻露出」。
         </p>
@@ -619,7 +619,7 @@ export const PatternsExhibit = () => {
         name="歌词面板"
         proto=".lyrics / .lyrics-head / .lyrics-line"
         page={11}
-        note="材质是**凹槽**不是玻璃：底白 13%（surface-sunken）+ 玻璃描边 + 模糊 20。看到「有描边有模糊」就当玻璃去套是错误的，面板会比设计稿亮一档。行高 43 取原型尾部覆盖值（前一处是 1.7）：22px 字号配 43px 行高，切换高亮行时看起来是「移动」而不是「重排」。非当前行是 --biu-text-lyrics-dim **整值令牌**，不要再套 alpha —— 那是二次调暗，与设计稿的 56% 白不是一回事。"
+        note="材质是**凹槽**不是玻璃：底白 13%（surface-sunken）+ 玻璃描边 + 模糊 20。看到「有描边有模糊」就当玻璃去套是错误的，面板会比设计稿亮一档。行高 43 取原型尾部覆盖值（前一处是 1.7）：22px 字号配 43px 行高，切换高亮行时看起来是「移动」而不是「重排」。非当前行是 --lili-text-lyrics-dim **整值令牌**，不要再套 alpha —— 那是二次调暗，与设计稿的 56% 白不是一回事。"
       >
         <LyricsPanel
           head="歌词 · B站字幕（AI 兜底）· 逐行高亮"
@@ -633,7 +633,7 @@ export const PatternsExhibit = () => {
             "如果回声也算回答",
           ]}
         />
-        <p className="m-0 mt-3 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+        <p className="m-0 mt-3 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
           传入 onSeek 时每行是可点按钮（键盘可达）；不传则渲染为 <code>&lt;p&gt;</code> —— 不做成按钮，
           否则读屏用户要逐个 Tab 走过整段歌词。
         </p>
@@ -649,7 +649,7 @@ export const PatternsExhibit = () => {
           <Button variant="primary" onClick={() => setDialogOpen(true)}>
             打开批量下载弹层
           </Button>
-          <span className="text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+          <span className="text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
             原型没有关闭按钮（×），Esc 与点遮罩仍然可用。
           </span>
         </ExhibitRow>

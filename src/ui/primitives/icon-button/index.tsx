@@ -27,13 +27,13 @@ export const IconButton = ({ label, children, className, tooltipProps, ...props 
       radius="full"
       variant="light"
       className={twMerge(
-        "text-[rgb(var(--biu-text-tertiary))] hover:bg-[var(--biu-surface-hover)] hover:text-[rgb(var(--biu-text-primary))]",
+        "text-[rgb(var(--lili-text-tertiary))] hover:bg-[var(--lili-surface-hover)] hover:text-[rgb(var(--lili-text-primary))]",
         "data-[pressed=true]:scale-95",
-        "transition-[color,background-color,transform] duration-[var(--biu-duration-fast)]",
-        "biu-theme-4188:text-[var(--biu-4188-text-muted)] biu-theme-4188:hover:bg-[var(--biu-4188-surface-hover)] biu-theme-4188:hover:text-[var(--biu-4188-text-primary)]",
-        "biu-theme-4188:data-[pressed=true]:bg-[var(--biu-4188-surface-pressed)] biu-theme-4188:data-[pressed=true]:scale-[var(--biu-4188-press-scale)]",
-        "biu-theme-4188:duration-[var(--biu-4188-duration-fast)]",
-        "aria-[pressed=true]:border aria-[pressed=true]:border-[var(--biu-4188-action)] aria-[pressed=true]:bg-[var(--biu-4188-action-soft)] aria-[pressed=true]:text-[var(--biu-4188-action)]",
+        "transition-[color,background-color,transform] duration-[var(--lili-duration-fast)]",
+        "lili-theme-4188:text-[var(--lili-4188-text-muted)] lili-theme-4188:hover:bg-[var(--lili-4188-surface-hover)] lili-theme-4188:hover:text-[var(--lili-4188-text-primary)]",
+        "lili-theme-4188:data-[pressed=true]:bg-[var(--lili-4188-surface-pressed)] lili-theme-4188:data-[pressed=true]:scale-[var(--lili-4188-press-scale)]",
+        "lili-theme-4188:duration-[var(--lili-4188-duration-fast)]",
+        "aria-[pressed=true]:border aria-[pressed=true]:border-[var(--lili-4188-action)] aria-[pressed=true]:bg-[var(--lili-4188-action-soft)] aria-[pressed=true]:text-[var(--lili-4188-action)]",
         className,
       )}
       {...props}

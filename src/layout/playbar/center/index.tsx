@@ -11,7 +11,7 @@ import { useNowPlaying } from "@/features/player/now-playing";
  * 实测值：条带 x792–1171 = 380，而**左缘 792 与「中段起点 603 + transport 136 +
  * 间距 53」恰好一致** —— 左缘相同而右缘差 12px，说明偏差在宽度而非起点，故取设计稿值
  * （原型 `.pb-progress { width: 392px }` 是原型档）。窗口收窄时先压进度条，不压按钮。
- * 与控件之间的 53px 间距同样取自设计稿实测（`--biu-playbar-progress-ml`）。
+ * 与控件之间的 53px 间距同样取自设计稿实测（`--lili-playbar-progress-ml`）。
  *
  * 宽度给的是 `barClassName`（条本体），不是 `className`（条 + 时间的外层）——
  * 给外层会被时间标签挤窄（1.3.9 的 270.5 即由此而来，见 `geometry.playbar.mid.progressWidthScope`）。
@@ -25,8 +25,8 @@ const Control = () => {
       <MusicPlayControl />
       <MusicPlayProgress
         isDisabled={controlsDisabled}
-        className="ml-[clamp(24px,3vw,var(--biu-playbar-progress-ml))] min-w-0 flex-1"
-        barClassName="min-w-[120px] max-w-[var(--biu-playbar-progress-w)] flex-1"
+        className="ml-[clamp(24px,3vw,var(--lili-playbar-progress-ml))] min-w-0 flex-1"
+        barClassName="min-w-[120px] max-w-[var(--lili-playbar-progress-w)] flex-1"
       />
     </div>
   );

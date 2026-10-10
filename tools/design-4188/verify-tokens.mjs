@@ -40,7 +40,7 @@ const requiredSemantic = [
   "scrim",
 ];
 for (const name of requiredSemantic) {
-  if (!css["semantic.css"].includes(`--biu-4188-${name}:`)) failures.push(`缺少语义令牌 --biu-4188-${name}`);
+  if (!css["semantic.css"].includes(`--lili-4188-${name}:`)) failures.push(`缺少语义令牌 --lili-4188-${name}`);
 }
 
 const nonPalette = [css["semantic.css"], css["geometry.css"], css["motion.css"]].join("\n");
@@ -79,7 +79,7 @@ for (const [foreground, background, minimum] of contrastPairs) {
 }
 
 if (!css["index.css"].includes("prefers-reduced-motion: reduce")) failures.push("缺少 reduced-motion 覆盖");
-if (!css["index.css"].includes("--biu-4188-duration-fast: 0ms")) failures.push("reduced-motion 未归零动效");
+if (!css["index.css"].includes("--lili-4188-duration-fast: 0ms")) failures.push("reduced-motion 未归零动效");
 
 const result = { ok: failures.length === 0, checkedFiles: files.length, contrasts, failures };
 console.log(JSON.stringify(result, null, 2));

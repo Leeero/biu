@@ -83,12 +83,12 @@ export const TrackTable = ({
               // 原型 .track-head：右缩进同列表、12px 四级文字。
               // 文字**上对齐 + 7px 上内边距**而不是垂直居中：设计稿第 3 页实测
               // 表头墨迹在 346，居中会落在 351（低 5px）。
-              // 盒高取 `--biu-layout-head-h` = 38，**不是原型的 44**：设计稿由
+              // 盒高取 `--lili-layout-head-h` = 38，**不是原型的 44**：设计稿由
               // 「首行封面顶缘 380 − 居中偏移 6 − 分组标题盒下沿 328 − marginBottom 8」
               // 解出行顶 374，故表头盒高 = 374 − 336 = 38。改的是盒底，
               // 文字位置不变 —— 才能只抬下面的行（行顶是硬锚点）。
-              "grid h-[var(--biu-layout-head-h)] items-start pt-[7px] pr-[var(--biu-layout-list-pad-r)]",
-              "text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]",
+              "grid h-[var(--lili-layout-head-h)] items-start pt-[7px] pr-[var(--lili-layout-list-pad-r)]",
+              "text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]",
             )}
             style={{ gridTemplateColumns: gridTemplate }}
           >

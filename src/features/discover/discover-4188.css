@@ -1,5 +1,5 @@
 /* stylelint-disable no-descending-specificity -- 交互态跟随对应基础选择器，保持组件局部可读。 */
-.biu-theme-4188 .discover4188 {
+.lili-theme-4188 .discover4188 {
   width: 100%;
   padding: 8px 0 44px;
 }
@@ -21,7 +21,7 @@
 
 .discover4188-heading p {
   margin: 9px 0 0;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 14px;
 }
 
@@ -35,26 +35,26 @@
 .discover4188-filters button {
   height: 34px;
   padding: 0 14px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-pill);
-  color: var(--biu-4188-text-secondary);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-pill);
+  color: var(--lili-4188-text-secondary);
+  background: var(--lili-4188-surface);
   cursor: pointer;
 }
 
 .discover4188-filters button:hover,
 .discover4188-filters button.is-active {
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-action-soft);
-  border-color: var(--biu-4188-action);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-action-soft);
+  border-color: var(--lili-4188-action);
 }
 
 .discover4188-hero {
   position: relative;
   height: clamp(260px, 34vw, 410px);
   overflow: hidden;
-  border-radius: var(--biu-4188-radius-xl);
-  background: var(--biu-4188-surface);
+  border-radius: var(--lili-4188-radius-xl);
+  background: var(--lili-4188-surface);
   background-image: var(--discover-art);
   background-size: cover;
   margin-bottom: 34px;
@@ -65,9 +65,9 @@
   position: absolute;
   z-index: 2;
   padding: 4px 8px;
-  border-radius: var(--biu-4188-radius-sm);
-  color: var(--biu-4188-image-on-dark);
-  background: var(--biu-4188-image-chip);
+  border-radius: var(--lili-4188-radius-sm);
+  color: var(--lili-4188-image-on-dark);
+  background: var(--lili-4188-image-chip);
   font-size: 11px;
 }
 
@@ -90,7 +90,7 @@
 .discover4188-hero-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, var(--biu-4188-image-shade-strong), var(--biu-4188-image-shade-soft) 70%);
+  background: linear-gradient(90deg, var(--lili-4188-image-shade-strong), var(--lili-4188-image-shade-soft) 70%);
 }
 
 .discover4188-hero-copy {
@@ -109,13 +109,13 @@
 
 .discover4188-hero-tags small {
   padding: 4px 8px;
-  border-radius: var(--biu-4188-radius-pill);
-  color: var(--biu-4188-text-secondary);
-  background: var(--biu-4188-image-chip);
+  border-radius: var(--lili-4188-radius-pill);
+  color: var(--lili-4188-text-secondary);
+  background: var(--lili-4188-image-chip);
 }
 
 .discover4188-hero-copy > span {
-  color: var(--biu-4188-playback);
+  color: var(--lili-4188-playback);
   font-size: 12px;
   font-weight: 700;
 }
@@ -127,7 +127,7 @@
 
 .discover4188-hero-copy h3 {
   margin: 0 0 22px;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
 }
 
 .discover4188-hero-copy button {
@@ -137,9 +137,9 @@
   height: 42px;
   padding: 0 19px;
   border: 0;
-  border-radius: var(--biu-4188-radius-pill);
-  background: var(--biu-4188-text-primary);
-  color: var(--biu-4188-canvas);
+  border-radius: var(--lili-4188-radius-pill);
+  background: var(--lili-4188-text-primary);
+  color: var(--lili-4188-canvas);
   font-weight: 650;
   cursor: pointer;
 }
@@ -166,29 +166,29 @@
   padding: 5px;
   margin: -5px;
   border: 1px solid transparent;
-  border-radius: var(--biu-4188-radius-lg);
+  border-radius: var(--lili-4188-radius-lg);
   transition:
-    transform var(--biu-4188-duration-normal),
-    background var(--biu-4188-duration-normal);
+    transform var(--lili-4188-duration-normal),
+    background var(--lili-4188-duration-normal);
 }
 
 .discover4188-card:hover {
   transform: translateY(-2px);
-  background: var(--biu-4188-surface-hover);
-  border-color: var(--biu-4188-border);
+  background: var(--lili-4188-surface-hover);
+  border-color: var(--lili-4188-border);
 }
 
 .discover4188-card.is-playing {
-  background: var(--biu-4188-playback-soft);
-  border-color: var(--biu-4188-playback);
+  background: var(--lili-4188-playback-soft);
+  border-color: var(--lili-4188-playback);
 }
 
 .discover4188-art {
   position: relative;
   aspect-ratio: 1.55;
   overflow: hidden;
-  border-radius: var(--biu-4188-radius-md);
-  background: var(--biu-4188-surface-elevated);
+  border-radius: var(--lili-4188-radius-md);
+  background: var(--lili-4188-surface-elevated);
 }
 
 .discover4188-art img,
@@ -216,12 +216,12 @@
   opacity: 0;
   border: 0;
   border-radius: 50%;
-  color: var(--biu-4188-canvas);
-  background: var(--biu-4188-text-primary);
+  color: var(--lili-4188-canvas);
+  background: var(--lili-4188-text-primary);
   cursor: pointer;
   transition:
-    opacity var(--biu-4188-duration-normal) var(--biu-4188-ease-standard),
-    transform var(--biu-4188-duration-normal) var(--biu-4188-ease-standard);
+    opacity var(--lili-4188-duration-normal) var(--lili-4188-ease-standard),
+    transform var(--lili-4188-duration-normal) var(--lili-4188-ease-standard);
 }
 
 .discover4188-card:hover .discover4188-art button,
@@ -237,8 +237,8 @@
   bottom: 7px;
   padding: 3px 6px;
   border-radius: 5px;
-  color: var(--biu-4188-image-on-dark);
-  background: var(--biu-4188-image-label);
+  color: var(--lili-4188-image-on-dark);
+  background: var(--lili-4188-image-label);
   font-size: 11px;
 }
 
@@ -248,8 +248,8 @@
   top: 8px;
   padding: 4px 7px;
   border-radius: 5px;
-  color: var(--biu-4188-playback);
-  background: var(--biu-4188-image-chip);
+  color: var(--lili-4188-playback);
+  background: var(--lili-4188-image-chip);
   font-size: 10px;
 }
 
@@ -269,13 +269,13 @@
 
 .discover4188-card > span {
   margin-top: 4px;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 12px;
 }
 
 .discover4188-card > small {
   margin-top: 5px;
-  color: var(--biu-4188-text-muted);
+  color: var(--lili-4188-text-muted);
   font-size: 10px;
 }
 

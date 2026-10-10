@@ -54,7 +54,7 @@ const UserCard: React.FC<UserCardProps> = ({ u }) => {
       as="div"
       aria-label={`打开创作者 ${u.uname}`}
       onPress={() => navigate(`/user/${u.mid}`)}
-      className="social4188-person-card border border-[rgb(var(--biu-color-border)/0.06)] bg-[rgb(var(--biu-color-surface))] shadow-none transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--biu-shadow-card)]"
+      className="social4188-person-card border border-[rgb(var(--lili-color-border)/0.06)] bg-[rgb(var(--lili-color-surface))] shadow-none transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--lili-shadow-card)]"
     >
       <CardBody className="flex flex-col items-center gap-y-3 p-5">
         {/* Avatar Section */}

@@ -220,8 +220,8 @@ const pick = (dottedPath: string): unknown =>
  * 被断言覆盖的令牌集合。
  *
  * 存在的理由：真值「登记了令牌」与测试「断言了令牌」是两件事，两者一旦脱钩，
- * 漂移就不会报警 —— P0 收尾时就是这样漏掉了 --biu-radius-image /
- * --biu-radius-window / --biu-scrim / --biu-scrim-veil 四个。
+ * 漂移就不会报警 —— P0 收尾时就是这样漏掉了 --lili-radius-image /
+ * --lili-radius-window / --lili-scrim / --lili-scrim-veil 四个。
  *
  * 末位的「登记即断言」用例消费本集合，所以每个 describe 在构造用例时
  * 必须把令牌登记进来；文件顺序即账本累积顺序。
@@ -274,12 +274,12 @@ describe("令牌层结构", () => {
     }
   });
 
-  test("所有 var(--c-*) 与 var(--biu-*) 引用都能解析到终点", () => {
+  test("所有 var(--c-*) 与 var(--lili-*) 引用都能解析到终点", () => {
     const seen = new Set<string>();
     for (const name of LAYERS) {
       // 必须先去掉注释：文档里会出现 `var(--c-x-rgb)` 这类占位写法，不是真实引用
       const body = stripComments(files.get(name) ?? "");
-      for (const match of body.matchAll(/var\(\s*(--(?:c|biu)-[\w-]+)\s*\)/g)) {
+      for (const match of body.matchAll(/var\(\s*(--(?:c|lili)-[\w-]+)\s*\)/g)) {
         seen.add(match[1] as string);
       }
     }
@@ -374,17 +374,17 @@ describe("色板与真值一致", () => {
   /**
    * 顶栏搜索位底色（1.3.8 起独立成格）。
    *
-   * 它**不能**复用 `--biu-surface-field`：那一格是白 17%，同时喂
+   * 它**不能**复用 `--lili-surface-field`：那一格是白 17%，同时喂
    * `.pill--neutral`，而药丸的设计实测是 17.8% —— 两个消费者要不同的值，
    * 合流必然把其中一个改错。取值本身有独立取证（设计稿白 9.9%）。
    *
    * 本条断言的是「独立且取值正确」。只断言「令牌存在」是不够的：
-   * 有人把它指回 `--biu-surface-field` 时，存在性依然成立。
+   * 有人把它指回 `--lili-surface-field` 时，存在性依然成立。
    */
   test("顶栏搜索位底色是独立一格，取值与真值一致", () => {
     const { fill, token } = spec.globalChrome.search.field;
 
-    expect(token).toBe("--biu-surface-search");
+    expect(token).toBe("--lili-surface-search");
     expect(canon(resolve(token))).toBe(canon(fill));
     // 与键帽底不同格：两者是顶栏里相邻的两个面，合流会让「框底 vs 键帽」的
     // 递进消失 —— 而那正是 1.3.6 勘定键帽时用的判据。
@@ -415,8 +415,8 @@ describe("排版与真值一致", () => {
   });
 
   test("字体族令牌存在", () => {
-    expect(resolve("--biu-font-sans")).toContain("PingFang SC");
-    expect(resolve("--biu-font-numeric")).toContain("SF Pro Display");
+    expect(resolve("--lili-font-sans")).toContain("PingFang SC");
+    expect(resolve("--lili-font-numeric")).toContain("SF Pro Display");
   });
 });
 
@@ -448,7 +448,7 @@ describe("几何与真值一致", () => {
     // CSS 侧是 rgb(0 0 0 / 45%)，canonLength 比不出这种写法差。
     spec.material.badge.defaultChipToken,
     spec.material.badge.dirChipToken,
-    // 播放栏材质（1.3.9）：底板走组合式（`rgb(var(--biu-surface-player) / 86%)`），
+    // 播放栏材质（1.3.9）：底板走组合式（`rgb(var(--lili-surface-player) / 86%)`），
     // 与进度槽 / 药丸底一样不是新色，故三者的令牌都显式登记。
     spec.material.playbar.surfaceToken,
     spec.material.playbar.progressTrackToken,
@@ -472,15 +472,15 @@ describe("几何与真值一致", () => {
   test("沉浸态封面尺寸与底部控制带", () => {
     const art = String(pick("geometry.immersive.art"));
     const [, width, height] = art.match(/(\d+)\s*×\s*(\d+)/) ?? [];
-    expect(canonLength(resolve("--biu-layout-immersive-art-w"))).toBe(`${width}px`);
-    expect(canonLength(resolve("--biu-layout-immersive-art-h"))).toBe(`${height}px`);
+    expect(canonLength(resolve("--lili-layout-immersive-art-w"))).toBe(`${width}px`);
+    expect(canonLength(resolve("--lili-layout-immersive-art-h"))).toBe(`${height}px`);
 
-    const top = parseFloat(resolve("--biu-layout-immersive-controls-top"));
-    const bottom = parseFloat(resolve("--biu-layout-immersive-controls-bottom"));
+    const top = parseFloat(resolve("--lili-layout-immersive-controls-top"));
+    const bottom = parseFloat(resolve("--lili-layout-immersive-controls-bottom"));
     const band = pick("geometry.immersive.controlsBand") as number[];
     expect(top).toBe(band[0]);
     expect(bottom).toBe(band[1]);
-    expect(parseFloat(resolve("--biu-layout-immersive-controls-h"))).toBe(band[1]! - band[0]!);
+    expect(parseFloat(resolve("--lili-layout-immersive-controls-h"))).toBe(band[1]! - band[0]!);
   });
 
   /**
@@ -499,10 +499,10 @@ describe("几何与真值一致", () => {
   test("表头标题列内缩 = 封面宽 + 图文间距", () => {
     const insetToken = String(pick("geometry.listHead.titleInsetToken"));
     ASSERTED.add(insetToken);
-    expect(insetToken).toBe("--biu-layout-head-title-inset");
+    expect(insetToken).toBe("--lili-layout-head-title-inset");
     expect(canonLength(resolve(insetToken))).toBe(canonLength(pick("geometry.listHead.titleInset")));
     expect(parseFloat(resolve(insetToken))).toBe(
-      parseFloat(resolve("--biu-layout-art-w")) + parseFloat(resolve("--biu-layout-track-gap")),
+      parseFloat(resolve("--lili-layout-art-w")) + parseFloat(resolve("--lili-layout-track-gap")),
     );
   });
 
@@ -520,12 +520,12 @@ describe("几何与真值一致", () => {
   test("播放栏封面与播放键尺寸", () => {
     const cover = String(pick("geometry.playbar.left.cover"));
     const [, coverW, coverH] = cover.match(/(\d+)\s*×\s*(\d+)/) ?? [];
-    expect(canonLength(resolve("--biu-playbar-cover-w"))).toBe(`${coverW}px`);
-    expect(canonLength(resolve("--biu-playbar-cover-h"))).toBe(`${coverH}px`);
+    expect(canonLength(resolve("--lili-playbar-cover-w"))).toBe(`${coverW}px`);
+    expect(canonLength(resolve("--lili-playbar-cover-h"))).toBe(`${coverH}px`);
 
     const play = String(pick("geometry.playbar.mid.playButton"));
     const [, playW] = play.match(/(\d+)\s*×\s*(\d+)/) ?? [];
-    expect(canonLength(resolve("--biu-playbar-play-size"))).toBe(`${playW}px`);
+    expect(canonLength(resolve("--lili-playbar-play-size"))).toBe(`${playW}px`);
   });
 
   test("播放栏进度槽与队列药丸底的材质与真值一致", () => {
@@ -567,16 +567,16 @@ describe("几何与真值一致", () => {
    */
   test("播放栏过渡控件簇恰好填满设计预留的缓冲，两侧各余 gutter", () => {
     const px = (token: string) => parseFloat(resolve(token));
-    const midOrigin = px("--biu-layout-stage-w") / 2 - px("--biu-playbar-mid-offset");
+    const midOrigin = px("--lili-layout-stage-w") / 2 - px("--lili-playbar-mid-offset");
     const leftMax =
-      px("--biu-playbar-inset-l") +
-      px("--biu-playbar-cover-w") +
-      px("--biu-playbar-meta-gap") +
-      px("--biu-playbar-meta-max-w");
-    const gutter = px("--biu-playbar-deferred-gutter");
-    const gap = px("--biu-playbar-deferred-gap");
+      px("--lili-playbar-inset-l") +
+      px("--lili-playbar-cover-w") +
+      px("--lili-playbar-meta-gap") +
+      px("--lili-playbar-meta-max-w");
+    const gutter = px("--lili-playbar-deferred-gutter");
+    const gap = px("--lili-playbar-deferred-gap");
     // 5 枚，尺寸复用中段传输按钮的档位（不是新造值）
-    const clusterW = 5 * px("--biu-playbar-transport-icon") + 4 * gap;
+    const clusterW = 5 * px("--lili-playbar-transport-icon") + 4 * gap;
 
     expect(String(pick("geometry.playbar.deferred.width"))).toContain(String(clusterW));
     expect(leftMax + gutter + clusterW + gutter, "簇没有恰好填满设计预留的缓冲").toBe(midOrigin);
@@ -591,9 +591,9 @@ describe("几何与真值一致", () => {
     expect(playbarSrc).toContain('className="shell4188-player-center"');
 
     const deferredSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/deferred/index.tsx"), "utf8");
-    expect(deferredSrc, "簇没有用登记过的间隔令牌").toContain("gap-[var(--biu-playbar-deferred-gap)]");
+    expect(deferredSrc, "簇没有用登记过的间隔令牌").toContain("gap-[var(--lili-playbar-deferred-gap)]");
     expect(deferredSrc, "簇没有把按钮收到传输按钮档位").toContain(
-      "[&>button]:size-[var(--biu-playbar-transport-icon)]",
+      "[&>button]:size-[var(--lili-playbar-transport-icon)]",
     );
 
     const rightSrc = readFileSync(path.resolve(ROOT, "src/layout/playbar/right/index.tsx"), "utf8");
@@ -625,7 +625,7 @@ describe("几何与真值一致", () => {
     const { fill, border, blur, token, borderToken } = spec.material.glass;
     expect(canon(resolve(token))).toBe(canon(fill));
     expect(canon(resolve(borderToken))).toBe(canon(border));
-    expect(canonLength(resolve("--biu-blur-glass"))).toBe(canonLength(blur));
+    expect(canonLength(resolve("--lili-blur-glass"))).toBe(canonLength(blur));
   });
 
   test("弹层材质：底、描边、模糊、投影都与玻璃材质不同", () => {
@@ -638,7 +638,7 @@ describe("几何与真值一致", () => {
 
     // 「弹层 ≠ 玻璃」是本组登记的全部理由。若哪天有人把弹层改成复用玻璃的值，
     // 上面四条会同时通过（因为改成什么就登记成什么），只有这条能拦住。
-    expect(canon(resolve(blurToken)), "弹层模糊被改成了玻璃的 20px").not.toBe(canon(resolve("--biu-blur-glass")));
+    expect(canon(resolve(blurToken)), "弹层模糊被改成了玻璃的 20px").not.toBe(canon(resolve("--lili-blur-glass")));
     expect(canon(resolve(surfaceToken)), "弹层底色被改成了玻璃的白 16%").not.toBe(
       canon(resolve(spec.material.glass.token)),
     );
@@ -670,11 +670,11 @@ describe("几何与真值一致", () => {
     // 「有人把徽标改回原型的白 14% 芯片」。芯片变亮会让影像上的来源标注
     // 读作高亮块，与设计稿「压暗的口」相反。
     expect(canon(resolve(defaultChipToken)), "默认徽标被改回了原型的白 14% 底").not.toBe(
-      canon(resolve("--biu-veil-14")),
+      canon(resolve("--lili-veil-14")),
     );
     // 本地目录徽标的文字是反色墨（深字压亮芯片），不是强调蓝 ——
     // 蓝字压蓝底会读不出字。
-    expect(resolve(dirTextToken)).toBe(resolve("--biu-inverse-ink"));
+    expect(resolve(dirTextToken)).toBe(resolve("--lili-inverse-ink"));
   });
 });
 
@@ -732,12 +732,12 @@ describe("发现音乐卡片几何与真值对齐", () => {
     ]);
 
     // 封面圆角用的是全局圆角档，不是为卡片另发明的值。
-    expect(spec.geometry.heroCard.artRadiusToken).toBe("--biu-radius-md");
-    expect(spec.geometry.albumCard.artRadiusToken).toBe("--biu-radius-md");
+    expect(spec.geometry.heroCard.artRadiusToken).toBe("--lili-radius-md");
+    expect(spec.geometry.albumCard.artRadiusToken).toBe("--lili-radius-md");
     // 卡高没有独立的 `height` 数字字段：它是恒等式（描边 2 + 2×内边距 + 封面）
     // 的闭合结果，登记在 `box` 的散文里，令牌指向自身。
-    expect(spec.geometry.albumCard.heightToken).toBe("--biu-layout-album-h");
-    expect(canonLength(resolve("--biu-layout-album-h"))).toBe("200px");
+    expect(spec.geometry.albumCard.heightToken).toBe("--lili-layout-album-h");
+    expect(canonLength(resolve("--lili-layout-album-h"))).toBe("200px");
   });
 
   /**
@@ -752,11 +752,11 @@ describe("发现音乐卡片几何与真值对齐", () => {
   });
 
   test("大卡内的芯片比标准 Tag 高一档（25 对 22，同页两档）", () => {
-    expect(canonLength(resolve("--biu-layout-hero-tag-h"))).toBe("25px");
-    expect(canonLength(resolve("--biu-layout-album-badge-inset"))).toBe("12px");
+    expect(canonLength(resolve("--lili-layout-hero-tag-h"))).toBe("25px");
+    expect(canonLength(resolve("--lili-layout-album-badge-inset"))).toBe("12px");
     // 标准 Tag 的 22 是组件内的字面值，不在几何令牌里 —— 断言两者**不相等**，
     // 免得有人「顺手统一」把大卡芯片改回 22。
-    expect(canonLength(resolve("--biu-layout-hero-tag-h"))).not.toBe("22px");
+    expect(canonLength(resolve("--lili-layout-hero-tag-h"))).not.toBe("22px");
   });
 });
 
@@ -768,22 +768,22 @@ describe("顶栏说明的材质令牌", () => {
     ASSERTED.add(note.inkToken);
     ASSERTED.add(note.sizeToken);
 
-    expect(note.containerToken).toBe("--biu-veil-9");
-    expect(note.inkToken).toBe("--biu-text-chrome-label");
-    // 1.3.25 由 `--biu-type-label-size`(13) 改成 `--biu-type-chrome`(14)：实测第 08 / 09
+    expect(note.containerToken).toBe("--lili-veil-9");
+    expect(note.inkToken).toBe("--lili-text-chrome-label");
+    // 1.3.25 由 `--lili-type-label-size`(13) 改成 `--lili-type-chrome`(14)：实测第 08 / 09
     // 两页读 13.75，而 13 对应 19.86 物理 px —— 测量里**只有 21、没有 19 / 20 的样本**。
     // 与同容器的分段标签（13.96）、搜索占位（14.03）同档。
-    expect(note.sizeToken).toBe("--biu-type-chrome");
+    expect(note.sizeToken).toBe("--lili-type-chrome");
 
     // resolve 会在令牌不存在时抛错，这一行是「三者确实存在」的证据。
-    expect(canon(resolve(note.containerToken))).toBe(canon(resolve("--biu-veil-9")));
-    expect(canon(resolve(note.inkToken))).toBe(canon(resolve("--biu-text-chrome-label")));
+    expect(canon(resolve(note.containerToken))).toBe(canon(resolve("--lili-veil-9")));
+    expect(canon(resolve(note.inkToken))).toBe(canon(resolve("--lili-text-chrome-label")));
   });
 
   test("容器底与字色都不是分段项悬停那一档（说明与 hover 是两回事）", () => {
-    // 说明文字是**常驻**的，不该借用 `--biu-veil-8`（分段项 hover 的叠层）——
+    // 说明文字是**常驻**的，不该借用 `--lili-veil-8`（分段项 hover 的叠层）——
     // 借了之后，「未选中分段被悬停」和「这里有一句说明」会长成一个样子。
-    expect(spec.globalChrome.topbarNote.containerToken).not.toBe("--biu-veil-8");
+    expect(spec.globalChrome.topbarNote.containerToken).not.toBe("--lili-veil-8");
   });
 });
 
@@ -809,14 +809,14 @@ describe("真值完备性：登记即断言", () => {
 /* ---------------------------------------------------------------- 无障碍 */
 
 describe("文字对比度", () => {
-  const canvas = triple("--biu-surface-canvas");
+  const canvas = triple("--lili-surface-canvas");
 
   const ramp = [
-    ["--biu-text-primary", "textPrimary"],
-    ["--biu-text-secondary", "textSecondary"],
-    ["--biu-text-tertiary", "textTertiary"],
-    ["--biu-text-quaternary", "textQuaternary"],
-    ["--biu-text-disabled", "textDisabled"],
+    ["--lili-text-primary", "textPrimary"],
+    ["--lili-text-secondary", "textSecondary"],
+    ["--lili-text-tertiary", "textTertiary"],
+    ["--lili-text-quaternary", "textQuaternary"],
+    ["--lili-text-disabled", "textDisabled"],
   ] as const;
 
   test("底板是实测值 #08080A，不是纯黑", () => {
@@ -838,13 +838,13 @@ describe("文字对比度", () => {
   });
 
   test("disabled 档低于 AA，但仍在 3:1 以上（仅限非正文标注）", () => {
-    const ratio = contrast(triple("--biu-text-disabled"), canvas);
+    const ratio = contrast(triple("--lili-text-disabled"), canvas);
     expect(ratio).toBeLessThan(4.5);
     expect(ratio).toBeGreaterThan(3);
   });
 
   test("反色对在其自身底色上达到 AA", () => {
-    expect(contrast(triple("--biu-inverse-ink"), triple("--biu-inverse-surface"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(triple("--lili-inverse-ink"), triple("--lili-inverse-surface"))).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -853,6 +853,6 @@ describe("文字对比度", () => {
 test("减少动效时三档时长归零，且覆盖规则排在令牌层之后", () => {
   const index = files.get("index.css") ?? "";
   expect(index).toContain("@media (prefers-reduced-motion: reduce)");
-  expect(index).toContain("--biu-duration-normal: 0ms");
+  expect(index).toContain("--lili-duration-normal: 0ms");
   expect(index.indexOf("@media (prefers-reduced-motion")).toBeGreaterThan(index.indexOf('@import "./geometry.css"'));
 });

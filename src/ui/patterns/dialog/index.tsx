@@ -19,12 +19,12 @@ interface DialogContentProps {
  */
 const DialogContent = ({ title, sub, lines, footer }: DialogContentProps) => (
   <>
-    <h2 className="m-0 text-[length:var(--biu-type-small-size)] leading-6 font-semibold text-[rgb(var(--biu-text-primary))]">
+    <h2 className="m-0 text-[length:var(--lili-type-small-size)] leading-6 font-semibold text-[rgb(var(--lili-text-primary))]">
       {title}
     </h2>
 
     {sub !== undefined && sub !== null && (
-      <p className="m-0 mt-1 text-[length:var(--biu-type-label-size)] leading-[21px] text-[rgb(var(--biu-text-quaternary))]">
+      <p className="m-0 mt-1 text-[length:var(--lili-type-label-size)] leading-[21px] text-[rgb(var(--lili-text-quaternary))]">
         {sub}
       </p>
     )}
@@ -32,7 +32,7 @@ const DialogContent = ({ title, sub, lines, footer }: DialogContentProps) => (
     {lines?.map((line, index) => (
       <p
         key={index}
-        className="m-0 mt-[5px] text-[length:var(--biu-type-label-size)] leading-[21px] text-[rgb(var(--biu-text-secondary))]"
+        className="m-0 mt-[5px] text-[length:var(--lili-type-label-size)] leading-[21px] text-[rgb(var(--lili-text-secondary))]"
       >
         {line}
       </p>
@@ -44,13 +44,13 @@ const DialogContent = ({ title, sub, lines, footer }: DialogContentProps) => (
 
 /** 弹层材质四项（原型 `.modal`）。弹出态与静态态共用，避免材质分叉。 */
 const DIALOG_SURFACE = [
-  "w-[var(--biu-layout-dialog-w)] max-w-[var(--biu-layout-dialog-w)]",
-  "h-[var(--biu-layout-dialog-h)] overflow-hidden rounded-[var(--biu-radius-lg)]",
-  "border border-[var(--biu-veil-14)] bg-[var(--biu-surface-modal)]",
-  "backdrop-blur-[var(--biu-blur-modal)] shadow-[var(--biu-shadow-modal)]",
-  "biu-theme-4188:h-auto biu-theme-4188:w-[min(480px,100%)] biu-theme-4188:max-w-[480px]",
-  "biu-theme-4188:rounded-[var(--biu-4188-radius-modal)] biu-theme-4188:border-[var(--biu-4188-border)]",
-  "biu-theme-4188:bg-[var(--biu-4188-surface-elevated)] biu-theme-4188:shadow-[var(--biu-4188-shadow-modal)]",
+  "w-[var(--lili-layout-dialog-w)] max-w-[var(--lili-layout-dialog-w)]",
+  "h-[var(--lili-layout-dialog-h)] overflow-hidden rounded-[var(--lili-radius-lg)]",
+  "border border-[var(--lili-veil-14)] bg-[var(--lili-surface-modal)]",
+  "backdrop-blur-[var(--lili-blur-modal)] shadow-[var(--lili-shadow-modal)]",
+  "lili-theme-4188:h-auto lili-theme-4188:w-[min(480px,100%)] lili-theme-4188:max-w-[480px]",
+  "lili-theme-4188:rounded-[var(--lili-4188-radius-modal)] lili-theme-4188:border-[var(--lili-4188-border)]",
+  "lili-theme-4188:bg-[var(--lili-4188-surface-elevated)] lili-theme-4188:shadow-[var(--lili-4188-shadow-modal)]",
 ].join(" ");
 
 interface DialogProps {
@@ -77,12 +77,12 @@ interface DialogProps {
  * 但**外观全部换成 C+ 材质**，不用 HeroUI 的玻璃与圆角：
  *
  *   原型            值                        令牌
- *   底              深灰 86%                  --biu-surface-modal
- *   描边            白 14%                    --biu-veil-14
- *   模糊            28px（不是 20）           --biu-blur-modal
- *   投影            0 24px 60px 黑 50%        --biu-shadow-modal
- *   圆角            20                        --biu-radius-lg
- *   几何            560 × 153                  --biu-layout-dialog-w / -h
+ *   底              深灰 86%                  --lili-surface-modal
+ *   描边            白 14%                    --lili-veil-14
+ *   模糊            28px（不是 20）           --lili-blur-modal
+ *   投影            0 24px 60px 黑 50%        --lili-shadow-modal
+ *   圆角            20                        --lili-radius-lg
+ *   几何            560 × 153                  --lili-layout-dialog-w / -h
  *
  * 六项里有四项与玻璃材质（16% 白 / 18% 描边 / 20 模糊）**不同**。
  * 看到「有描边 + 有模糊」就当成玻璃去套，弹层会比设计稿亮一档、也不够「浮」。
@@ -119,21 +119,21 @@ export const Dialog = ({
     classNames={{
       wrapper: "items-center",
       base: twMerge(
-        "m-0 w-[var(--biu-layout-dialog-w)] max-w-[var(--biu-layout-dialog-w)]",
-        "h-[var(--biu-layout-dialog-h)] overflow-hidden rounded-[var(--biu-radius-lg)]",
-        "border border-[var(--biu-veil-14)] bg-[var(--biu-surface-modal)]",
-        "backdrop-blur-[var(--biu-blur-modal)] shadow-[var(--biu-shadow-modal)]",
-        "biu-theme-4188:h-auto biu-theme-4188:w-[min(480px,calc(100%_-_40px))] biu-theme-4188:max-w-[480px]",
-        "biu-theme-4188:rounded-[var(--biu-4188-radius-modal)] biu-theme-4188:border-[var(--biu-4188-border)]",
-        "biu-theme-4188:bg-[var(--biu-4188-surface-elevated)] biu-theme-4188:shadow-[var(--biu-4188-shadow-modal)]",
+        "m-0 w-[var(--lili-layout-dialog-w)] max-w-[var(--lili-layout-dialog-w)]",
+        "h-[var(--lili-layout-dialog-h)] overflow-hidden rounded-[var(--lili-radius-lg)]",
+        "border border-[var(--lili-veil-14)] bg-[var(--lili-surface-modal)]",
+        "backdrop-blur-[var(--lili-blur-modal)] shadow-[var(--lili-shadow-modal)]",
+        "lili-theme-4188:h-auto lili-theme-4188:w-[min(480px,calc(100%_-_40px))] lili-theme-4188:max-w-[480px]",
+        "lili-theme-4188:rounded-[var(--lili-4188-radius-modal)] lili-theme-4188:border-[var(--lili-4188-border)]",
+        "lili-theme-4188:bg-[var(--lili-4188-surface-elevated)] lili-theme-4188:shadow-[var(--lili-4188-shadow-modal)]",
         className,
       ),
       backdrop:
-        "bg-[var(--biu-scrim)] backdrop-blur-none biu-theme-4188:bg-[var(--biu-4188-scrim)] biu-theme-4188:backdrop-blur-[8px]",
+        "bg-[var(--lili-scrim)] backdrop-blur-none lili-theme-4188:bg-[var(--lili-4188-scrim)] lili-theme-4188:backdrop-blur-[8px]",
     }}
     aria-label={typeof title === "string" ? title : undefined}
   >
-    <ModalContent className="biu-theme-4188:p-[22px] relative px-6 pt-[17px] pb-5">
+    <ModalContent className="lili-theme-4188:p-[22px] relative px-6 pt-[17px] pb-5">
       <DialogContent title={title} sub={sub} lines={lines} footer={footer} />
     </ModalContent>
   </Modal>
@@ -158,7 +158,7 @@ export const DialogStatic = ({ style, className, ...content }: DialogStaticProps
   <div
     aria-hidden="true"
     className={twMerge(
-      "pointer-events-none absolute z-[var(--biu-z-note)] px-6 pt-[17px] pb-5",
+      "pointer-events-none absolute z-[var(--lili-z-note)] px-6 pt-[17px] pb-5",
       DIALOG_SURFACE,
       className,
     )}
@@ -187,10 +187,10 @@ export const DialogAction = ({ children, onPress, className }: DialogActionProps
     type="button"
     onClick={onPress}
     className={twMerge(
-      "inline-flex h-9 cursor-pointer items-center rounded-[var(--biu-radius-pill)] px-5",
-      "bg-[rgb(var(--biu-accent))] text-[length:var(--biu-type-label-size)] font-semibold",
-      "text-[rgb(var(--biu-text-primary))]",
-      "biu-theme-4188:bg-[var(--biu-4188-text-primary)] biu-theme-4188:text-[var(--biu-4188-canvas)]",
+      "inline-flex h-9 cursor-pointer items-center rounded-[var(--lili-radius-pill)] px-5",
+      "bg-[rgb(var(--lili-accent))] text-[length:var(--lili-type-label-size)] font-semibold",
+      "text-[rgb(var(--lili-text-primary))]",
+      "lili-theme-4188:bg-[var(--lili-4188-text-primary)] lili-theme-4188:text-[var(--lili-4188-canvas)]",
       className,
     )}
   >

@@ -20,14 +20,14 @@ interface Props {
  *
  * 与上一版的差别（spec-lock `geometry.playbar.mid`，1.3.9 补录）：
  *   · 时间从「进度条两侧各一枚 11px 三级文字」改为**进度条右侧的单枚 13px
- *     `--biu-text-secondary` 标签**「01:22 / 03:48」。依据：设计稿第 3 页的时间墨迹
+ *     `--lili-text-secondary` 标签**「01:22 / 03:48」。依据：设计稿第 3 页的时间墨迹
  *     x1197–1264 是**一段**（宽 67，正好是「mm:ss / mm:ss」在 13px 下的宽度），
  *     不是两段；原型的 `.pb-time` 也是单枚（`margin-left: 14`，本实现取实测的 26）。
- *   · 进度槽高从 3px 改回 **4px**（`--biu-playbar-progress-h`）、圆角 2、轨道色
- *     `--biu-veil-18`（设计稿实测槽底的三通道是 57/57/59、压在亮度 14.2 的栏底上
+ *   · 进度槽高从 3px 改回 **4px**（`--lili-playbar-progress-h`）、圆角 2、轨道色
+ *     `--lili-veil-18`（设计稿实测槽底的三通道是 57/57/59、压在亮度 14.2 的栏底上
  *     ⇒ 17.8%，且 18% 档在色板上登记的用途就是「进度槽」；原型 `.pb-progress` 的
  *     22% 是原型档）。
- *   · 填充色 `--biu-accent`，不再借 HeroUI 的 `bg-primary` —— 那是 HeroUI 主题色，
+ *   · 填充色 `--lili-accent`，不再借 HeroUI 的 `bg-primary` —— 那是 HeroUI 主题色，
  *     绕过了 C+ 色板。
  *   · 宽度由调用方给，但**必须给到条本体**（`barClassName`），不能给到外层容器：
  *     spec-lock `geometry.playbar.mid.progressWidth` 说的是**条自身**的宽（设计稿实测
@@ -64,14 +64,14 @@ const MusicPlayProgress = memo(({ isDisabled, className, barClassName, trackClas
         className={twMerge("flex-1", barClassName)}
         classNames={{
           track: twMerge(
-            "h-[var(--biu-playbar-progress-h)] cursor-pointer rounded-[2px] bg-[var(--biu-veil-18)]",
+            "h-[var(--lili-playbar-progress-h)] cursor-pointer rounded-[2px] bg-[var(--lili-veil-18)]",
             trackClassName,
           ),
-          filler: "rounded-[2px] bg-[rgb(var(--biu-accent))]",
-          thumb: "size-3 bg-[rgb(var(--biu-accent))] after:hidden",
+          filler: "rounded-[2px] bg-[rgb(var(--lili-accent))]",
+          thumb: "size-3 bg-[rgb(var(--lili-accent))] after:hidden",
         }}
       />
-      <span className="ml-[clamp(14px,2vw,var(--biu-playbar-time-gap))] min-w-[88px] flex-none text-right text-[length:var(--biu-type-label-size)] whitespace-nowrap text-[rgb(var(--biu-text-secondary))] tabular-nums">
+      <span className="ml-[clamp(14px,2vw,var(--lili-playbar-time-gap))] min-w-[88px] flex-none text-right text-[length:var(--lili-type-label-size)] whitespace-nowrap text-[rgb(var(--lili-text-secondary))] tabular-nums">
         {currentTime ? formatDuration(currentTime) : "-:--"} / {duration ? formatDuration(duration) : "-:--"}
       </span>
     </div>

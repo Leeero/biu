@@ -28,7 +28,7 @@ import { useNowPlaying } from "@/features/player/now-playing";
  *
  * ## 为什么按钮是 22px
  *
- * 不是新造档位：22 就是中段传输按钮的尺寸（`--biu-playbar-transport-icon`）。
+ * 不是新造档位：22 就是中段传输按钮的尺寸（`--lili-playbar-transport-icon`）。
  * `IconButton` 最小的 `size="sm"` 是 32，5 枚即 `5×32 + 4×g`，即使 `g = 0` 也 160 > 126，
  * 必然越界。22 档下按钮的实心墨迹仍约 14px，图标之间视觉间距约 8px，可读。
  *
@@ -46,11 +46,11 @@ const DeferredControl = () => {
   return (
     <div
       className={[
-        "flex items-center justify-end gap-[var(--biu-playbar-deferred-gap)]",
-        "text-[rgb(var(--biu-text-secondary))]",
+        "flex items-center justify-end gap-[var(--lili-playbar-deferred-gap)]",
+        "text-[rgb(var(--lili-text-secondary))]",
         // 只收窄**直接子级**按钮：本组 5 个组件里有 2 个（音量、倍速）带 Tooltip/Popover，
         // 其内容会被 HeroUI 传送到 body，故 `> button` 不会误伤浮层里的按钮。
-        "[&>button]:size-[var(--biu-playbar-transport-icon)] [&>button]:min-w-0",
+        "[&>button]:size-[var(--lili-playbar-transport-icon)] [&>button]:min-w-0",
       ].join(" ")}
     >
       <MusicPlayMode />

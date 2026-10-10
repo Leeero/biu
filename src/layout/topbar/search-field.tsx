@@ -146,7 +146,7 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange, className }) =
           // 下拉层不能使用半透明的 surface-sunken：搜索结果卡片和播放栏会透过来，
           // 看起来像是层级失效。这里使用不透明的 raised 表面，并把最大高度限制在
           // 顶栏与播放栏之间；overscroll-contain 也避免滚动到边界后带动页面内容。
-          "absolute top-full right-0 isolate z-100 mt-2 h-auto max-h-[calc(100dvh-var(--biu-layout-topbar-h)-var(--biu-layout-player-h)-0.5rem)] w-full min-w-[360px] overflow-hidden overscroll-contain rounded-[var(--biu-radius-lg)] border border-[var(--biu-border)] bg-[rgb(var(--biu-color-surface-raised))] shadow-[var(--biu-shadow-floating)]",
+          "absolute top-full right-0 isolate z-100 mt-2 h-auto max-h-[calc(100dvh-var(--lili-layout-topbar-h)-var(--lili-layout-player-h)-0.5rem)] w-full min-w-[360px] overflow-hidden overscroll-contain rounded-[var(--lili-radius-lg)] border border-[var(--lili-border)] bg-[rgb(var(--lili-color-surface-raised))] shadow-[var(--lili-shadow-floating)]",
           {
             hidden: !open,
             "flex min-h-0 flex-col": open,
@@ -155,7 +155,7 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange, className }) =
       >
         <OverlayScrollbarsComponent
           className="h-full min-h-0 flex-1 p-2"
-          options={{ scrollbars: { autoHide: "leave", autoHideDelay: 600, theme: "os-theme-biu" } }}
+          options={{ scrollbars: { autoHide: "leave", autoHideDelay: 600, theme: "os-theme-lili" } }}
         >
           <Listbox
             aria-label="搜索建议"
@@ -176,7 +176,7 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange, className }) =
                     <span className="text-sm font-medium">搜索历史</span>
                     <button
                       type="button"
-                      className="cursor-pointer text-xs text-[rgb(var(--biu-text-quaternary))] hover:text-[rgb(var(--biu-text-primary))]"
+                      className="cursor-pointer text-xs text-[rgb(var(--lili-text-quaternary))] hover:text-[rgb(var(--lili-text-primary))]"
                       onMouseDown={e => e.preventDefault()}
                       onClick={e => {
                         e.stopPropagation();

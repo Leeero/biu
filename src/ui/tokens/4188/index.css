@@ -10,9 +10,9 @@
 @import "./motion.css";
 
 @media (prefers-reduced-motion: reduce) {
-  .biu-theme-4188 {
-    --biu-4188-duration-fast: 0ms;
-    --biu-4188-duration-normal: 0ms;
-    --biu-4188-duration-slow: 0ms;
+  .lili-theme-4188 {
+    --lili-4188-duration-fast: 0ms;
+    --lili-4188-duration-normal: 0ms;
+    --lili-4188-duration-slow: 0ms;
   }
 }

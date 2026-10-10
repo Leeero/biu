@@ -16,7 +16,7 @@
 
 .manage4188-head > div:first-child > span,
 .settings4188-head > span {
-  color: var(--biu-4188-action);
+  color: var(--lili-4188-action);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -25,7 +25,7 @@
 .manage4188-head h1,
 .settings4188-head h1 {
   margin: 6px 0 8px;
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 36px;
   line-height: 1.1;
   letter-spacing: -1px;
@@ -34,7 +34,7 @@
 .manage4188-head p,
 .settings4188-head p {
   margin: 0;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 14px;
 }
 
@@ -53,25 +53,25 @@
   gap: 6px;
   min-height: 34px;
   padding: 0 14px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-pill);
-  color: var(--biu-4188-text-secondary);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-pill);
+  color: var(--lili-4188-text-secondary);
+  background: var(--lili-4188-surface);
   font-size: 11px;
   cursor: pointer;
 }
 
 .manage4188-actions button:hover,
 .manage4188-actions button.is-primary {
-  color: var(--biu-4188-text-primary);
-  border-color: var(--biu-4188-action);
-  background: var(--biu-4188-action-soft);
+  color: var(--lili-4188-text-primary);
+  border-color: var(--lili-4188-action);
+  background: var(--lili-4188-action-soft);
 }
 
 .manage4188-actions button.is-danger:hover,
 .manage4188-task-actions button:last-child:hover {
-  color: var(--biu-4188-error);
-  border-color: var(--biu-4188-error);
+  color: var(--lili-4188-error);
+  border-color: var(--lili-4188-error);
 }
 
 .manage4188-actions button:disabled {
@@ -97,22 +97,22 @@
   gap: 20px;
   min-height: 80px;
   padding: 10px 14px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-card);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-card);
+  background: var(--lili-4188-surface);
 }
 
 .manage4188-task:hover {
-  border-color: var(--biu-4188-action);
-  background: var(--biu-4188-surface-hover);
+  border-color: var(--lili-4188-action);
+  background: var(--lili-4188-surface-hover);
 }
 
 .manage4188-modal {
-  border: 1px solid var(--biu-4188-border) !important;
-  border-radius: var(--biu-4188-radius-modal) !important;
-  color: var(--biu-4188-text-primary) !important;
-  background: var(--biu-4188-surface-elevated) !important;
-  box-shadow: var(--biu-4188-shadow-modal) !important;
+  border: 1px solid var(--lili-4188-border) !important;
+  border-radius: var(--lili-4188-radius-modal) !important;
+  color: var(--lili-4188-text-primary) !important;
+  background: var(--lili-4188-surface-elevated) !important;
+  box-shadow: var(--lili-4188-shadow-modal) !important;
 }
 
 .manage4188-modal [data-slot="header"] {
@@ -122,12 +122,12 @@
 }
 
 .manage4188-modal [data-slot="body"] {
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
 }
 
 .manage4188-modal [data-slot="footer"] {
   padding: 14px 24px 22px;
-  border-top: 1px solid var(--biu-4188-border);
+  border-top: 1px solid var(--lili-4188-border);
 }
 
 .manage4188-task-main {
@@ -148,8 +148,8 @@
   width: 56px;
   height: 56px;
   flex: none;
-  border-radius: var(--biu-4188-radius-sm);
-  background: var(--biu-4188-surface-elevated);
+  border-radius: var(--lili-4188-radius-sm);
+  background: var(--lili-4188-surface-elevated);
   object-fit: cover;
 }
 
@@ -167,13 +167,13 @@
 }
 
 .manage4188-task-main strong {
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 14px;
 }
 
 .manage4188-task-main small,
 .manage4188-task-status small {
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 11px;
 }
 
@@ -190,7 +190,7 @@
 }
 
 .manage4188-task-status b {
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 12px;
   font-weight: 600;
 }
@@ -199,19 +199,19 @@
   width: 100%;
   height: 5px;
   border: 0;
-  border-radius: var(--biu-4188-radius-pill);
-  background: var(--biu-4188-surface-elevated);
+  border-radius: var(--lili-4188-radius-pill);
+  background: var(--lili-4188-surface-elevated);
   appearance: none;
 }
 
 .manage4188-task-status progress::-webkit-progress-bar {
   border-radius: inherit;
-  background: var(--biu-4188-surface-elevated);
+  background: var(--lili-4188-surface-elevated);
 }
 
 .manage4188-task-status progress::-webkit-progress-value {
   border-radius: inherit;
-  background: var(--biu-4188-success);
+  background: var(--lili-4188-success);
 }
 
 .manage4188-task-actions {
@@ -231,26 +231,26 @@
 
 .settings4188-nav {
   padding: 7px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-md);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-md);
+  background: var(--lili-4188-surface);
 }
 
 .settings4188-nav-item[aria-current="page"] {
-  color: var(--biu-4188-text-primary) !important;
-  background: var(--biu-4188-action-soft) !important;
-  box-shadow: inset 3px 0 0 var(--biu-4188-action);
+  color: var(--lili-4188-text-primary) !important;
+  background: var(--lili-4188-action-soft) !important;
+  box-shadow: inset 3px 0 0 var(--lili-4188-action);
 }
 
 .settings4188-card {
-  border-color: var(--biu-4188-border) !important;
-  border-radius: var(--biu-4188-radius-card) !important;
-  background: var(--biu-4188-surface) !important;
+  border-color: var(--lili-4188-border) !important;
+  border-radius: var(--lili-4188-radius-card) !important;
+  background: var(--lili-4188-surface) !important;
   box-shadow: none !important;
 }
 
 .settings4188-content h2 {
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 18px;
 }
 

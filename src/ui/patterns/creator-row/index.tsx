@@ -36,15 +36,15 @@ interface CreatorRowProps {
  *   56px 列 + 0 间隙，此处选语义更直的那一种）。原型按 107 + 16 摆会让
  *   姓名落在 x187，与实测差 67px。
  * - 操作列左缘 x1264 = 内容右缘 1376 − 112，与 `geometry.list.col5` 同宽。
- * - 行内文本块与列表行同构：姓名 17 / 600（`--biu-type-list-title`）+
+ * - 行内文本块与列表行同构：姓名 17 / 600（`--lili-type-list-title`）+
  *   6px + 副行 13，两行 `leading-none`（`geometry.list.trackText`）。
  *
  * 关注按钮是**反色的二元态**（spec-lock `material.followButton`）：
- * 未关注「关注」是**反色亮底 + 深字**（`--biu-inverse-surface` +
- * `--biu-inverse-ink`，与激活药丸同一条设计语言），已关注「已关注」是
- * 白 10% 弱底 + 亮字（`--biu-surface-hover`）—— 与原型（未关注 = 描边、
+ * 未关注「关注」是**反色亮底 + 深字**（`--lili-inverse-surface` +
+ * `--lili-inverse-ink`，与激活药丸同一条设计语言），已关注「已关注」是
+ * 白 10% 弱底 + 亮字（`--lili-surface-hover`）—— 与原型（未关注 = 描边、
  * 已关注 = 白 12% 底）的材质相反，且两态都**无描边**、高 32
- * （`--biu-layout-follow-h`）、左右内距 16。原型 `.follow` 的
+ * （`--lili-layout-follow-h`）、左右内距 16。原型 `.follow` 的
  * 「高 34 / 内距 20 / 白 22% 描边」是原型档，实现不随行。
  *
  * 按钮**水平居中于操作列的可用宽**会落到 x1264 以右 —— 实测两态按钮
@@ -62,7 +62,7 @@ export const CreatorRow = ({
 }: CreatorRowProps) => (
   <div
     className={twMerge(
-      "grid h-[var(--biu-layout-creator-row-h)] grid-cols-[40px_minmax(0,1fr)_var(--biu-layout-creator-actions-w)] items-center gap-4",
+      "grid h-[var(--lili-layout-creator-row-h)] grid-cols-[40px_minmax(0,1fr)_var(--lili-layout-creator-actions-w)] items-center gap-4",
       className,
     )}
   >
@@ -72,15 +72,15 @@ export const CreatorRow = ({
       alt=""
       radius="round"
       gradient="face"
-      className="h-[var(--biu-layout-creator-avatar)] w-[var(--biu-layout-creator-avatar)] flex-none"
+      className="h-[var(--lili-layout-creator-avatar)] w-[var(--lili-layout-creator-avatar)] flex-none"
     />
 
     <div className="min-w-0">
-      <div className="truncate text-[length:var(--biu-type-list-title-size)] leading-none font-semibold text-[rgb(var(--biu-text-primary))]">
+      <div className="truncate text-[length:var(--lili-type-list-title-size)] leading-none font-semibold text-[rgb(var(--lili-text-primary))]">
         {name}
       </div>
       {meta !== undefined && meta !== null && (
-        <div className="mt-[6px] truncate text-[length:var(--biu-type-label-size)] leading-none text-[rgb(var(--biu-text-quaternary))]">
+        <div className="mt-[6px] truncate text-[length:var(--lili-type-label-size)] leading-none text-[rgb(var(--lili-text-quaternary))]">
           {meta}
         </div>
       )}
@@ -93,11 +93,11 @@ export const CreatorRow = ({
           aria-pressed={followed}
           onClick={onFollow}
           className={twMerge(
-            "h-[var(--biu-layout-follow-h)] cursor-pointer rounded-[var(--biu-radius-pill)] px-4",
-            "text-[length:var(--biu-type-label-size)] font-medium",
+            "h-[var(--lili-layout-follow-h)] cursor-pointer rounded-[var(--lili-radius-pill)] px-4",
+            "text-[length:var(--lili-type-label-size)] font-medium",
             followed
-              ? "border-0 bg-[var(--biu-surface-hover)] text-[rgb(var(--biu-text-secondary))]"
-              : "border-0 bg-[rgb(var(--biu-inverse-surface))] text-[rgb(var(--biu-inverse-ink))]",
+              ? "border-0 bg-[var(--lili-surface-hover)] text-[rgb(var(--lili-text-secondary))]"
+              : "border-0 bg-[rgb(var(--lili-inverse-surface))] text-[rgb(var(--lili-inverse-ink))]",
           )}
         >
           {followed ? "已关注" : "关注"}

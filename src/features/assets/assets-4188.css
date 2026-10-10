@@ -13,7 +13,7 @@
 }
 
 .asset4188-eyebrow {
-  color: var(--biu-4188-action);
+  color: var(--lili-4188-action);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -29,7 +29,7 @@
 .asset4188-head p {
   max-width: 680px;
   margin: 0;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 14px;
 }
 
@@ -47,10 +47,10 @@
   justify-content: center;
   height: 36px;
   padding: 0 15px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-pill);
-  color: var(--biu-4188-text-secondary);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-pill);
+  color: var(--lili-4188-text-secondary);
+  background: var(--lili-4188-surface);
   font-size: 12px;
 }
 
@@ -60,21 +60,21 @@
 
 .asset4188-actions button:hover,
 .asset4188-actions button.is-primary {
-  color: var(--biu-4188-text-primary);
-  border-color: var(--biu-4188-action);
-  background: var(--biu-4188-action-soft);
+  color: var(--lili-4188-text-primary);
+  border-color: var(--lili-4188-action);
+  background: var(--lili-4188-action-soft);
 }
 
 .asset4188-actions button.is-danger:hover {
-  color: var(--biu-4188-error);
-  border-color: var(--biu-4188-error);
+  color: var(--lili-4188-error);
+  border-color: var(--lili-4188-error);
 }
 
 .asset4188-actions button:disabled,
 .asset4188-actions button:disabled:hover {
-  color: var(--biu-4188-text-muted);
-  border-color: var(--biu-4188-border);
-  background: var(--biu-4188-surface);
+  color: var(--lili-4188-text-muted);
+  border-color: var(--lili-4188-border);
+  background: var(--lili-4188-surface);
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -90,15 +90,15 @@
   display: grid;
   gap: 5px;
   padding: 15px 18px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-md);
-  color: var(--biu-4188-text-secondary);
-  background: var(--biu-4188-surface);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-md);
+  color: var(--lili-4188-text-secondary);
+  background: var(--lili-4188-surface);
   font-size: 11px;
 }
 
 .asset4188-stats b {
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 18px;
 }
 
@@ -130,23 +130,23 @@
   padding: 5px;
   margin: -5px;
   border: 1px solid transparent;
-  border-radius: var(--biu-4188-radius-card);
+  border-radius: var(--lili-4188-radius-card);
   background: transparent;
   text-align: left;
   cursor: pointer;
 }
 
 .asset4188-card:hover {
-  border-color: var(--biu-4188-border);
-  background: var(--biu-4188-surface-hover);
+  border-color: var(--lili-4188-border);
+  background: var(--lili-4188-surface-hover);
 }
 
 .asset4188-card-art {
   position: relative;
   aspect-ratio: 1.55;
   overflow: hidden;
-  border-radius: var(--biu-4188-radius-md);
-  background: var(--biu-4188-surface-elevated);
+  border-radius: var(--lili-4188-radius-md);
+  background: var(--lili-4188-surface-elevated);
 }
 
 .asset4188-card-art > img {
@@ -175,9 +175,9 @@
   left: 8px;
   top: 8px;
   padding: 4px 7px;
-  border-radius: var(--biu-4188-radius-xs);
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-image-chip);
+  border-radius: var(--lili-4188-radius-xs);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-image-chip);
   font-size: 10px;
   pointer-events: none;
 }
@@ -203,13 +203,13 @@
 
 .asset4188-card-link > strong {
   margin-top: 10px;
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 14px;
 }
 
 .asset4188-card-link > small {
   margin-top: 5px;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
   font-size: 11px;
 }
 
@@ -236,13 +236,13 @@
   place-items: center;
   border: 0;
   border-radius: 50%;
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-image-chip);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-image-chip);
   cursor: pointer;
 }
 
 .asset4188-list {
-  border-top: 1px solid var(--biu-4188-border);
+  border-top: 1px solid var(--lili-4188-border);
 }
 
 .asset4188-row {
@@ -252,18 +252,18 @@
   gap: 10px;
   min-height: 76px;
   padding: 8px 10px;
-  border-bottom: 1px solid var(--biu-4188-border);
+  border-bottom: 1px solid var(--lili-4188-border);
   border-radius: 10px;
-  color: var(--biu-4188-text-secondary);
+  color: var(--lili-4188-text-secondary);
 }
 
 .asset4188-row:hover {
-  background: var(--biu-4188-surface-hover);
+  background: var(--lili-4188-surface-hover);
 }
 
 .asset4188-row.is-current {
-  background: var(--biu-4188-playback-soft);
-  box-shadow: inset 3px 0 0 var(--biu-4188-playback);
+  background: var(--lili-4188-playback-soft);
+  box-shadow: inset 3px 0 0 var(--lili-4188-playback);
 }
 
 .asset4188-row > img,
@@ -271,12 +271,12 @@
   width: 56px;
   height: 56px;
   border-radius: 8px;
-  background: var(--biu-4188-surface-elevated);
+  background: var(--lili-4188-surface-elevated);
   object-fit: cover;
 }
 
 .asset4188-index {
-  color: var(--biu-4188-text-muted);
+  color: var(--lili-4188-text-muted);
   font-size: 11px;
   text-align: center;
 }
@@ -295,7 +295,7 @@
 }
 
 .asset4188-copy strong {
-  color: var(--biu-4188-text-primary);
+  color: var(--lili-4188-text-primary);
   font-size: 14px;
 }
 
@@ -333,15 +333,15 @@
   height: 36px;
   min-width: 220px;
   padding: 0 14px;
-  border: 1px solid var(--biu-4188-border);
-  border-radius: var(--biu-4188-radius-pill);
+  border: 1px solid var(--lili-4188-border);
+  border-radius: var(--lili-4188-radius-pill);
   outline: 0;
-  color: var(--biu-4188-text-primary);
-  background: var(--biu-4188-surface);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-surface);
 }
 
 .asset4188-filter input:focus {
-  border-color: var(--biu-4188-focus);
+  border-color: var(--lili-4188-focus);
 }
 
 @media (width<=980px) {

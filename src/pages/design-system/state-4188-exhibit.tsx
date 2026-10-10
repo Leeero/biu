@@ -12,9 +12,9 @@ const previewClass = (state: UiState) =>
   state === "hover"
     ? "brightness-110"
     : state === "focus-visible"
-      ? "outline-2 outline-offset-2 outline-[var(--biu-4188-focus)]"
+      ? "outline-2 outline-offset-2 outline-[var(--lili-4188-focus)]"
       : state === "pressed"
-        ? "scale-[var(--biu-4188-press-scale)] brightness-90"
+        ? "scale-[var(--lili-4188-press-scale)] brightness-90"
         : "";
 
 export const State4188Exhibit = () => {
@@ -66,8 +66,8 @@ export const State4188Exhibit = () => {
             value="搜索请求失败"
             onValueChange={() => undefined}
             label="搜索错误"
-            className="border-[var(--biu-4188-error)]"
-            trailing={<RiAlertLine aria-hidden="true" className="text-[var(--biu-4188-error)]" />}
+            className="border-[var(--lili-4188-error)]"
+            trailing={<RiAlertLine aria-hidden="true" className="text-[var(--lili-4188-error)]" />}
           />
         </div>
       </Showcase>

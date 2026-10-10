@@ -60,12 +60,12 @@ export const StateMatrix = ({ render, states = ALL_STATES, className }: StateMat
   <div className={twMerge("grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4 xl:grid-cols-8", className)}>
     {states.map(state => (
       <div key={state} className="min-w-0">
-        <p className="m-0 mb-2 flex items-baseline gap-1.5 text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-disabled))]">
-          <span className="font-[family-name:var(--biu-font-numeric)]">{STATE_LABEL[state]}</span>
+        <p className="m-0 mb-2 flex items-baseline gap-1.5 text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-disabled))]">
+          <span className="font-[family-name:var(--lili-font-numeric)]">{STATE_LABEL[state]}</span>
           {LIVE_STATES.has(state) && (
             <span
               title="需真实交互：把指针移入 / 按住 / 用 Tab 聚焦本格"
-              className="cursor-help text-[rgb(var(--biu-text-disabled))]"
+              className="cursor-help text-[rgb(var(--lili-text-disabled))]"
             >
               ↗
             </span>
@@ -102,19 +102,19 @@ export const Showcase = ({ name, proto, page, note, children, className }: Showc
   <section
     id={`c-${name}`}
     className={twMerge(
-      "rounded-[var(--biu-radius-lg)] border border-[var(--biu-border-weak)] bg-[var(--biu-surface-raised)] p-6",
-      "biu-theme-4188:rounded-[var(--biu-4188-radius-panel)] biu-theme-4188:border-[var(--biu-4188-border)] biu-theme-4188:bg-[var(--biu-4188-surface)]",
+      "rounded-[var(--lili-radius-lg)] border border-[var(--lili-border-weak)] bg-[var(--lili-surface-raised)] p-6",
+      "lili-theme-4188:rounded-[var(--lili-4188-radius-panel)] lili-theme-4188:border-[var(--lili-4188-border)] lili-theme-4188:bg-[var(--lili-4188-surface)]",
       className,
     )}
   >
-    <header className="mb-5 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-[var(--biu-border-weak)] pb-3">
-      <h3 className="m-0 text-[length:var(--biu-type-small-size)] font-semibold text-[rgb(var(--biu-text-primary))]">
+    <header className="mb-5 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-[var(--lili-border-weak)] pb-3">
+      <h3 className="m-0 text-[length:var(--lili-type-small-size)] font-semibold text-[rgb(var(--lili-text-primary))]">
         {name}
       </h3>
-      <code className="font-[family-name:var(--biu-font-numeric)] text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-tertiary))]">
+      <code className="font-[family-name:var(--lili-font-numeric)] text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-tertiary))]">
         {proto}
       </code>
-      <span className="ml-auto text-[length:var(--biu-type-micro-size)] text-[rgb(var(--biu-text-quaternary))]">
+      <span className="ml-auto text-[length:var(--lili-type-micro-size)] text-[rgb(var(--lili-text-quaternary))]">
         设计页 {page}
       </span>
     </header>
@@ -122,7 +122,7 @@ export const Showcase = ({ name, proto, page, note, children, className }: Showc
     {children}
 
     {note && (
-      <p className="m-0 mt-4 border-t border-[var(--biu-border-weak)] pt-3 text-[length:var(--biu-type-micro-size)] leading-[1.7] text-[rgb(var(--biu-text-quaternary))]">
+      <p className="m-0 mt-4 border-t border-[var(--lili-border-weak)] pt-3 text-[length:var(--lili-type-micro-size)] leading-[1.7] text-[rgb(var(--lili-text-quaternary))]">
         {note}
       </p>
     )}
@@ -138,11 +138,11 @@ interface ExhibitSectionProps {
 /** 展位分组的外框（§5.1 基础件 / §5.2 模式件 / 令牌）。 */
 export const ExhibitSection = ({ title, note, children }: ExhibitSectionProps) => (
   <section className="mt-10 [&+&]:mt-14">
-    <h2 className="m-0 mb-1 text-[length:var(--biu-type-lead-size)] font-semibold text-[rgb(var(--biu-text-primary))]">
+    <h2 className="m-0 mb-1 text-[length:var(--lili-type-lead-size)] font-semibold text-[rgb(var(--lili-text-primary))]">
       {title}
     </h2>
     {note && (
-      <p className="m-0 mb-6 max-w-[72ch] text-[length:var(--biu-type-label-size)] leading-[1.7] text-[rgb(var(--biu-text-quaternary))]">
+      <p className="m-0 mb-6 max-w-[72ch] text-[length:var(--lili-type-label-size)] leading-[1.7] text-[rgb(var(--lili-text-quaternary))]">
         {note}
       </p>
     )}

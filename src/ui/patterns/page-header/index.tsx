@@ -83,7 +83,7 @@ export const PageHeader = ({
       style={aside ? { gridTemplateColumns: `minmax(0, 1fr) ${asideWidth}px` } : undefined}
     >
       <div className={twMerge("min-w-0", baseline === "aligned" && "pt-[11px]")}>
-        <h1 className="m-0 text-[length:var(--biu-type-page-title-size)] leading-[var(--biu-type-page-title-leading)] font-semibold tracking-[var(--biu-type-page-title-tracking)] text-[rgb(var(--biu-text-primary))]">
+        <h1 className="m-0 text-[length:var(--lili-type-page-title-size)] leading-[var(--lili-type-page-title-leading)] font-semibold tracking-[var(--lili-type-page-title-tracking)] text-[rgb(var(--lili-text-primary))]">
           {title}
         </h1>
         {leadContent && (

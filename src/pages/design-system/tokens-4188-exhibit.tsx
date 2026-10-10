@@ -1,15 +1,15 @@
 import { ExhibitSection } from "./showcase";
 
 const colors = [
-  ["canvas", "--biu-4188-canvas"],
-  ["surface", "--biu-4188-surface"],
-  ["elevated", "--biu-4188-surface-elevated"],
-  ["hover", "--biu-4188-surface-hover"],
-  ["action", "--biu-4188-action"],
-  ["playback", "--biu-4188-playback"],
-  ["success", "--biu-4188-success"],
-  ["warning", "--biu-4188-warning"],
-  ["error", "--biu-4188-error"],
+  ["canvas", "--lili-4188-canvas"],
+  ["surface", "--lili-4188-surface"],
+  ["elevated", "--lili-4188-surface-elevated"],
+  ["hover", "--lili-4188-surface-hover"],
+  ["action", "--lili-4188-action"],
+  ["playback", "--lili-4188-playback"],
+  ["success", "--lili-4188-success"],
+  ["warning", "--lili-4188-warning"],
+  ["error", "--lili-4188-error"],
 ] as const;
 
 export const Tokens4188Exhibit = () => (
@@ -18,14 +18,14 @@ export const Tokens4188Exhibit = () => (
       {colors.map(([name, token]) => (
         <div
           key={name}
-          className="overflow-hidden rounded-[var(--biu-4188-radius-card)] border border-[var(--biu-4188-border)] bg-[var(--biu-4188-surface)]"
+          className="overflow-hidden rounded-[var(--lili-4188-radius-card)] border border-[var(--lili-4188-border)] bg-[var(--lili-4188-surface)]"
         >
           <div className="h-20" style={{ background: `var(${token})` }} />
           <div className="px-3 py-2">
-            <p className="m-0 text-[length:var(--biu-4188-type-body-size)] font-medium text-[var(--biu-4188-text-primary)]">
+            <p className="m-0 text-[length:var(--lili-4188-type-body-size)] font-medium text-[var(--lili-4188-text-primary)]">
               {name}
             </p>
-            <code className="text-[length:var(--biu-4188-type-eyebrow-size)] text-[var(--biu-4188-text-muted)]">
+            <code className="text-[length:var(--lili-4188-type-eyebrow-size)] text-[var(--lili-4188-text-muted)]">
               {token}
             </code>
           </div>

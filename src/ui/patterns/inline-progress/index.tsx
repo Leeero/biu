@@ -54,14 +54,14 @@ export const InlineProgress = ({
 
   const bar =
     clamped === undefined ? null : (
-      <div className="h-1 flex-none overflow-hidden rounded-[2px] bg-[var(--biu-veil-18)]" style={{ width }}>
+      <div className="h-1 flex-none overflow-hidden rounded-[2px] bg-[var(--lili-veil-18)]" style={{ width }}>
         <span
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={clamped}
           aria-label={typeof label === "string" ? label : undefined}
-          className="block h-full rounded-[2px] bg-[rgb(var(--biu-accent))]"
+          className="block h-full rounded-[2px] bg-[rgb(var(--lili-accent))]"
           style={{ width: `${clamped}%` }}
         />
       </div>
@@ -70,10 +70,10 @@ export const InlineProgress = ({
   const labelNode = (
     <span
       className={twMerge(
-        "truncate text-[length:var(--biu-type-label-size)]",
+        "truncate text-[length:var(--lili-type-label-size)]",
         orientation === "stacked"
-          ? "leading-5 text-[rgb(var(--biu-text-secondary))]"
-          : "text-[rgb(var(--biu-text-secondary))] tabular-nums",
+          ? "leading-5 text-[rgb(var(--lili-text-secondary))]"
+          : "text-[rgb(var(--lili-text-secondary))] tabular-nums",
       )}
     >
       {label}

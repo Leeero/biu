@@ -20,7 +20,7 @@ import { Icon } from "@/ui/primitives/icon";
  * 字形改用 `Icon` 词汇表的 `play` / `pause`（`RiPlayFill` / `RiPauseFill`，
  * 实心），而不是 `RiPlayCircleFill` —— 设计稿的圆来自按钮底色，不是图标自带的圆。
  *
- * 圆片用 `--biu-text-primary` 而不是新开一个「播放键色」：真值登记的就是这个令牌，
+ * 圆片用 `--lili-text-primary` 而不是新开一个「播放键色」：真值登记的就是这个令牌，
  * 再开一个同值令牌只会让「改文字色」与「改播放键色」变成两件事。
  *
  * 这里不用 `IconButton`：它的 HeroUI 底座会把盒子撑到 32px 并加悬停底色，
@@ -32,14 +32,14 @@ const MusicPlayControl = () => {
   const { previous, next, togglePlay } = usePlayerActions();
 
   return (
-    <div className="flex items-center justify-center gap-[var(--biu-playbar-transport-gap)]">
+    <div className="flex items-center justify-center gap-[var(--lili-playbar-transport-gap)]">
       <button
         type="button"
         aria-label="上一首"
         title="上一首"
         disabled={!ready || single}
         onClick={() => void previous()}
-        className="grid size-[var(--biu-playbar-transport-icon)] flex-none cursor-pointer place-items-center text-[length:var(--biu-playbar-transport-icon)] text-[rgb(var(--biu-film))] transition-colors duration-[var(--biu-duration-fast)] hover:text-[rgb(var(--biu-text-primary))] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[rgb(var(--biu-film))]"
+        className="grid size-[var(--lili-playbar-transport-icon)] flex-none cursor-pointer place-items-center text-[length:var(--lili-playbar-transport-icon)] text-[rgb(var(--lili-film))] transition-colors duration-[var(--lili-duration-fast)] hover:text-[rgb(var(--lili-text-primary))] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[rgb(var(--lili-film))]"
       >
         <Icon name="prev" />
       </button>
@@ -50,7 +50,7 @@ const MusicPlayControl = () => {
         title={isPlaying ? "暂停" : "播放"}
         disabled={!ready}
         onClick={() => void togglePlay()}
-        className="grid size-[var(--biu-playbar-play-size)] flex-none cursor-pointer place-items-center rounded-[var(--biu-radius-pill)] bg-[rgb(var(--biu-text-primary))] text-[length:var(--biu-playbar-transport-icon)] text-[rgb(var(--biu-inverse-ink))] transition-transform duration-[var(--biu-duration-fast)] hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+        className="grid size-[var(--lili-playbar-play-size)] flex-none cursor-pointer place-items-center rounded-[var(--lili-radius-pill)] bg-[rgb(var(--lili-text-primary))] text-[length:var(--lili-playbar-transport-icon)] text-[rgb(var(--lili-inverse-ink))] transition-transform duration-[var(--lili-duration-fast)] hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
       >
         <Icon name={isPlaying ? "pause" : "play"} />
       </button>
@@ -61,7 +61,7 @@ const MusicPlayControl = () => {
         title="下一首"
         disabled={!ready || single}
         onClick={() => void next()}
-        className="grid size-[var(--biu-playbar-transport-icon)] flex-none cursor-pointer place-items-center text-[length:var(--biu-playbar-transport-icon)] text-[rgb(var(--biu-film))] transition-colors duration-[var(--biu-duration-fast)] hover:text-[rgb(var(--biu-text-primary))] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[rgb(var(--biu-film))]"
+        className="grid size-[var(--lili-playbar-transport-icon)] flex-none cursor-pointer place-items-center text-[length:var(--lili-playbar-transport-icon)] text-[rgb(var(--lili-film))] transition-colors duration-[var(--lili-duration-fast)] hover:text-[rgb(var(--lili-text-primary))] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[rgb(var(--lili-film))]"
       >
         <Icon name="next" />
       </button>

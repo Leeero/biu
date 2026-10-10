@@ -52,8 +52,8 @@ interface AnnotationBandProps {
  * 那块区域的行就点不动了 —— 这类「有一部分点不动」的问题极难定位。
  * 代价是注解文字不可选中；需要可选中时用 `anchor="inline"` 把它排进内容流。
  *
- * **字号 14 / 行距 20 走独立档 `--biu-type-note`（spec-lock 1.3.24）**，不借
- * `--biu-type-label-size`（13）。原型 `.note` 用的是 `--fs-label`，但设计稿实测注解带是
+ * **字号 14 / 行距 20 走独立档 `--lili-type-note`（spec-lock 1.3.24）**，不借
+ * `--lili-type-label-size`（13）。原型 `.note` 用的是 `--fs-label`，但设计稿实测注解带是
  * **14.0**（跨 6 页一致），而 label 档在同一份测量里被行内副标题验证为 13 且设计 = 应用
  * —— 两档混用会把 25 处 label 消费方一起带偏。行距 20 来自设计侧两行墨迹起点 728 / 748。
  *
@@ -67,16 +67,16 @@ export const AnnotationBand = ({ anchor, children, className }: AnnotationBandPr
   return (
     <p
       className={twMerge(
-        "z-[var(--biu-z-note)] m-0 flex items-start gap-3",
-        "text-[length:var(--biu-type-note-size)] leading-[1.43] text-[rgb(var(--biu-text-quaternary))]",
+        "z-[var(--lili-z-note)] m-0 flex items-start gap-3",
+        "text-[length:var(--lili-type-note-size)] leading-[1.43] text-[rgb(var(--lili-text-quaternary))]",
         isInline
           ? "relative mt-6"
-          : "pointer-events-none absolute right-[var(--biu-layout-gutter)] left-[var(--biu-layout-gutter)]",
+          : "pointer-events-none absolute right-[var(--lili-layout-gutter)] left-[var(--lili-layout-gutter)]",
         className,
       )}
       style={isInline ? undefined : { top: anchor ? ANCHOR_TOP[anchor] : NOTE_BASE_TOP }}
     >
-      <span aria-hidden="true" className="mt-[6.4px] size-2 flex-none bg-[rgb(var(--biu-accent))]" />
+      <span aria-hidden="true" className="mt-[6.4px] size-2 flex-none bg-[rgb(var(--lili-accent))]" />
       <span>{children}</span>
     </p>
   );

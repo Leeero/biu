@@ -36,7 +36,7 @@ export interface TrackTableRowProps {
  *    68px 的行高与当前行的圆角高亮表达。上一轮的实现在这里加过分隔线。
  * 2. **高亮是整行通铺 + 上下内缩 2px**，用 `::before` 画而不是背景色 ——
  *    这样高亮可以盖住内容宽度（左右通栏）而不受 grid 列宽影响。
- *    `inset` 的 2px 取自 `--biu-layout-current-inset`。
+ *    `inset` 的 2px 取自 `--lili-layout-current-inset`。
  * 3. **悬停 4% / 当前 7%，当前态压过悬停态**。原型里 `.is-current::before`
  *    写在 `:hover::before` 之后，所以悬停当前行仍是 7%。Tailwind 的变体
  *    输出顺序不保证与书写顺序一致，因此这里**显式重述**了一条
@@ -80,14 +80,14 @@ export const TrackTableRow = ({ trackId, current, position, className, children 
       onDragOver={draggable ? handleDragOver : undefined}
       onDrop={draggable ? handleDrop : undefined}
       className={twMerge(
-        "relative grid h-[var(--biu-layout-row-h)] items-center pr-[var(--biu-layout-list-pad-r)]",
+        "relative grid h-[var(--lili-layout-row-h)] items-center pr-[var(--lili-layout-list-pad-r)]",
         // 行高亮：整行通铺、上下内缩、圆角 8（原型 --r-chip）。不响应指针。
         "before:pointer-events-none before:absolute before:inset-x-0",
-        "before:top-[var(--biu-layout-current-inset)] before:bottom-[var(--biu-layout-current-inset)]",
-        "before:rounded-[var(--biu-radius-sm)] before:bg-transparent before:content-['']",
-        "hover:before:bg-[var(--biu-veil-4)]",
-        "data-[current]:before:bg-[var(--biu-surface-current)]",
-        "hover:data-[current]:before:bg-[var(--biu-surface-current)]",
+        "before:top-[var(--lili-layout-current-inset)] before:bottom-[var(--lili-layout-current-inset)]",
+        "before:rounded-[var(--lili-radius-sm)] before:bg-transparent before:content-['']",
+        "hover:before:bg-[var(--lili-veil-4)]",
+        "data-[current]:before:bg-[var(--lili-surface-current)]",
+        "hover:data-[current]:before:bg-[var(--lili-surface-current)]",
         draggable && "cursor-grab active:cursor-grabbing",
         className,
       )}
@@ -123,7 +123,7 @@ export const TrackIndex = ({ value, children, className }: TrackIndexProps) => (
   <div
     className={twMerge(
       CELL_LAYER,
-      "text-[length:var(--biu-type-label-size)] leading-none text-[rgb(var(--biu-text-quaternary))]",
+      "text-[length:var(--lili-type-label-size)] leading-none text-[rgb(var(--lili-text-quaternary))]",
       "tabular-nums",
       className,
     )}
@@ -139,7 +139,7 @@ interface TrackMainProps {
 
 /** 标题列（图 + 文）。原型 `.track-main`：flex、图→文 31px、可收缩。 */
 export const TrackMain = ({ children, className }: TrackMainProps) => (
-  <div className={twMerge(CELL_LAYER, "flex min-w-0 items-center gap-[var(--biu-layout-track-gap)]", className)}>
+  <div className={twMerge(CELL_LAYER, "flex min-w-0 items-center gap-[var(--lili-layout-track-gap)]", className)}>
     {children}
   </div>
 );
@@ -165,7 +165,7 @@ export const TrackArt = ({ src, artKey, placeholder, alt = "", shape = "rect", c
     alt={alt}
     radius={shape === "disc" ? "round" : "art"}
     gradient={shape === "disc" ? "disc" : "linear"}
-    className={twMerge("h-[var(--biu-layout-art-h)] w-[var(--biu-layout-art-w)] flex-none", className)}
+    className={twMerge("h-[var(--lili-layout-art-h)] w-[var(--lili-layout-art-w)] flex-none", className)}
   />
 );
 
@@ -194,8 +194,8 @@ export const TrackText = ({ title, subtitle, className }: TrackTextProps) => (
   <div className={twMerge(CELL_LAYER, "min-w-0", className)}>
     <div
       className={twMerge(
-        "truncate text-[length:var(--biu-type-list-title-size)] leading-none font-semibold",
-        "text-[rgb(var(--biu-text-primary))]",
+        "truncate text-[length:var(--lili-type-list-title-size)] leading-none font-semibold",
+        "text-[rgb(var(--lili-text-primary))]",
       )}
     >
       {title}
@@ -203,8 +203,8 @@ export const TrackText = ({ title, subtitle, className }: TrackTextProps) => (
     {subtitle !== undefined && subtitle !== null && (
       <div
         className={twMerge(
-          "mt-[6px] truncate text-[length:var(--biu-type-label-size)] leading-none",
-          "text-[rgb(var(--biu-text-quaternary))]",
+          "mt-[6px] truncate text-[length:var(--lili-type-label-size)] leading-none",
+          "text-[rgb(var(--lili-text-quaternary))]",
         )}
       >
         {subtitle}
@@ -226,8 +226,8 @@ export const TrackCell = ({ children, align = "start", tone = "normal", classNam
   <div
     className={twMerge(
       CELL_LAYER,
-      "truncate text-[length:var(--biu-type-label-size)] leading-none tabular-nums",
-      tone === "danger" ? "text-[rgb(var(--biu-danger))]" : "text-[rgb(var(--biu-text-quaternary))]",
+      "truncate text-[length:var(--lili-type-label-size)] leading-none tabular-nums",
+      tone === "danger" ? "text-[rgb(var(--lili-danger))]" : "text-[rgb(var(--lili-text-quaternary))]",
       align === "end" && "text-right",
       className,
     )}
@@ -280,11 +280,11 @@ export const TrackTableActions = ({ actions, className }: TrackTableActionsProps
   <div
     className={twMerge(
       // z-index 3：压过行高亮（1）与行内容（1）。原型同此。
-      "absolute top-1/2 z-[3] inline-flex -translate-y-1/2 items-center gap-[var(--biu-layout-action-gap)]",
-      "right-[calc(var(--biu-layout-col-4)+var(--biu-layout-col-5)+var(--biu-layout-list-pad-r)+152px)]",
+      "absolute top-1/2 z-[3] inline-flex -translate-y-1/2 items-center gap-[var(--lili-layout-action-gap)]",
+      "right-[calc(var(--lili-layout-col-4)+var(--lili-layout-col-5)+var(--lili-layout-list-pad-r)+152px)]",
       // 玻璃材质写在**带子**上，不是写在按钮上（见 GlassButton 的 tone 说明）。
-      "rounded-[var(--biu-radius-pill)] border border-[var(--biu-veil-18)] bg-[var(--biu-veil-14)]",
-      "p-[var(--biu-layout-action-pad)] backdrop-blur-[var(--biu-blur-glass)]",
+      "rounded-[var(--lili-radius-pill)] border border-[var(--lili-veil-18)] bg-[var(--lili-veil-14)]",
+      "p-[var(--lili-layout-action-pad)] backdrop-blur-[var(--lili-blur-glass)]",
       className,
     )}
   >

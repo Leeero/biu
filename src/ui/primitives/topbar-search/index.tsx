@@ -64,7 +64,7 @@ const HINT_GUTTER = "pe-[62px]";
  * 顶栏搜索位（原型 `.search`）。
  *
  * 几何：高 40、圆角 999、左内边距 16、右 8、图标 20、字号 15、底色白 10%
- * （`--biu-surface-search`，设计稿实测 9.9%）。**不要**改用 `--biu-surface-field`：
+ * （`--lili-surface-search`，设计稿实测 9.9%）。**不要**改用 `--lili-surface-field`：
  * 那一格是白 17%，同时喂 `.pill--neutral`，而药丸设计实测 17.8% —— 两个消费者
  * 需要不同的值，见 spec-lock `globalChrome.search.field.rule`。
  * 宽度是**弹性**的（`min(32vw, 400px)`，下限 240）：设计稿在 1440 宽下是 400，
@@ -115,24 +115,24 @@ export const TopBarSearch = ({
         aria-label={label}
         placeholder={placeholder}
         isClearable
-        startContent={<Icon name="search" size={20} className="text-[rgb(var(--biu-text-quaternary))]" />}
+        startContent={<Icon name="search" size={20} className="text-[rgb(var(--lili-text-quaternary))]" />}
         className="window-no-drag w-full"
         classNames={{
-          // 输入文字与占位同取顶栏档 `--biu-type-chrome`(14)：设计稿里这一串占位
-          // 出现在 8 页顶栏，逐页实测都是 14（14.03），此前借 `--biu-type-body-size`(15)
+          // 输入文字与占位同取顶栏档 `--lili-type-chrome`(14)：设计稿里这一串占位
+          // 出现在 8 页顶栏，逐页实测都是 14（14.03），此前借 `--lili-type-body-size`(15)
           // 偏大一档。取证见 docs/design/evidence/type-scale-audit.md。
           input: twMerge(
-            "text-[length:var(--biu-type-chrome-size)] outline-none focus-visible:outline-none placeholder:text-[var(--biu-text-placeholder)]",
+            "text-[length:var(--lili-type-chrome-size)] outline-none focus-visible:outline-none placeholder:text-[var(--lili-text-placeholder)]",
             HINT_GUTTER,
           ),
           inputWrapper:
-            "h-10 rounded-[var(--biu-radius-pill)] border border-transparent bg-[var(--biu-surface-search)] px-4 text-[rgb(var(--biu-text-primary))] shadow-none outline-none transition-[background-color,border-color,box-shadow] group-data-[focus=true]:border-[var(--biu-glass-border)] group-data-[focus=true]:bg-[var(--biu-surface-search)] group-data-[focus=true]:shadow-[0_0_0_3px_var(--biu-accent-soft)] group-data-[focus-visible=true]:ring-0 group-data-[focus-visible=true]:outline-none",
+            "h-10 rounded-[var(--lili-radius-pill)] border border-transparent bg-[var(--lili-surface-search)] px-4 text-[rgb(var(--lili-text-primary))] shadow-none outline-none transition-[background-color,border-color,box-shadow] group-data-[focus=true]:border-[var(--lili-glass-border)] group-data-[focus=true]:bg-[var(--lili-surface-search)] group-data-[focus=true]:shadow-[0_0_0_3px_var(--lili-accent-soft)] group-data-[focus-visible=true]:ring-0 group-data-[focus-visible=true]:outline-none",
         }}
       />
       {showHint && (
         <kbd
           aria-hidden="true"
-          className="pointer-events-none absolute end-2 top-1/2 z-10 flex h-6 -translate-y-1/2 items-center rounded-[7px] bg-[var(--biu-veil-12)] px-2 text-[length:var(--biu-type-micro-size)] tracking-[0.2px] text-[rgb(var(--biu-text-chrome-label))]"
+          className="pointer-events-none absolute end-2 top-1/2 z-10 flex h-6 -translate-y-1/2 items-center rounded-[7px] bg-[var(--lili-veil-12)] px-2 text-[length:var(--lili-type-micro-size)] tracking-[0.2px] text-[rgb(var(--lili-text-chrome-label))]"
         >
           {hint}
         </kbd>

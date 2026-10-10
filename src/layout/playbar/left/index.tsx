@@ -25,7 +25,7 @@ import PageListDrawer from "./page-list";
  *   · 封面左缘 **32**（原型 36）、封面 → 文案块 **21**（原型 gap 16）；
  *   · 副行 → 徽标间距取原型成文值 **10**（设计稿两页实测 72 / 24 不等，读不出常量）。
  *
- * 标题 17px/600、单行省略；副行 13px `--biu-text-quaternary`；徽标同 `.tag`
+ * 标题 17px/600、单行省略；副行 13px `--lili-text-quaternary`；徽标同 `.tag`
  * （高 22 / 内距 8 / 圆角 6 / 字号 12 / 字重 500 / `quality` 变体）。
  *
  * 封面**不用 `Image`** 而用 `Artwork`：后者在无地址或加载失败时回落到占位底图，
@@ -41,12 +41,12 @@ const LeftControl = () => {
   const { title, sub, ownerClickable, ownerMid, hasMultiPart, sourceIsLocal, cover, badgeText } = useNowPlaying();
 
   return (
-    <div className="flex h-full min-w-0 items-center gap-[var(--biu-playbar-meta-gap)] overflow-hidden">
+    <div className="flex h-full min-w-0 items-center gap-[var(--lili-playbar-meta-gap)] overflow-hidden">
       <button
         type="button"
         aria-label="打开全屏播放器"
         data-id="full-screen-player-open"
-        className="group relative flex-none cursor-pointer overflow-hidden rounded-[var(--biu-playbar-cover-radius)]"
+        className="group relative flex-none cursor-pointer overflow-hidden rounded-[var(--lili-playbar-cover-radius)]"
         onClick={openNowPlaying}
       >
         <Artwork
@@ -54,25 +54,25 @@ const LeftControl = () => {
           radius="none"
           alt=""
           placeholder={PLACEHOLDER_RADIALS.playbarCover}
-          className="rounded-[var(--biu-playbar-cover-radius)]"
-          style={{ width: "var(--biu-playbar-cover-w)", height: "var(--biu-playbar-cover-h)" }}
+          className="rounded-[var(--lili-playbar-cover-radius)]"
+          style={{ width: "var(--lili-playbar-cover-w)", height: "var(--lili-playbar-cover-h)" }}
         />
-        <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/55 text-white opacity-0 transition-opacity duration-[var(--biu-duration-fast)] group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/55 text-white opacity-0 transition-opacity duration-[var(--lili-duration-fast)] group-hover:opacity-100 group-focus-visible:opacity-100">
           <RiArrowUpSLine size={32} />
         </span>
       </button>
 
-      <div className="flex min-w-0 flex-1 flex-col items-start gap-[var(--biu-playbar-title-gap)] overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-[var(--lili-playbar-title-gap)] overflow-hidden">
         <span
           title={title}
-          className="block w-full max-w-full truncate text-[length:var(--biu-type-list-title-size)] font-semibold text-[rgb(var(--biu-text-primary))]"
+          className="block w-full max-w-full truncate text-[length:var(--lili-type-list-title-size)] font-semibold text-[rgb(var(--lili-text-primary))]"
         >
           {title}
         </span>
-        <span className="flex w-full min-w-0 items-center gap-[var(--biu-playbar-sub-gap)]">
+        <span className="flex w-full min-w-0 items-center gap-[var(--lili-playbar-sub-gap)]">
           <span
             className={clsx(
-              "min-w-0 truncate text-[length:var(--biu-type-label-size)] whitespace-nowrap text-[rgb(var(--biu-text-quaternary))]",
+              "min-w-0 truncate text-[length:var(--lili-type-label-size)] whitespace-nowrap text-[rgb(var(--lili-text-quaternary))]",
               { "cursor-pointer hover:underline": ownerClickable },
             )}
             onClick={event => {
