@@ -84,7 +84,7 @@ const Sidebar = ({ pathname }: SidebarProps) => {
         aria-label={collapsed ? "展开侧栏" : "收起侧栏"}
         onClick={() => updateSettings({ sideMenuCollapsed: !collapsed })}
       >
-        Biu
+        lili
       </button>
       <div className="shell4188-sidebar-scroll">
         <nav className="shell4188-nav-list">{PRIMARY.map(renderItem)}</nav>

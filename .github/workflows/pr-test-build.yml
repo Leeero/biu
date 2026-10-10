@@ -84,7 +84,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: biu-${{ matrix.os }}
+          name: lili-${{ matrix.os }}
           path: |
             dist/artifacts/*.exe
             dist/artifacts/*.yml

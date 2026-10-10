@@ -499,7 +499,7 @@ export const PatternsExhibit = () => {
           {[
             { title: "夜航", meta: "NOISE_LAB · 12 首 · 2024-08-12", tag: "专辑", badge: "无损" },
             { title: "器乐练习", meta: "琴键上的猫 · 28 首 · 2024-06-30", tag: "合集", badge: "合集" },
-            { title: "深夜循环", meta: "Biu Music · 63 首 · 2024-09-21", tag: "歌单", badge: "收藏夹" },
+            { title: "深夜循环", meta: "lili Music · 63 首 · 2024-09-21", tag: "歌单", badge: "收藏夹" },
           ].map((item, index) => (
             <AlbumCard
               key={item.title}

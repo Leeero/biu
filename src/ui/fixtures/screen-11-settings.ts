@@ -26,7 +26,7 @@ export const SCREEN_11_SETTINGS_FIXTURE = {
     {
       title: "下载与本地",
       subtitle: "下载目录 · 本地音乐目录 · FFmpeg 路径（高级）",
-      value: "~/Music/Biu",
+      value: "~/Music/lili",
       count: "3 项",
       icon: "folder",
       tab: "download",

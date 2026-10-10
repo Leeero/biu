@@ -37,7 +37,7 @@ export const SCREEN_12_MINI_PLAYER_FIXTURE = {
     caption: "收起主窗口后自动继续 · 常驻置顶 · 可拖动",
     artPlaceholder: PLACEHOLDER_GRADIENTS[1],
   },
-  trayItems: ["播放 / 暂停", "上一首", "下一首", "显示主窗口", "退出 Biu"],
+  trayItems: ["播放 / 暂停", "上一首", "下一首", "显示主窗口", "退出 lili"],
   shortcutRows: [
     ["播放 / 暂停", "Ctrl + Alt + Space"],
     ["上一首 / 下一首", "Ctrl + Alt + Left / Right"],

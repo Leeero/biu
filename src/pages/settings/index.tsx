@@ -239,7 +239,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
         <div className="settings4188-head">
           <span>应用偏好</span>
           <h1>设置</h1>
-          <p>管理 Biu 的界面、播放与本地应用偏好</p>
+          <p>管理 lili 的界面、播放与本地应用偏好</p>
         </div>
         <div className="flex w-full items-start max-md:flex-col">
           <nav

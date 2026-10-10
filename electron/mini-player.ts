@@ -12,7 +12,7 @@ let miniPlayer: BrowserWindow | null = null;
 
 const createMiniPlayer = () => {
   miniPlayer = new BrowserWindow({
-    title: "Biu Mini Player",
+    title: "lili Mini Player",
     show: true,
     hasShadow: true,
     width: 360,

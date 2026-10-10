@@ -8,7 +8,7 @@ export const SCREEN_05_DOWNLOADS_FIXTURE = {
     lead: "9 种真实任务状态，暂停 / 继续 / 重试按状态门控，不发出无效操作。",
   },
   filterPills: [
-    { kind: "primary", label: "打开下载目录 · ~/Music/Biu" },
+    { kind: "primary", label: "打开下载目录 · ~/Music/lili" },
     { kind: "secondary", label: "暂停全部" },
     { kind: "neutral", label: "重试全部失败" },
     { kind: "neutral", label: "清空已完成" },

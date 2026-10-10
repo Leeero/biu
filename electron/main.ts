@@ -38,7 +38,7 @@ let unsubscribeThumbarStatus: (() => void) | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    title: isDev ? "Biu-dev" : "Biu",
+    title: isDev ? "lili-dev" : "lili",
     icon: getWindowIcon(),
     show: true,
     hasShadow: true,

@@ -141,14 +141,14 @@ function createTray({ getMainWindow, onExit }: Props) {
     if (!tray) return;
     const { title } = getPlayerStatus();
     try {
-      tray.setToolTip(title ? `Biu - ${title}` : "Biu");
+      tray.setToolTip(title ? `lili - ${title}` : "lili");
     } catch (err) {
       log.warn("[tray] update tooltip failed:", err);
     }
   };
 
   tray = new Tray(loadTrayIcon());
-  tray.setToolTip("Biu");
+  tray.setToolTip("lili");
 
   rebuildMenu();
   unsubscribeStatus = subscribePlayerStatus(() => {

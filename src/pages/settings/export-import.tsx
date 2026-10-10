@@ -23,7 +23,7 @@ const ImportExport = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `biu-settings-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
+      a.download = `lili-settings-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();

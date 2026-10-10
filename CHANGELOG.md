@@ -1,5 +1,15 @@
 # Changelog
 
+> **本项目已由 Biu 改名为 lili（2026-10-10）。**
+>
+> 下方 `v1.16.0` 及更早的条目继承自上游 [`wood3n/biu`](https://github.com/wood3n/biu)，
+> 属改名前的版本线：其中的 compare / commit 链接指向上游仓库，**保持原样不改动** ——
+> 那是既成事实的记录，改写它等于伪造历史。
+>
+> 本项目的版本号自改名起从 **v1.0.0** 重新计数（改名同时更换了 appId，与旧版本
+> `com.biu.wood3n` 之间不存在自动升级路径，因此版本号不延续旧线反而更准确）。
+> 新条目由 `changelogen` 追加在本注释上方。
+
 ## v1.16.0
 
 [compare changes](https://github.com/wood3n/biu/compare/v1.15.0...v1.16.0)

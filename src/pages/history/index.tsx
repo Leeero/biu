@@ -269,7 +269,7 @@ const History = () => {
           <div>
             <span className="asset4188-eyebrow">来自 Bilibili</span>
             <h1>观看历史</h1>
-            <p>这里显示 Bilibili 历史，不等同于 Biu 的听歌统计。</p>
+            <p>这里显示 Bilibili 历史，不等同于 lili 的听歌统计。</p>
           </div>
           <div className="asset4188-actions">
             <button

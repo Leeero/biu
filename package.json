@@ -1,21 +1,21 @@
 {
-  "name": "biu",
-  "version": "1.16.0",
+  "name": "lili",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": "22.17.1"
   },
   "type": "module",
   "description": "music application based on bilibili api",
-  "author": "wood3n",
+  "author": "Leeero",
   "license": "PolyForm-Noncommercial-1.0.0",
-  "homepage": "https://github.com/Leeero/biu#readme",
+  "homepage": "https://github.com/Leeero/LiLi#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Leeero/biu.git"
+    "url": "git+https://github.com/Leeero/LiLi.git"
   },
   "bugs": {
-    "url": "https://github.com/Leeero/biu/issues"
+    "url": "https://github.com/Leeero/LiLi/issues"
   },
   "keywords": [
     "music",
@@ -140,5 +140,5 @@
     "*.json": "prettier --write"
   },
   "packageManager": "pnpm@10.24.0",
-  "productName": "Biu"
+  "productName": "lili"
 }

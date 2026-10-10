@@ -96,7 +96,7 @@ export const buildShellMenuTemplate = (
       click: actions.onOpenSettings,
     },
     {
-      label: "退出 Biu",
+      label: "退出 lili",
       click: actions.onQuit,
     },
   ];

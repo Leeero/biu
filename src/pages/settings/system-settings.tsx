@@ -307,7 +307,7 @@ export const SystemSettingsTab = ({
       )}
       {section === "about" && (
         <>
-          <h2>关于 Biu</h2>
+          <h2>关于 lili</h2>
           <div className="flex w-full items-center justify-between">
             <div className="mr-6 flex items-center space-x-1">
               <span>当前版本 {appVersion}</span>
