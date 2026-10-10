@@ -41,7 +41,6 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange, className }) =
   const user = useUser(s => s.user);
 
   const searchHistoryItems = useSearchHistory(s => s.items);
-  const keyword = useSearchHistory(s => s.keyword);
   const addSearchHistory = useSearchHistory(s => s.add);
   const deleteSearchHistory = useSearchHistory(s => s.delete);
   const clearSearchHistory = useSearchHistory(s => s.clear);
@@ -50,7 +49,15 @@ const SearchField: React.FC<SearchFieldProps> = ({ onFocusChange, className }) =
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(keyword);
+  /**
+   * 输入框初值**恒为空**，不取 store 里的 `keyword`（当前查询词）。
+   *
+   * 此前的写法是把 store 的 `keyword` 直接当 useState 的初值，而 `keyword` 又落了盘
+   * —— 两者一叠加，等于「每次启动，搜索框里躺着上一次搜的词」。用户看到的现象像
+   * 浏览器自动填充，其实是应用自己回填的（2026-10-09 修）。本次会话里提交过搜索后，
+   * 输入框仍会保留刚搜的词（那是下面的 `setValue` 写的）；只有冷启动是空的。
+   */
+  const [value, setValue] = useState("");
 
   useClickAway(() => {
     setOpen(false);

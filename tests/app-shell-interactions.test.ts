@@ -12,7 +12,7 @@
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { resolveShellLayout, type ShellChrome } from "@/app/shell/model";
 import { CollectionType } from "@/common/constants/collection";
@@ -415,5 +415,50 @@ describe("顶栏搜索", () => {
     expect(isTypingTarget(target("DIV", true))).toBe(true);
     expect(isTypingTarget(target("DIV"))).toBe(false);
     expect(isTypingTarget(null)).toBe(false);
+  });
+});
+
+/**
+ * 「搜索框里躺着上一次搜的词」曾是一个真实缺陷：`keyword`（当前查询词）被一起
+ * 持久化了，而输入框又用 `useState(keyword)` 取初值 —— 每次冷启动都像是被自动
+ * 填充。下面三条分别钉住两处改动的**行为**（不是源码形状），以及存量数据的迁移。
+ */
+describe("顶栏搜索框不记住上一次的查询词", () => {
+  test("输入框初值恒为空，不从 store 的当前查询词回填", () => {
+    const searchField = readFileSync(path.resolve(process.cwd(), "src/layout/topbar/search-field.tsx"), "utf8");
+    expect(searchField).toContain('useState("")');
+    expect(searchField).not.toContain("useState(keyword)");
+    // 只改初值还不够：只要还订阅着 keyword，将来有人顺手把它接回初值就又回填了。
+    expect(searchField).not.toContain("s => s.keyword");
+  });
+
+  test("当前查询词不落盘，搜索历史照旧进 localStorage", async () => {
+    localStorage.clear();
+    vi.resetModules();
+    const { useSearchHistory } = await import("@/store/search-history");
+
+    useSearchHistory.getState().add("下雨");
+
+    // 会话内 `/search` 页仍要能读到查询词。
+    expect(useSearchHistory.getState().keyword).toBe("下雨");
+    const persisted = JSON.parse(localStorage.getItem("search-history") ?? "{}") as {
+      state: Record<string, unknown> & { items: { value: string }[] };
+    };
+    expect(Object.keys(persisted.state)).not.toContain("keyword");
+    expect(persisted.state.items.map(item => item.value)).toEqual(["下雨"]);
+  });
+
+  test("老数据里存过的 keyword 在升版水合时被清掉", async () => {
+    // 只改 partialize 治不了存量数据：那份数据里**已经有** keyword，
+    // 水合时会合并回内存 —— 老用户升级后照样被回填。
+    localStorage.setItem(
+      "search-history",
+      JSON.stringify({ state: { keyword: "下雨", items: [{ value: "下雨", time: 1 }] }, version: 0 }),
+    );
+    vi.resetModules();
+    const { useSearchHistory } = await import("@/store/search-history");
+
+    expect(useSearchHistory.getState().keyword).toBe("");
+    expect(useSearchHistory.getState().items.map(item => item.value)).toEqual(["下雨"]);
   });
 });
