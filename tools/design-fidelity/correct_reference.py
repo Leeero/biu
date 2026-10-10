@@ -217,7 +217,7 @@ def selftest() -> int:
         print(f"跳过：缺少 {raw_path}（原始失真图），无法模拟 PDF 渲染。")
         return 0
 
-    tmp = pathlib.Path(tempfile.mkdtemp(prefix="biu-correct-selftest-"))
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix="lili-correct-selftest-"))
     try:
         work, out = tmp / "work", tmp / "out"
         work.mkdir()

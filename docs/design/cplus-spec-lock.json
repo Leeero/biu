@@ -5,7 +5,7 @@
     "version": "1.3.35",
     "frozenAt": "2026-10-10",
     "sourcePdf": "lili 1.0 · C+ 视觉稿（定性卡 + 12 屏 + 色板）, 14 页",
-    "sourceRender": "/tmp/biu-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
+    "sourceRender": "/tmp/lili-design/page-01.png … page-14.png（pdftoppm -png -r 110，2200 × 1375）",
     "prototype": "prototypes/c-plus-2026/",
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [

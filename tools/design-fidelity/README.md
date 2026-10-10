@@ -1,6 +1,6 @@
 # design-fidelity · C+ 保真度校验工具
 
-保证「按视觉稿重构」这件事**可执行、可验证、不可绕过**。前四件对应 [`../../docs/design/biu-cplus-refactor-plan.md`](../../docs/design/biu-cplus-refactor-plan.md) §7 的三道闸门，其余是辅助件（它们是**手段**，不参与判定）。
+保证「按视觉稿重构」这件事**可执行、可验证、不可绕过**。前四件对应 [`../../docs/design/lili-cplus-refactor-plan.md`](../../docs/design/lili-cplus-refactor-plan.md) §7 的三道闸门，其余是辅助件（它们是**手段**，不参与判定）。
 
 | 工具                          | 闸门       | 作用                                                              |
 | ----------------------------- | ---------- | ----------------------------------------------------------------- |
@@ -92,7 +92,7 @@ node tools/design-fidelity/serve-app.mjs --root dist/web --port 4173
 bash tools/design-fidelity/run.sh --screen 07 --target app --base-url http://127.0.0.1:4173
 ```
 
-`build-app.mjs` 会带 `BIU_WEB_ONLY=1`，跳过 Electron 主进程打包与 electron-builder 封装
+`build-app.mjs` 会带 `LILI_WEB_ONLY=1`，跳过 Electron 主进程打包与 electron-builder 封装
 （后者还要 Xcode 的 `actool`，本机没有）。构建末尾 rspack 在关闭编译器时可能报
 `Rspack build failed`，**但产物已经落盘** —— 判断成功与否看那行「手动落盘 N 个产物」，
 不要看退出码。
@@ -100,7 +100,7 @@ bash tools/design-fidelity/run.sh --screen 07 --target app --base-url http://127
 `run.sh` 会自动准备 Python 环境（在 `tools/design-fidelity/.venv` 内安装 `pillow` + `numpy`）。若已有可用解释器：
 
 ```bash
-BIU_FIDELITY_PYTHON=/path/to/python bash tools/design-fidelity/run.sh --all
+LILI_FIDELITY_PYTHON=/path/to/python bash tools/design-fidelity/run.sh --all
 ```
 
 需要 Chrome / Chromium（`/Applications/Google Chrome.app`、`google-chrome`、`chromium` 任一）。
@@ -141,7 +141,7 @@ BIU_FIDELITY_PYTHON=/path/to/python bash tools/design-fidelity/run.sh --all
 重新生成：
 
 ```bash
-tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf"
+tools/design-fidelity/prepare_reference.sh "/path/to/lili 1.0 · C+ 视觉稿.pdf"
 ```
 
 依赖 `pdftoppm`（macOS：`brew install poppler`）。脚本以 110 dpi 渲染（2200 × 1375），再按**保宽等比**缩放到 1440 × 900。

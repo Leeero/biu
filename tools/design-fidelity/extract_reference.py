@@ -12,7 +12,7 @@ import sys
 import numpy as np
 from PIL import Image
 
-DESIGN_DIR = pathlib.Path("/tmp/biu-design")
+DESIGN_DIR = pathlib.Path("/tmp/lili-design")
 CANVAS = (1440, 900)
 
 # 原型屏名 → 设计稿页码
@@ -154,7 +154,7 @@ if __name__ == "__main__":
         result[name] = p
         print(f"--- {name} (p{page}) ---")
         print(json.dumps(p, ensure_ascii=False, indent=1)[:1200])
-    pathlib.Path("/tmp/biu-render/reference-raw.json").write_text(
+    pathlib.Path("/tmp/lili-render/reference-raw.json").write_text(
         json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print("\nwrote /tmp/biu-render/reference-raw.json")
+    print("\nwrote /tmp/lili-render/reference-raw.json")

@@ -30,7 +30,7 @@ if (isDev) {
   // 开发环境暴露完整可访问性树，便于键盘与辅助技术回归测试。
   app.commandLine.appendSwitch("force-renderer-accessibility");
   // 开发环境数据隔离
-  app.setPath("userData", path.join(app.getPath("appData"), `biu-dev`));
+  app.setPath("userData", path.join(app.getPath("appData"), `lili-dev`));
 }
 
 let mainWindow: BrowserWindow | null = null;

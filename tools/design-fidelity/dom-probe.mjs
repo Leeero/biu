@@ -95,7 +95,7 @@ const child = spawn(chrome, [
   `--remote-debugging-port=${port}`,
   "--no-first-run",
   "--no-default-browser-check",
-  "--user-data-dir=/tmp/biu-domprobe-profile",
+  "--user-data-dir=/tmp/lili-domprobe-profile",
   "about:blank",
 ]);
 child.on("error", e => {

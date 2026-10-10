@@ -52,9 +52,9 @@ describe("Electron security validation", () => {
   });
 
   test("allows navigation only to the packaged application document", () => {
-    const indexPath = path.resolve("/tmp/biu/dist/web/index.html");
+    const indexPath = path.resolve("/tmp/lili/dist/web/index.html");
     expect(isTrustedAppNavigation(`${pathToFileURL(indexPath).toString()}#/settings`, indexPath)).toBe(true);
-    expect(isTrustedAppNavigation(pathToFileURL(path.resolve("/tmp/biu/other.html")).toString(), indexPath)).toBe(
+    expect(isTrustedAppNavigation(pathToFileURL(path.resolve("/tmp/lili/other.html")).toString(), indexPath)).toBe(
       false,
     );
     expect(isTrustedAppNavigation("https://example.com", indexPath)).toBe(false);

@@ -21,7 +21,7 @@
  *      CLI 没有这个问题 —— 因为它显式 `loadConfig()` 后再把结果交给 createRsbuild。
  *      这里照抄 CLI 的做法，于是 ① 的手动落盘和 ② 的插件加载可以同时满足。
  *
- * 只构建 web：`BIU_WEB_ONLY=1` 会让 `plugins/rsbuild-plugin-electron.ts` 跳过 Electron
+ * 只构建 web：`LILI_WEB_ONLY=1` 会让 `plugins/rsbuild-plugin-electron.ts` 跳过 Electron
  * 主进程打包与 electron-builder 封装（后者还要 Xcode 的 actool，本机没有）。
  *
  * 用法：
@@ -38,7 +38,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
 const OUT = path.resolve(process.argv[2] ?? path.join(ROOT, "dist/web"));
 
-process.env.BIU_WEB_ONLY = "1";
+process.env.LILI_WEB_ONLY = "1";
 
 const { createRsbuild, loadConfig } = await import("@rsbuild/core");
 

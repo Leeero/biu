@@ -19,7 +19,7 @@ import { convert } from "./ffmpeg-processor";
 import { ensureDir, getStreamAudioBandwidth, isUrlValid, removeDirOrFile, sortAudio } from "./utils";
 
 const ChunkSize = 10 * 1024 * 1024; // 10MB
-const TempRootDir = path.join(os.tmpdir(), "biu-temp-downloader");
+const TempRootDir = path.join(os.tmpdir(), "lili-temp-downloader");
 
 export class DownloadCore extends EventEmitter {
   public id: string;

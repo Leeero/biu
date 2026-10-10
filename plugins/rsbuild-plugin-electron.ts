@@ -10,8 +10,8 @@ export const pluginElectron = (): RsbuildPlugin => ({
   setup(api) {
     // 保真度比对 / CI 网页构建只需要 dist/web，跳过 Electron 主进程打包与
     // electron-builder 封装（后者会跑 dmg/zip 多目标，极慢且与本目标无关）。
-    // 用 BIU_WEB_ONLY=1 触发：`BIU_WEB_ONLY=1 pnpm build`。
-    const webOnly = process.env.BIU_WEB_ONLY === "1";
+    // 用 LILI_WEB_ONLY=1 触发：`LILI_WEB_ONLY=1 pnpm build`。
+    const webOnly = process.env.LILI_WEB_ONLY === "1";
 
     api.onAfterDevCompile(async ({ isFirstCompile }) => {
       if (webOnly) return;

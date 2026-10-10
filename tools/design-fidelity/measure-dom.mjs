@@ -42,8 +42,8 @@ const CHROME_CANDIDATES = [
 ];
 
 const VIEWPORT = { width: 1440, height: 900 };
-const PORT = Number(process.env.BIU_CDP_PORT ?? 9333);
-const WAIT_MS = Number(process.env.BIU_CDP_WAIT_MS ?? 2500);
+const PORT = Number(process.env.LILI_CDP_PORT ?? 9333);
+const WAIT_MS = Number(process.env.LILI_CDP_WAIT_MS ?? 2500);
 
 const [url, ...selectors] = process.argv.slice(2);
 if (!url || selectors.length === 0) {
@@ -70,7 +70,7 @@ const child = spawn(
     "--force-device-scale-factor=1",
     `--window-size=${VIEWPORT.width},${VIEWPORT.height}`,
     `--remote-debugging-port=${PORT}`,
-    `--user-data-dir=${path.join(process.env.TMPDIR ?? "/tmp", `biu-cdp-${PORT}`)}`,
+    `--user-data-dir=${path.join(process.env.TMPDIR ?? "/tmp", `lili-cdp-${PORT}`)}`,
     url,
   ],
   { stdio: "ignore" },

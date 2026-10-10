@@ -6,7 +6,7 @@
 # （第 8 页就是这样被压掉 0.9204 的，见 docs/design/evidence/reference-page-08-distortion.md）。
 #
 # 用法：
-#   tools/design-fidelity/prepare_reference.sh "/path/to/Biu 2.0 · C+ 视觉稿.pdf"
+#   tools/design-fidelity/prepare_reference.sh "/path/to/lili 1.0 · C+ 视觉稿.pdf"
 #
 # 依赖：poppler（pdftoppm）与 Python 侧的 pillow + numpy。macOS: brew install poppler
 set -euo pipefail
@@ -37,7 +37,7 @@ pdftoppm -png -r 110 "$PDF" "$WORK/page"
 mkdir -p "$OUT"
 echo "▸ 保宽等比缩放到 1440 × 900 并写入 $OUT …（画板高度不为 900 的页按壳层对齐裁切，见 correct_reference.py）"
 
-PY="${BIU_FIDELITY_PYTHON:-python3}"
+PY="${LILI_FIDELITY_PYTHON:-python3}"
 if ! "$PY" -c "import numpy, PIL" >/dev/null 2>&1; then
   if [ -x "$HERE/.venv/bin/python" ]; then
     PY="$HERE/.venv/bin/python"

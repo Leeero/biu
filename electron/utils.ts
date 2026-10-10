@@ -12,7 +12,7 @@ import { appSettingsStore } from "./store";
 export const IconBase = isDev ? process.cwd() : process.resourcesPath;
 
 export const getUserDataPath = () => {
-  return isDev ? path.join(app.getPath("appData"), `biu-dev`) : app.getPath("userData");
+  return isDev ? path.join(app.getPath("appData"), `lili-dev`) : app.getPath("userData");
 };
 
 export const getWindowIcon = () =>

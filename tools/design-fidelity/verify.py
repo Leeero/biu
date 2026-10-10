@@ -47,7 +47,7 @@ SPEC_LOCK = ROOT / "docs/design/cplus-spec-lock.json"
 REFERENCE_DIR = ROOT / "tools/design-fidelity/reference"
 PROTOTYPE_DIR = ROOT / "prototypes/c-plus-2026/screens"
 FIXTURES_DIR = ROOT / "tools/design-fidelity/fixtures"
-FALLBACK_REFERENCE_DIR = pathlib.Path("/tmp/biu-design")
+FALLBACK_REFERENCE_DIR = pathlib.Path("/tmp/lili-design")
 
 CANVAS = (1440, 900)
 CHROME_CANDIDATES = [
@@ -791,7 +791,7 @@ def main() -> int:
         return 2
 
     chrome = find_chrome()
-    out_dir = pathlib.Path(args.out) if args.out else pathlib.Path(tempfile.mkdtemp(prefix="biu-fidelity-"))
+    out_dir = pathlib.Path(args.out) if args.out else pathlib.Path(tempfile.mkdtemp(prefix="lili-fidelity-"))
     out_dir.mkdir(parents=True, exist_ok=True)
     print(f"目标：{args.target}　输出：{out_dir}")
 
