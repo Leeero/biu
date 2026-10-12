@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { addToast } from "@heroui/react";
@@ -80,12 +80,16 @@ const MusicRecommendLive = () => {
   const [errorMessage, setErrorMessage] = useState("请稍后重试");
   const playId = usePlayList(state => state.playId);
 
+  const requestSeq = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = ++requestSeq.current;
     setStatus("loading");
     setErrorMessage("请稍后重试");
     try {
       if (source === "module") {
         const [banner, music] = await Promise.all([getNewMusicBanner(), getNewMusic()]);
+        if (seq !== requestSeq.current) return;
         const banners = (banner.data?.list ?? []).map((item, i) => adaptNewMusicBannerToTrack(item, `banner-${i}`));
         setFeaturedTrack(banners[0] ?? null);
         setTracks(
@@ -103,12 +107,15 @@ const MusicRecommendLive = () => {
           plat: 30,
           web_location: "333.40138",
         });
+        if (seq !== requestSeq.current) return;
         if (res.code !== 0) throw new Error(res.message || `B站接口返回 ${res.code}`);
         setFeaturedTrack(null);
         setTracks((res.data?.archives ?? []).map((item, i) => adaptRegionArchiveToTrack(item, String(i))));
       }
+      if (seq !== requestSeq.current) return;
       setStatus("ready");
     } catch (error) {
+      if (seq !== requestSeq.current) return;
       setTracks([]);
       setErrorMessage(error instanceof Error ? error.message : "无法加载 B 站音乐分区");
       setStatus("error");
@@ -164,10 +171,14 @@ const MusicRecommendLive = () => {
     [displayMode, updateSettings],
   );
 
-  if (status === "loading") return <PageState kind="loading" />;
-  if (status === "error")
-    return <PageState kind="error" description={errorMessage} actionLabel="重新加载" onAction={() => void load()} />;
-  if (!tracks.length && !featuredTrack) return <PageState kind="empty" />;
+  const content = useMemo(() => {
+    if (status === "loading") return <PageState kind="loading" className="min-h-[420px]" />;
+    if (status === "error")
+      return <PageState kind="error" description={errorMessage} actionLabel="重新加载" onAction={() => void load()} />;
+    if (!tracks.length && !featuredTrack) return <PageState kind="empty" />;
+    return undefined;
+  }, [errorMessage, featuredTrack, load, status, tracks.length]);
+
   if (displayMode === "list") {
     const rows = (featuredTrack ? [featuredTrack, ...tracks] : tracks).map(toListRow);
     return (
@@ -178,6 +189,7 @@ const MusicRecommendLive = () => {
         filters={[]}
         filterControl={filterControl}
         viewSwitcher={viewSwitcher}
+        content={content}
         sectionTitle={source === "region" ? "音乐分区推荐" : "新歌推荐"}
         columns={discoverListColumns(["#", "标题", "播放", "时长"])}
         tracks={rows}
@@ -202,6 +214,7 @@ const MusicRecommendLive = () => {
         filters={[]}
         filterControl={filterControl}
         viewSwitcher={viewSwitcher}
+        content={content}
         heroSectionTitle="新碟速递"
         hero={
           featuredTrack
