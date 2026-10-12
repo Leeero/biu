@@ -84,6 +84,27 @@ export interface DiscoverListViewProps {
   title: string;
   lead: ReactNode;
   filters: DiscoverFilter[];
+  /**
+   * 语义筛选控件。**传了它就用它替代 `filters` 的默认渲染** —— 理由与
+   * `DiscoverViewProps.filterControl` 相同：「音乐分区 / 新碟与新歌」是互斥二选一
+   * 的数据源，该用分段控件表达，而不是一排并列药丸。夹具路径不传。
+   */
+  filterControl?: ReactNode;
+  /**
+   * 头部右上角的"视图切换"控件。**与 `filterControl`（语义筛选）刻意分开** —— 理由
+   * 与 `DiscoverViewProps.viewSwitcher` 相同：把视图切换塞进筛选条会让它
+   * 与"音乐分区 / 新碟与新歌"等数据源 Pill 抢视觉重心。夹具路径不传。
+   */
+  viewSwitcher?: ReactNode;
+  /**
+   * 内容区。**传了它就用它替代曲目表那一整段。**
+   *
+   * 存在的理由与 `DiscoverViewProps.content` 相同：切换数据源时**页头必须常驻**。
+   * 让页面在 loading / error / empty 时整个早退成 `<PageState>` 会把页头连同
+   * 分段控件一起卸载重建 —— 每次点击闪一下，且刚点下的那一档会在视觉上"消失"
+   * 半秒。骨架常驻、只有数据区换状态才是对的。
+   */
+  content?: ReactNode;
   sectionTitle: string;
   columns: TrackTableColumn[];
   tracks: DiscoverListTrackRow[];
@@ -115,6 +136,9 @@ export const DiscoverListView = ({
   title,
   lead,
   filters,
+  filterControl,
+  viewSwitcher,
+  content,
   sectionTitle,
   columns,
   tracks,
@@ -127,63 +151,71 @@ export const DiscoverListView = ({
     <div className="w-full">
       {/* 单列页头：设计稿本屏没有右栏，故不给 `aside`（与屏 01 的两栏页头不同）。 */}
       <PageHeader title={title} lead={lead} leadOffsetPx={DISCOVER_LIST_RHYTHM.leadMarginTop}>
-        <FilterBar label="发现音乐筛选" gapPx={DISCOVER_LIST_RHYTHM.filterMarginTop}>
-          {filters.map(item =>
-            item.onPress ? (
-              <Button
-                key={item.key}
-                variant={item.variant}
-                icon={item.icon}
-                trailing={item.trailing}
-                disabled={item.disabled}
-                onClick={() => onPillPress(item)}
-              >
-                {item.label}
-              </Button>
-            ) : (
-              <Pill key={item.key} variant={item.variant} icon={item.icon} trailing={item.trailing}>
-                {item.label}
-              </Pill>
-            ),
-          )}
-        </FilterBar>
+        {viewSwitcher ? (
+          <div className="flex justify-end" aria-label="视图切换">
+            {viewSwitcher}
+          </div>
+        ) : null}
+        {filterControl ?? (
+          <FilterBar label="发现音乐筛选" gapPx={DISCOVER_LIST_RHYTHM.filterMarginTop}>
+            {filters.map(item =>
+              item.onPress ? (
+                <Button
+                  key={item.key}
+                  variant={item.variant}
+                  icon={item.icon}
+                  trailing={item.trailing}
+                  disabled={item.disabled}
+                  onClick={() => onPillPress(item)}
+                >
+                  {item.label}
+                </Button>
+              ) : (
+                <Pill key={item.key} variant={item.variant} icon={item.icon} trailing={item.trailing}>
+                  {item.label}
+                </Pill>
+              ),
+            )}
+          </FilterBar>
+        )}
       </PageHeader>
 
-      {/* 段标题下距与段标题高都取缺省档（8 / 24）—— 见 `DISCOVER_LIST_RHYTHM` 的说明。 */}
-      <Section title={sectionTitle} gapPx={DISCOVER_LIST_RHYTHM.sectionGap}>
-        {/*
+      {content ?? (
+        <Section title={sectionTitle} gapPx={DISCOVER_LIST_RHYTHM.sectionGap}>
+          {/*
           **不传 `currentId`**：设计稿本屏第 04 行只有操作带常驻露出，**没有**整行高亮。
           取证：该行与相邻行在操作带之外（x850–1300）逐行比较，列中位差 = 0.0；
           行 3 / 4 / 5 的列中位同为 7.00（同一条底板垂直渐变）。而原型的
           `.track-row.is-current::before`（7% 白）会让同行中位变成 26.0。
           详见 spec-lock `screens[07].rowStateRule` 与 `geometry.list.currentStateNote`。
         */}
-        <TrackTable columns={columns}>
-          {tracks.map(row => (
-            <TrackTableRow key={row.id} trackId={row.id}>
-              <TrackIndex value={row.index} />
-              <TrackMain>
-                <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
-                <TrackText title={row.title} subtitle={row.subtitle} />
-              </TrackMain>
-              <TrackCell>{row.stats}</TrackCell>
-              <TrackCell align="end">{row.duration}</TrackCell>
-              {/*
+          <TrackTable columns={columns}>
+            {tracks.map(row => (
+              <TrackTableRow key={row.id} trackId={row.id}>
+                <TrackIndex value={row.index} />
+                <TrackMain>
+                  <TrackArt src={row.art} artKey={row.artKey} placeholder={row.placeholder} />
+                  <TrackText title={row.title} subtitle={row.subtitle} />
+                </TrackMain>
+                <TrackCell>{row.stats}</TrackCell>
+                <TrackCell align="end">{row.duration}</TrackCell>
+                {/*
                 操作带走 `TrackTableActions` 的**缺省右偏移公式**：设计稿本屏带子右缘
                 画布 x812，与屏 02 同（屏 06 右缘 x1152 才需要 `right-[224px]` 覆写）。
               */}
-              {demoActionRowIds.includes(row.id) && (
-                <TrackTableActions
-                  actions={rowActions.map(action => ({
-                    ...action,
-                    onPress: () => onRowAction(row, action.key),
-                  }))}
-                />
-              )}
-            </TrackTableRow>
-          ))}
-        </TrackTable>
-      </Section>
+                {demoActionRowIds.includes(row.id) && (
+                  <TrackTableActions
+                    actions={rowActions.map(action => ({
+                      ...action,
+                      onPress: () => onRowAction(row, action.key),
+                    }))}
+                  />
+                )}
+              </TrackTableRow>
+            ))}
+          </TrackTable>
+        </Section>
+      )}
     </div>
   </ScrollContainer>
 );

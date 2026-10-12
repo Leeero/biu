@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { addToast } from "@heroui/react";
+import { RiGridLine, RiListUnordered } from "@remixicon/react";
 
 import type { Track } from "@/domain/track";
 
@@ -20,7 +21,7 @@ import {
   discoverListColumns,
   type DiscoverListTrackRow,
 } from "@/features/discover/discover-list-view";
-import { DiscoverView, type DiscoverAlbum, type DiscoverFilter } from "@/features/discover/discover-view";
+import { DiscoverView, type DiscoverAlbum } from "@/features/discover/discover-view";
 import {
   useDiscoverFixtureData,
   useDiscoverFixtureName,
@@ -36,6 +37,7 @@ import { useSettings } from "@/store/settings";
 import { DISCOVER_CARD_FIXTURE_NAME } from "@/ui/fixtures/screen-07-discover-card";
 import { DISCOVER_LIST_FIXTURE_NAME } from "@/ui/fixtures/screen-08-discover-list";
 import { AnnotationBand } from "@/ui/patterns/annotation-band";
+import { SegmentedControl } from "@/ui/primitives/segmented-control";
 import { PageState } from "@/ui/states/page-state";
 
 const toListRow = (track: Track, index: number): DiscoverListTrackRow => ({
@@ -130,28 +132,36 @@ const MusicRecommendLive = () => {
     }
   }, []);
 
-  const filters = useMemo<DiscoverFilter[]>(
-    () => [
-      {
-        key: "region",
-        label: "音乐分区",
-        variant: source === "region" ? "primary" : "neutral",
-        onPress: () => navigate("/?source=region"),
-      },
-      {
-        key: "module",
-        label: "新碟与新歌",
-        variant: source === "module" ? "primary" : "neutral",
-        onPress: () => navigate("/?source=module"),
-      },
-      {
-        key: "mode",
-        label: displayMode === "card" ? "列表视图" : "卡片视图",
-        variant: "neutral",
-        onPress: () => updateSettings({ displayMode: displayMode === "card" ? "list" : "card" }),
-      },
-    ],
-    [displayMode, navigate, source, updateSettings],
+  const filterControl = useMemo(
+    () => (
+      <SegmentedControl
+        size="default"
+        label="数据源"
+        items={[
+          { key: "region", label: "音乐分区" },
+          { key: "module", label: "新碟与新歌" },
+        ]}
+        activeKey={source}
+        onSelect={key => navigate(`/?source=${key === "module" ? "module" : "region"}`)}
+      />
+    ),
+    [navigate, source],
+  );
+
+  const viewSwitcher = useMemo(
+    () => (
+      <SegmentedControl
+        size="compact"
+        label="显示模式"
+        items={[
+          { key: "card", label: <RiGridLine size={15} aria-hidden="true" /> },
+          { key: "list", label: <RiListUnordered size={15} aria-hidden="true" /> },
+        ]}
+        activeKey={displayMode === "card" ? "card" : "list"}
+        onSelect={key => updateSettings({ displayMode: key === "card" ? "card" : "list" })}
+      />
+    ),
+    [displayMode, updateSettings],
   );
 
   if (status === "loading") return <PageState kind="loading" />;
@@ -164,7 +174,10 @@ const MusicRecommendLive = () => {
       <DiscoverListView
         title="发现音乐"
         lead={source === "region" ? "浏览音乐分区最新内容。" : "浏览新碟与新歌推荐。"}
-        filters={filters}
+        // 空数组：数据源切换改走 `filterControl` 的分段控件，这里没有药丸要渲染。
+        filters={[]}
+        filterControl={filterControl}
+        viewSwitcher={viewSwitcher}
         sectionTitle={source === "region" ? "音乐分区推荐" : "新歌推荐"}
         columns={discoverListColumns(["#", "标题", "播放", "时长"])}
         tracks={rows}
@@ -185,7 +198,10 @@ const MusicRecommendLive = () => {
       <DiscoverView
         title="发现音乐"
         lead="来自 Bilibili 的音乐视频，与本地音乐，一起播放"
-        filters={filters}
+        // 空数组：数据源切换改走 `filterControl` 的分段控件，这里没有药丸要渲染。
+        filters={[]}
+        filterControl={filterControl}
+        viewSwitcher={viewSwitcher}
         heroSectionTitle="新碟速递"
         hero={
           featuredTrack

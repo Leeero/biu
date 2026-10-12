@@ -49,6 +49,35 @@ export interface DiscoverViewProps {
   title: string;
   lead: string;
   filters: DiscoverFilter[];
+  /**
+   * 语义筛选控件。**传了它就用它替代 `filters` 的默认渲染。**
+   *
+   * 真实路径用它传入 `SegmentedControl`：「音乐分区 / 新碟与新歌」是**互斥二选一**
+   * 的数据源，分段控件才有这个语义 —— 激活项反色、方向键在两档间循环、
+   * 读屏听到「已按下 / 未按下」而不是「按钮 · X / 按钮 · Y」三选一。
+   * 夹具路径不传（那一屏的 5 枚是「全部播放 / 随机 / 去重后合并 N 条 / 显示模式 · 卡片 /
+   * 第二段标题」，本来就不是互斥选项，**别被强行改成分段**）。
+   */
+  filterControl?: ReactNode;
+  /**
+   * 头部右上角的"视图切换"控件。
+   *
+   * 刻意与 `filterControl`（语义筛选）分开放在头部右侧，且**不**与 `filterControl`
+   * 拼成同一组 SegmentedControl —— 把视图切换塞进筛选条会让它和"音乐分区 / 新碟
+   * 与新歌"等数据源 Pill 抢视觉重心，而它实际影响的不是数据源、是**内容区怎么画**。
+   *
+   * 真实路径传 `SegmentedControl`，夹具路径不传（那一屏没有视图切换概念）。
+   */
+  viewSwitcher?: ReactNode;
+  /**
+   * 内容区。**传了它就用它替代大卡 + 专辑网格那一整段。**
+   *
+   * 存在的理由：切换数据源时**页头必须常驻**。让页面在 loading / error / empty 时
+   * 整段早退成 `<PageState>` 会把页头连同分段控件一起卸载重建 —— 每次点击闪一下，
+   * 且刚点下的那一档会在视觉上"消失"半秒。骨架常驻、只有数据区换状态才是对的。
+   * 详见 `src/pages/music-recommend/index.tsx` 里 `content` memo 的注释。
+   */
+  content?: ReactNode;
   heroSectionTitle: string;
   hero: DiscoverHero | null;
   albumSectionTitle: string;
