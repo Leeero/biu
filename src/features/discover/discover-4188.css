@@ -1,7 +1,19 @@
 /* stylelint-disable no-descending-specificity -- 交互态跟随对应基础选择器，保持组件局部可读。 */
+
+/**
+ * 滚动条预留。
+ *
+ * `ScrollContainer` 的滚动条是 **absolute 覆盖**在 viewport 右边缘的
+ * （`overlayscrollbars`，`--os-size: 10px`），不占布局宽度。而 shell 的 48px
+ * gutter 在**滚动容器之外** —— 本文件根节点的 padding 若左右为 0，卡片网格就
+ * 一路铺到 viewport 右边缘，最右一列正好被滚动条压掉 10px。
+ *
+ * 留 14 = 轨道 10 + 呼吸 4：贴合之余留一点余量，免得悬停加粗时又贴上去。
+ * 两个分支各自的根节点都留这份：它们是彼此独立的滚动容器内容根。
+ */
 .lili-theme-4188 .discover4188 {
   width: 100%;
-  padding: 8px 0 44px;
+  padding: 8px 14px 44px 0;
 }
 
 .discover4188-heading {

@@ -148,7 +148,9 @@ export const DiscoverListView = ({
   onRowAction,
 }: DiscoverListViewProps) => (
   <ScrollContainer enableBackToTop className="h-full w-full">
-    <div className="w-full">
+    {/* 右侧留 14 给滚动条 —— 理由同 `.discover4188`：滚动条是覆盖式的、不占布局
+        宽度，最右列（本屏是右对齐的时长列）会被压掉 10px。 */}
+    <div className="w-full pr-[14px]">
       {/* 单列页头：设计稿本屏没有右栏，故不给 `aside`（与屏 01 的两栏页头不同）。 */}
       <PageHeader title={title} lead={lead} leadOffsetPx={DISCOVER_LIST_RHYTHM.leadMarginTop}>
         {viewSwitcher ? (
