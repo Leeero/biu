@@ -21,6 +21,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 
+import { DISCOVER_HEAD_RHYTHM } from "@/features/discover/discover-heading";
 import {
   DISCOVER_LIST_RHYTHM,
   DiscoverListView,
@@ -109,16 +110,27 @@ const normalizeImage = (value: string) =>
 describe("屏 08 的屏级节奏与真值一致", () => {
   const truth = screen08.rhythmImplementation;
 
-  test("三个像素值逐项相等，且与屏 07 的那一组不同", () => {
-    expect(DISCOVER_LIST_RHYTHM.leadMarginTop).toBe(truth.leadMarginTop);
-    expect(DISCOVER_LIST_RHYTHM.filterMarginTop).toBe(truth.filterMarginTop);
+  test("段间距仍是本屏的值，导语/筛选间距改由共享页头给出", () => {
+    // **展示模式只影响内容区**，页头两屏同源 —— 见 `DiscoverHeading`。
+    // 所以 `DISCOVER_LIST_RHYTHM` 现在只剩「段间距」这一个本屏值，导语与筛选的
+    // 间距归 `DISCOVER_HEAD_RHYTHM`，不再在本屏里重复一份。
     expect(DISCOVER_LIST_RHYTHM.sectionGap).toBe(truth.sectionGap);
+    expect(Object.keys(DISCOVER_LIST_RHYTHM)).toEqual(["sectionGap"]);
+  });
 
-    // 真值里三个值分别是 8 / 20 / 20，屏 07 是 18 / 13 / 25 —— **三处都不同**。
-    // 只要有人「顺手对齐两屏」，这条会红。
-    expect(DISCOVER_LIST_RHYTHM.leadMarginTop).not.toBe(DISCOVER_RHYTHM.leadMarginTop);
-    expect(DISCOVER_LIST_RHYTHM.filterMarginTop).not.toBe(DISCOVER_RHYTHM.filterMarginTop);
-    expect(DISCOVER_LIST_RHYTHM.sectionGap).not.toBe(DISCOVER_RHYTHM.sectionGap);
+  test("页头两屏同源： lead / filter 与卡片分支逐项相等", () => {
+    // 这条是「统一页头」的落点，方向与旧版断言**相反**：旧版要求两屏不许对齐
+    // （卡片 18/13 vs 列表 8/20），因为那是照**两张静态设计稿**落的；
+    // 但它们其实是同一个页面的两个展示模式，用户会在其间来回切换 ——
+    // 形式稳定优先，故统一为一组（取屏 07 的 18 / 13）。
+    expect(DISCOVER_HEAD_RHYTHM.leadMarginTop).toBe(DISCOVER_RHYTHM.leadMarginTop);
+    expect(DISCOVER_HEAD_RHYTHM.filterMarginTop).toBe(DISCOVER_RHYTHM.filterMarginTop);
+    expect(DISCOVER_HEAD_RHYTHM.leadMarginTop).toBe(18);
+    expect(DISCOVER_HEAD_RHYTHM.filterMarginTop).toBe(13);
+    // 列表屏旧值（设计稿 8 / 20）保留在这里，是为了让「舍弃了哪组数」可读：
+    // 谁要让列表屏回到设计稿逐像素，看这两行就知道要改什么。
+    expect(truth.leadMarginTop).toBe(8);
+    expect(truth.filterMarginTop).toBe(20);
   });
 
   test("段标题高与下距取缺省档：本屏**不覆写**（屏 07 的 3 / 24 是被折线以下的大卡补偿推出来的）", () => {
@@ -130,13 +142,17 @@ describe("屏 08 的屏级节奏与真值一致", () => {
     expect(DISCOVER_RHYTHM.sectionHeadMarginBottom).toBe(3);
   });
 
-  test("导语的方向不能记反：本页 192 比第 8 页 202 更**高**", () => {
+  test("导语的旧方向留在注释里：本页原为 192 / 236，现已统一到卡片屏的 202 / 239", () => {
+    // 设计稿第 9 页实测 192 / 236，第 8 页是 202 / 239 —— 即**列表屏原本更高**
+    // 10px / 3px（1.3.22 订正过一处方向写反，这里保留判据的读法）。
     expect(screen08.anchors.leadTop).toBe(192);
     expect(screen08.anchors.filterTop).toBe(236);
-    // 8 = 202 − 192 与 20 = 236 − 216 …：真正的判据是「本屏的 leadMarginTop 更小」。
-    // 1.3.22 订正过一处方向写反（原写「第 9 页导语低 10px」），所以在这里再锁一层。
-    expect(DISCOVER_LIST_RHYTHM.leadMarginTop).toBeLessThan(DISCOVER_RHYTHM.leadMarginTop);
-    expect(DISCOVER_LIST_RHYTHM.filterMarginTop).toBeGreaterThan(DISCOVER_RHYTHM.filterMarginTop);
+    expect(DISCOVER_RHYTHM.leadMarginTop).toBe(18);
+    expect(DISCOVER_RHYTHM.filterMarginTop).toBe(13);
+    // 统一后两屏都取 18 / 13，列表屏因此比它的设计稿低 10 / 3px。
+    // **内容带不受影响**：首行封面仍由 `DISCOVER_LIST_RHYTHM.sectionGap` 闭合到 380。
+    expect(DISCOVER_HEAD_RHYTHM.leadMarginTop).toBe(DISCOVER_RHYTHM.leadMarginTop);
+    expect(DISCOVER_HEAD_RHYTHM.filterMarginTop).toBe(DISCOVER_RHYTHM.filterMarginTop);
   });
 });
 
@@ -202,17 +218,18 @@ describe("屏 08 呈现结构", () => {
     expect(grid?.style.gridTemplateColumns).toBe("");
   });
 
-  test("导语与筛选条走屏级像素覆写（8 / 20），不走档位", async () => {
+  test("导语与筛选条走共享页头（与卡片分支同一组值 18 / 13）", async () => {
     const container = await render(<DiscoverListView {...fixtureProps()} />);
     const fixture = SCREEN_08_DISCOVER_LIST_FIXTURE;
 
     const lead = Array.from(container.querySelectorAll("p")).find(node => node.textContent === fixture.head.lead);
     expect(lead).toBeDefined();
-    expect((lead as HTMLElement).style.marginTop).toBe(`${DISCOVER_LIST_RHYTHM.leadMarginTop}px`);
+    // 屏级像素覆写来自 `DiscoverHeading`（两屏共用），不是本屏私有的 8 / 20。
+    expect((lead as HTMLElement).style.marginTop).toBe(`${DISCOVER_HEAD_RHYTHM.leadMarginTop}px`);
 
     const bar = container.querySelector('[role="group"]');
     expect(bar).not.toBeNull();
-    expect((bar as HTMLElement).style.marginTop).toBe(`${DISCOVER_LIST_RHYTHM.filterMarginTop}px`);
+    expect((bar as HTMLElement).style.marginTop).toBe(`${DISCOVER_HEAD_RHYTHM.filterMarginTop}px`);
   });
 
   test("只有一段，段间距 20，段标题下距**没有**内联覆写", async () => {

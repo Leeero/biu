@@ -80,6 +80,14 @@ const MusicRecommendLive = () => {
   const [errorMessage, setErrorMessage] = useState("请稍后重试");
   const playId = usePlayList(state => state.playId);
 
+  /**
+   * 请求序号。**用来丢弃过期响应**，不是用来做 UI 判断。
+   *
+   * 快速连点"音乐分区 / 新碟与新歌"时，两个请求会并发在途；网络抖动下先发的
+   * 那一个可能**后到**，把后发那次的结果盖掉 —— 界面于是停在"上一个数据源"
+   * 的内容上，而分段控件显示的是刚点的这一档。用递增序号在写状态前比对，
+   * 过期响应直接丢弃，不写任何 state。
+   */
   const requestSeq = useRef(0);
 
   const load = useCallback(async () => {
@@ -139,6 +147,28 @@ const MusicRecommendLive = () => {
     }
   }, []);
 
+  /**
+   * 语义筛选控件（"音乐分区 / 新碟与新歌"）。
+   *
+   * 用 `SegmentedControl` 而不是一排并列药丸，因为这两者是**互斥二选一的数据源**：
+   *   · 分段控件的激活项反色，用户一眼看得出当前在哪一边 —— 并列药丸只能靠
+   *     描边/底色的细微差别猜；
+   *   · 方向键（←/→）可在两档间循环，Home / End 跳首尾 —— 互斥选项该有这个
+   *     键盘约定，而并列按钮只能逐个 Tab；
+   *   · 读屏听到的是 `aria-pressed` 的「已按下」，语义落在"单选"上。
+   *
+   * 传给 `filterControl` 槽位后，视图**不再渲染** `filters` 那排药丸，故下面
+   * `filters` 传空数组 —— 真实路径的数据源切换只有这两档，没有第三枚药丸可放。
+   * 夹具路径不受影响：它不传 `filterControl`，仍走 `filters` 的静态药丸渲染
+   * （那一屏的 5 枚是「全部播放 / 随机播放 / 数据源 · … / 去重后合并 27 条 /
+   * 显示模式 · 卡片」，本来就不是互斥选项，不该被强行改成分段）。
+   *
+   * 走 `navigate` 改 query 而不是本地 state：`source` 是**路由契约**
+   * （`/?source=region|module`），改 query 才能被前进/后退与分享链接携带。
+   * `SegmentedControl` 有 `href` 形态（渲染 `<Link>`），但那样会丢掉
+   * `aria-pressed` 语义 —— 数据源切换是"面板里的内容整体换掉"，
+   * 用按钮 + navigate 更贴合，也保持与既有实现一致。
+   */
   const filterControl = useMemo(
     () => (
       <SegmentedControl
@@ -155,6 +185,11 @@ const MusicRecommendLive = () => {
     [navigate, source],
   );
 
+  // 视图切换控件。`displayMode === "compact"` 暂未在本页提供对应渲染分支，
+  // 仍然把它放进可选项，避免与全局设置里"列表/网格/紧凑"三档不一致。
+  // 用户在系统设置页选了"紧凑"后，会落到列表分支的紧凑实现 —— 见 spec-lock
+  // `screens[07].rowStateRule` 与 `docs/design/cplus-screen-matrix.md` 的"displayMode
+  // 实为三档"条目。
   const viewSwitcher = useMemo(
     () => (
       <SegmentedControl
@@ -171,6 +206,19 @@ const MusicRecommendLive = () => {
     [displayMode, updateSettings],
   );
 
+  /**
+   * 内容区状态。**页头不参与切换** —— 见 `DiscoverViewProps.content`。
+   *
+   * 三个非 `ready` 态从这里传给视图的 `content` 槽位，页头（H1 / 导语 / 两个分段
+   * 控件）始终挂载在 `DiscoverView` / `DiscoverListView` 里，因此切换数据源或点
+   * "重新加载"时**只有下面这块换内容**，页面不闪，刚点下的那一档也不会在视觉上
+   * 消失半秒。
+   *
+   * `min-h-[420px]` 是给加载态的：**别让内容区塌到 256px**（`PageState` 自己的
+   * `min-h-64`）。卡片分支满屏约 12 张卡，切源时若内容区从近千像素缩到 256，
+   * 滚动位置会猛跳一截 —— 那跟"闪一下"一样难受，只是换了个形式。420 让塌陷
+   * 幅度落在可感但不刺眼的区间，且首次加载（页面本来就空）也不会撑出多余留白。
+   */
   const content = useMemo(() => {
     if (status === "loading") return <PageState kind="loading" className="min-h-[420px]" />;
     if (status === "error")

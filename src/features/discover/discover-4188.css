@@ -16,50 +16,13 @@
   padding: 8px 14px 44px 0;
 }
 
-.discover4188-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 25px;
-}
-
-.discover4188-heading h1 {
-  margin: 0;
-  font-size: 36px;
-  line-height: 1.1;
-  letter-spacing: -1px;
-}
-
-.discover4188-heading p {
-  margin: 9px 0 0;
-  color: var(--lili-4188-text-secondary);
-  font-size: 14px;
-}
-
-.discover4188-filters {
-  display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.discover4188-filters button {
-  height: 34px;
-  padding: 0 14px;
-  border: 1px solid var(--lili-4188-border);
-  border-radius: var(--lili-4188-radius-pill);
-  color: var(--lili-4188-text-secondary);
-  background: var(--lili-4188-surface);
-  cursor: pointer;
-}
-
-.discover4188-filters button:hover,
-.discover4188-filters button.is-active {
-  color: var(--lili-4188-text-primary);
-  background: var(--lili-4188-action-soft);
-  border-color: var(--lili-4188-action);
-}
+/**
+ * 页头样式**不在这里**。两个展示分支共用 `DiscoverHeading`（走 `PageHeader` +
+ * `FilterBar`），几何由 `discover-heading.tsx` 的 `DISCOVER_HEAD_RHYTHM` 下发，
+ * 因此本文件不再有任何 `.discover4188-heading*` / `-filters` 规则 —— 页头只有
+ * 一处描述是刻意的：两份描述迟早会漂移，而它在 UI 上的症状就是「切模式时标题
+ * 跟着动」。
+ */
 
 .discover4188-hero {
   position: relative;
@@ -292,11 +255,6 @@
 }
 
 @media (width <= 760px) {
-  .discover4188-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .discover4188-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px 10px;

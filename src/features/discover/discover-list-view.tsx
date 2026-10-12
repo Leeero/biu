@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 
 import ScrollContainer from "@/components/scroll-container";
-import { FilterBar } from "@/ui/patterns/filter-bar";
-import { PageHeader } from "@/ui/patterns/page-header";
 import { Section } from "@/ui/patterns/section";
 import {
   TrackArt,
@@ -16,39 +14,35 @@ import {
   type TrackActionSpec,
   type TrackTableColumn,
 } from "@/ui/patterns/track-table";
-import { Button } from "@/ui/primitives/button";
-import { Pill } from "@/ui/primitives/pill";
 
 import type { DiscoverFilter } from "./discover-view";
 
+import { DiscoverHeading } from "./discover-heading";
+
 /**
- * 屏 08「发现音乐 · 列表」的屏级节奏。
+ * 屏 08「发现音乐 · 列表」的**内容区**节奏。
  *
- * 三个值全部来自 spec-lock `screens[07].rhythmImplementation`，是**设计稿第 9 页
- * 的实测值**。它们与本路由另一屏（屏 07 · 卡片，第 8 页）**逐项不同**：
+ * 本表现在只剩 `sectionGap` 一项：
  *
- *   本屏   导语 8 / 筛选条 20 / 段距 20
- *   屏 07  导语 18 / 筛选条 13 / 段距 25
+ * 导语与筛选条的间距已移交给共享页头 `DISCOVER_HEAD_RHYTHM`（两个展示分支共用，
+ * 统一取卡片屏的 18 / 13）。**这不是把两屏的设计稿值抹平了事** —— 设计稿第 9 页
+ * 实测导语 192 / 筛选条 236，第 8 页是 202 / 239，两页原本差 10 / 3px；但它们
+ * 是**同一个页面的两个展示模式**，用户会在其间来回切换，页头若跟着变，一次切换
+ * 会挪动标题与副标题，看着像跳去了别的页面。形式稳定优先，故统一。
  *
- * 差异的方向容易记反，故按设计稿的墨迹坐标记一遍：本页导语墨迹 **192**、筛选条盒顶
- * **236**；第 8 页是 **202 / 239** —— 本页的导语比第 8 页**高** 10px、筛选条**高** 3px
- * （spec-lock 1.3.22 订正：此前两边都写成「第 9 页低 10/3」，方向反了；数字一直是对的，
- * 量的是 900 画布上的 y 差，照那句话实现会把导语放到 202）。
+ * 代价与范围写清楚：列表屏的导语因此比**它的设计稿**低 10px、筛选条低 3px，
+ * 但**内容带一个 y 都不动** —— 首行封面 380 由下面的 `sectionGap` 独立闭合，
+ * 表头 346 / 行距 68 同理。被挪的只有页头内部。
+ *
+ * `sectionGap` 20 来自 spec-lock `screens[07].rhythmImplementation`，
+ * 是设计稿第 9 页的实测值（与屏 02 的逐带复核见下）。
  *
  * `sectionHeadMarginBottom` / `sectionHeadHeight` **不在本表里**：本屏取缺省档（8 / 24）。
  * 屏 07 那两条 3 / 24 是被「大卡落在 900 折线以下」的补偿推出来的，本屏表头紧接段标题，
  * 缺省档（8 + 38 = 首行顶 374）自然闭合。
- *
- * 横向复核：**本屏的头部与列表几何与第 3 页（屏 02）逐带相同**（H1 121 / 导语 192 /
- * 筛选条 236 / 段标题 308 / 表头 346 / 首行 380 / 行距 68），故落法直接照屏 02 的
- * `PlaylistDetailView`。
  */
 export const DISCOVER_LIST_RHYTHM = {
-  /** 导语上边距。缺省档 `base` 是 18，本屏实测 8。 */
-  leadMarginTop: 8,
-  /** 筛选条上边距。缺省档 `base` 是 20 —— 与本屏同值，但仍显式下发：它是**本屏的**值，不是档位。 */
-  filterMarginTop: 20,
-  /** 段间距（筛选条 → 首段）。本屏与缺省档 `base` 同为 20，同样显式下发。 */
+  /** 段间距（筛选条 → 首段）。spec-lock `screens[07]` 实测 20，显式下发。 */
   sectionGap: 20,
 } as const;
 
@@ -87,13 +81,16 @@ export interface DiscoverListViewProps {
   /**
    * 语义筛选控件。**传了它就用它替代 `filters` 的默认渲染** —— 理由与
    * `DiscoverViewProps.filterControl` 相同：「音乐分区 / 新碟与新歌」是互斥二选一
-   * 的数据源，该用分段控件表达，而不是一排并列药丸。夹具路径不传。
+   * 的数据源，该用分段控件表达，而不是一排并列药丸。夹具路径不传（那一屏的
+   * 药丸是静态标记，不是互斥选项）。
    */
   filterControl?: ReactNode;
   /**
-   * 头部右上角的"视图切换"控件。**与 `filterControl`（语义筛选）刻意分开** —— 理由
+   * 头部右上角的"视图切换"控件。**与 `filters`（语义筛选）刻意分开** —— 理由
    * 与 `DiscoverViewProps.viewSwitcher` 相同：把视图切换塞进筛选条会让它
-   * 与"音乐分区 / 新碟与新歌"等数据源 Pill 抢视觉重心。夹具路径不传。
+   * 与"音乐分区 / 新碟与新歌"等数据源 Pill 抢视觉重心。调用方传入任意
+   * ReactNode（典型是 `SegmentedControl` 或一对图标按钮），不传则头部
+   * 只有筛选条。
    */
   viewSwitcher?: ReactNode;
   /**
@@ -151,46 +148,30 @@ export const DiscoverListView = ({
     {/* 右侧留 14 给滚动条 —— 理由同 `.discover4188`：滚动条是覆盖式的、不占布局
         宽度，最右列（本屏是右对齐的时长列）会被压掉 10px。 */}
     <div className="w-full pr-[14px]">
-      {/* 单列页头：设计稿本屏没有右栏，故不给 `aside`（与屏 01 的两栏页头不同）。 */}
-      <PageHeader title={title} lead={lead} leadOffsetPx={DISCOVER_LIST_RHYTHM.leadMarginTop}>
-        {viewSwitcher ? (
-          <div className="flex justify-end" aria-label="视图切换">
-            {viewSwitcher}
-          </div>
-        ) : null}
-        {filterControl ?? (
-          <FilterBar label="发现音乐筛选" gapPx={DISCOVER_LIST_RHYTHM.filterMarginTop}>
-            {filters.map(item =>
-              item.onPress ? (
-                <Button
-                  key={item.key}
-                  variant={item.variant}
-                  icon={item.icon}
-                  trailing={item.trailing}
-                  disabled={item.disabled}
-                  onClick={() => onPillPress(item)}
-                >
-                  {item.label}
-                </Button>
-              ) : (
-                <Pill key={item.key} variant={item.variant} icon={item.icon} trailing={item.trailing}>
-                  {item.label}
-                </Pill>
-              ),
-            )}
-          </FilterBar>
-        )}
-      </PageHeader>
+      {/* 页头与卡片分支**同一个组件**（`DiscoverHeading`）。 */}
+      <DiscoverHeading
+        title={title}
+        lead={lead}
+        filters={filters}
+        filterControl={filterControl}
+        viewSwitcher={viewSwitcher}
+        onPillPress={onPillPress}
+      />
 
+      {/*
+        页头之后是内容区。**给了 `content` 就整段替换**（曲目表不渲染），这样加载 /
+        失败 / 空态只换这一块，页头与两个分段控件始终挂载 —— 切换数据源时不会闪。
+        详见 `DiscoverListViewProps.content`。
+      */}
       {content ?? (
         <Section title={sectionTitle} gapPx={DISCOVER_LIST_RHYTHM.sectionGap}>
           {/*
-          **不传 `currentId`**：设计稿本屏第 04 行只有操作带常驻露出，**没有**整行高亮。
-          取证：该行与相邻行在操作带之外（x850–1300）逐行比较，列中位差 = 0.0；
-          行 3 / 4 / 5 的列中位同为 7.00（同一条底板垂直渐变）。而原型的
-          `.track-row.is-current::before`（7% 白）会让同行中位变成 26.0。
-          详见 spec-lock `screens[07].rowStateRule` 与 `geometry.list.currentStateNote`。
-        */}
+            **不传 `currentId`**：设计稿本屏第 04 行只有操作带常驻露出，**没有**整行高亮。
+            取证：该行与相邻行在操作带之外（x850–1300）逐行比较，列中位差 = 0.0；
+            行 3 / 4 / 5 的列中位同为 7.00（同一条底板垂直渐变）。而原型的
+            `.track-row.is-current::before`（7% 白）会让同行中位变成 26.0。
+            详见 spec-lock `screens[07].rowStateRule` 与 `geometry.list.currentStateNote`。
+          */}
           <TrackTable columns={columns}>
             {tracks.map(row => (
               <TrackTableRow key={row.id} trackId={row.id}>
@@ -202,9 +183,9 @@ export const DiscoverListView = ({
                 <TrackCell>{row.stats}</TrackCell>
                 <TrackCell align="end">{row.duration}</TrackCell>
                 {/*
-                操作带走 `TrackTableActions` 的**缺省右偏移公式**：设计稿本屏带子右缘
-                画布 x812，与屏 02 同（屏 06 右缘 x1152 才需要 `right-[224px]` 覆写）。
-              */}
+                  操作带走 `TrackTableActions` 的**缺省右偏移公式**：设计稿本屏带子右缘
+                  画布 x812，与屏 02 同（屏 06 右缘 x1152 才需要 `right-[224px]` 覆写）。
+                */}
                 {demoActionRowIds.includes(row.id) && (
                   <TrackTableActions
                     actions={rowActions.map(action => ({

@@ -19,6 +19,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 
+import { DISCOVER_HEAD_RHYTHM } from "@/features/discover/discover-heading";
 import { DISCOVER_RHYTHM, DiscoverView, type DiscoverViewProps } from "@/features/discover/discover-view";
 import { PLACEHOLDER_RADIALS } from "@/ui/fixtures/placeholder-art";
 import { SCREEN_07_DISCOVER_CARD_FIXTURE } from "@/ui/fixtures/screen-07-discover-card";
@@ -139,17 +140,23 @@ describe("屏 07 呈现结构", () => {
     expect(container.querySelector('[style*="grid-template-columns"]')).toBeNull();
   });
 
-  test("导语与筛选条统一走 4188 组件类", async () => {
+  test("导语与筛选条走共享页头组件（与列表分支同一个）", async () => {
     const container = await render(<DiscoverView {...fixtureProps()} />);
     const fixture = SCREEN_07_DISCOVER_CARD_FIXTURE;
 
     const lead = Array.from(container.querySelectorAll("p")).find(node => node.textContent === fixture.head.lead);
     expect(lead).toBeDefined();
-    expect(lead?.closest("header")?.className).toBe("discover4188-heading");
+    // 两个展示分支共用 `DiscoverHeading`（走 `PageHeader`），不再是自研的
+    // `.discover4188-heading`。页头几何因此只有一处描述 —— 详见
+    // `src/features/discover/discover-heading.tsx`。
+    expect((lead as HTMLElement).style.marginTop).toBe(`${DISCOVER_HEAD_RHYTHM.leadMarginTop}px`);
 
+    // 筛选条是 L1 硬锚点：`FilterBar` 的条高 48 / 药丸 36 / 间隔 4，
+    // 两个分支都不再用 `.discover4188-filters` 那套自研按钮。
     const bar = container.querySelector('[aria-label="发现音乐筛选"]');
     expect(bar).not.toBeNull();
-    expect(bar?.className).toBe("discover4188-filters");
+    expect((bar as HTMLElement).style.marginTop).toBe(`${DISCOVER_HEAD_RHYTHM.filterMarginTop}px`);
+    expect(bar?.className).toContain("bg-[var(--lili-surface-sunken)]");
   });
 
   test("大卡和专辑区使用同一 4188 命名空间", async () => {
