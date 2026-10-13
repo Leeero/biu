@@ -17,6 +17,7 @@ import {
 import { PlayMode } from "@/common/constants/audio";
 import { formatDuration } from "@/common/utils/time";
 import { getActiveLyricIndex } from "@/components/lyrics/model";
+import { useTrackFallback } from "@/components/lyrics/use-track-fallback";
 import { useTrackLyrics } from "@/components/lyrics/use-track-lyrics";
 import { buildQueueViewModel } from "@/features/player/queue";
 import { usePlayList } from "@/store/play-list";
@@ -81,6 +82,9 @@ const NowPlayingPage = () => {
   const activeLyricIndex = isFixture
     ? SCREEN_10_NOW_PLAYING_FIXTURE.currentLine
     : getActiveLyricIndex(lyricLines, Math.round(resolvedTime * 1000));
+  // 无歌词降级：歌词加载完成且为空时，才拉简介与同 UP 主投稿。
+  const showFallback = !isFixture && !lyricsLoading && lyrics.length === 0;
+  const fallback = useTrackFallback(showFallback ? item : undefined);
   const handleSeek = (event: MouseEvent<HTMLButtonElement>) => {
     if (disabled || resolvedDuration <= 0) return;
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -189,7 +193,40 @@ const NowPlayingPage = () => {
               ) : (
                 <div className="np4188-side-empty">
                   <strong>暂未匹配到歌词</strong>
-                  <span>可以继续播放，或查看当前队列</span>
+                  {fallback.loading ? (
+                    <span>正在加载简介…</span>
+                  ) : (
+                    <>
+                      {fallback.desc && (
+                        <div className="np4188-fallback-desc">
+                          <span>视频简介</span>
+                          <p>{fallback.desc}</p>
+                        </div>
+                      )}
+                      {fallback.posts.length > 0 && (
+                        <div className="np4188-fallback-posts">
+                          <span>同 UP 主投稿</span>
+                          {fallback.posts.map(post => (
+                            <button
+                              key={post.bvid}
+                              type="button"
+                              onClick={() =>
+                                void usePlayList
+                                  .getState()
+                                  .play({ type: "mv", bvid: post.bvid, title: post.title, cover: post.cover })
+                              }
+                            >
+                              {post.cover ? <img src={post.cover} alt="" /> : <i />}
+                              <span>
+                                <strong>{post.title}</strong>
+                                {post.duration && <small>{post.duration}</small>}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
