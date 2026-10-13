@@ -5,7 +5,11 @@
   display: flex;
   flex-direction: column;
   padding: 24px 6vw 18px;
-  background: radial-gradient(circle at 24% 22%, var(--lili-4188-action-soft), transparent 36%), var(--lili-4188-canvas);
+  /* 原型设计：沉浸播放器固定深底 #17141c，不跟随主题（刻意为之，非 bug） */
+  background:
+    radial-gradient(circle at 24% 22%, var(--lili-4188-action-soft), transparent 36%),
+    #17141c;
+  color: #fff;
   overflow: hidden;
 }
 

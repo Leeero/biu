@@ -1,0 +1,20 @@
+/**
+ * 本地打包字体。DM Mono 用于数字/时间戳等 mono 场景（原型设计）。
+ * Noto Sans SC 体积过大（完整 CJK 上十 MB），不打包，靠字体栈的系统字体兜底：
+ * macOS 用 PingFang SC，Windows 用 Microsoft YaHei，Linux 用 Noto Sans CJK。
+ */
+@font-face {
+  font-family: "DM Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./dm-mono-400.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "DM Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./dm-mono-500.ttf") format("truetype");
+}
