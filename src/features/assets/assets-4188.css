@@ -79,27 +79,31 @@
   opacity: 0.6;
 }
 
+/* 原型 .library-stats / .stat：4 列，卡片 15px 内边距/14px 圆角，数字 19px 等宽 */
 .asset4188-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  margin-bottom: 32px;
+  margin-bottom: 22px;
 }
 
 .asset4188-stats span {
-  display: grid;
-  gap: 5px;
-  padding: 15px 18px;
+  display: block;
+  padding: 15px;
   border: 1px solid var(--lili-4188-border);
-  border-radius: var(--lili-4188-radius-md);
-  color: var(--lili-4188-text-secondary);
+  border-radius: 14px;
+  color: var(--lili-4188-text-muted);
   background: var(--lili-4188-surface);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .asset4188-stats b {
+  display: block;
+  margin-top: 5px;
   color: var(--lili-4188-text-primary);
-  font-size: 18px;
+  font-family: var(--lili-4188-font-numeric);
+  font-size: 19px;
+  font-weight: 500;
 }
 
 .asset4188-section {
