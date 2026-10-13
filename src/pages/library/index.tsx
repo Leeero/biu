@@ -34,7 +34,8 @@ const TRACK_SOURCES = new Set<PlaylistTrackSource>(["favorite-folder", "season",
 const Library = () => {
   const fixture = useLibraryFixtureData();
   const [searchParams] = useSearchParams();
-  const libraryTab = searchParams.get("tab") === "collected" ? "collected" : "created";
+  const tabParam = searchParams.get("tab");
+  const libraryTab = tabParam === "collected" ? "collected" : tabParam === "collections" ? "collections" : "created";
   const user = useUser(state => state.user);
   const createdFavorites = useFavoritesStore(state => state.createdFavorites);
   const collectedFavorites = useFavoritesStore(state => state.collectedFavorites);
@@ -147,6 +148,7 @@ const Library = () => {
           qualityPillText={`音质偏好 · ${overview.qualityLabel}`}
           createdTiles={created}
           collectedTiles={collected}
+          collectionTiles={[]}
           demoActionKeys={searchParams.get("preview") === "4188" ? [] : demoActionKeys}
           onTilePress={() => {
             /* 夹具模式下不跳转：比对需要画面稳定。 */
@@ -167,23 +169,54 @@ const Library = () => {
     );
   }
 
+  // 未登录降级：收藏夹 / 合集需登录态，只展示本地目录；
+  // 连本地目录都没有时才落到登录引导。
   if (!user?.isLogin) {
+    const guestTiles: LibraryTile[] = localMusicDirs.map(dir => adaptLocalDirToTile(dir));
+    if (!guestTiles.length) {
+      return (
+        <PageState
+          kind="empty"
+          title="登录后查看我的收藏"
+          description="收藏内容同步自当前 B 站账号"
+          actionLabel="去登录"
+          onAction={openLoginModal}
+        />
+      );
+    }
     return (
-      <PageState
-        kind="empty"
-        title="登录后查看我的收藏"
-        description="收藏内容同步自当前 B 站账号"
-        actionLabel="去登录"
-        onAction={openLoginModal}
+      <LibraryView
+        lead={`本地目录 · ${guestTiles.length} 个 — 登录后同步 B 站收藏`}
+        overviewLines={buildLibraryOverviewLines({
+          createdCount: 0,
+          collectedCount: 0,
+          qualityLabel: QUALITY_LABELS[audioQuality] ?? audioQuality,
+          localDirs: guestTiles.length,
+        })}
+        qualityPillText={`音质偏好 · ${QUALITY_LABELS[audioQuality] ?? audioQuality}`}
+        createdTiles={guestTiles}
+        collectedTiles={[]}
+        collectionTiles={[]}
+        demoActionKeys={[]}
+        onTilePress={tile => navigate(tile.href)}
+        onTileAction={() => {
+          /* 访客态只有本地目录瓦片，无远程操作。 */
+        }}
+        onPlayAll={() => undefined}
+        onShuffleAll={() => undefined}
       />
     );
   }
 
-  const createdTiles: LibraryTile[] = [
-    ...createdFavorites.map(item => adaptFavoriteItemToTile(item, true)),
-    ...localMusicDirs.map(dir => adaptLocalDirToTile(dir)),
-  ];
-  const collectedTiles: LibraryTile[] = collectedFavorites.map(item => adaptFavoriteItemToTile(item, false));
+  // 三组拆分：合集 / 系列（season / series 来源）从收藏夹里独立成第三组，
+  // 不再混在「我创建的 / 我收藏的」里。
+  const isCollectionTile = (tile: LibraryTile) => tile.source === "season" || tile.source === "series";
+  const createdFavTiles = createdFavorites.map(item => adaptFavoriteItemToTile(item, true));
+  const collectedFavTiles = collectedFavorites.map(item => adaptFavoriteItemToTile(item, false));
+  const localTiles = localMusicDirs.map(dir => adaptLocalDirToTile(dir));
+  const createdTiles: LibraryTile[] = [...createdFavTiles.filter(tile => !isCollectionTile(tile)), ...localTiles];
+  const collectedTiles: LibraryTile[] = collectedFavTiles.filter(tile => !isCollectionTile(tile));
+  const collectionTiles: LibraryTile[] = [...createdFavTiles, ...collectedFavTiles].filter(isCollectionTile);
   const trackTotal = [...createdFavorites, ...collectedFavorites].reduce(
     (sum, item) => sum + (item.trackCount ?? 0),
     0,
@@ -200,13 +233,15 @@ const Library = () => {
     downloadsActive: downloadCounts?.active,
   });
 
+  const hasAnyTiles = createdTiles.length + collectedTiles.length + collectionTiles.length > 0;
+
   return (
     <>
-      {loading && !createdFavorites.length && !collectedFavorites.length ? (
+      {loading && !hasAnyTiles ? (
         <PageState kind="loading" className="min-h-[320px]" />
       ) : loadError ? (
         <PageState kind="error" actionLabel="重新加载" onAction={() => void refresh()} />
-      ) : !createdFavorites.length && !collectedFavorites.length ? (
+      ) : !hasAnyTiles ? (
         <PageState kind="empty" title="暂无收藏内容" description="在 B 站创建或收藏的播放列表会显示在这里" />
       ) : (
         <>
@@ -220,6 +255,7 @@ const Library = () => {
             qualityPillText={`音质偏好 · ${QUALITY_LABELS[audioQuality] ?? audioQuality}`}
             createdTiles={libraryTab === "created" ? createdTiles : []}
             collectedTiles={libraryTab === "collected" ? collectedTiles : []}
+            collectionTiles={libraryTab === "collections" ? collectionTiles : []}
             demoActionKeys={[]}
             onTilePress={tile => navigate(tile.href)}
             onTileAction={(tile, key) => void onTileAction(tile, key)}

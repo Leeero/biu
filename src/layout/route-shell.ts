@@ -79,6 +79,7 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
 const LIBRARY_SEGMENTS: TopbarSegment[] = [
   { key: "created", label: "我的歌单", href: "/library?tab=created" },
   { key: "collected", label: "我收藏的", href: "/library?tab=collected" },
+  { key: "collections", label: "合集与系列", href: "/library?tab=collections" },
 ];
 
 /**
@@ -149,7 +150,12 @@ const collectionTypeSegment = (type: CollectionType, label: string): TopbarSegme
 export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
   "/library": {
     segments: LIBRARY_SEGMENTS,
-    activeKey: search => (search.get("tab") === "collected" ? "collected" : "created"),
+    activeKey: search => {
+      const tab = search.get("tab");
+      if (tab === "collected") return "collected";
+      if (tab === "collections") return "collections";
+      return "created";
+    },
   },
   "/queue": {
     segments: [

@@ -269,8 +269,9 @@ describe("/collection/:id 顶栏分段组", () => {
 
   test("音乐库使用资产分段，默认激活我的歌单", () => {
     const shell = resolveRouteShell("/library");
-    expect(shell.contextSegments.map(segment => segment.label)).toEqual(["我的歌单", "我收藏的"]);
+    expect(shell.contextSegments.map(segment => segment.label)).toEqual(["我的歌单", "我收藏的", "合集与系列"]);
     expect(shell.activeContextKey).toBe("created");
+    expect(resolveRouteShell("/library", "?tab=collections").activeContextKey).toBe("collections");
   });
 });
 

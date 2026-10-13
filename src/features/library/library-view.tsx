@@ -21,6 +21,8 @@ export interface LibraryViewProps {
   qualityPillText: string;
   createdTiles: LibraryTile[];
   collectedTiles: LibraryTile[];
+  /** 合集与系列（season / series）：从收藏夹里按来源徽标拆出来的第三组。 */
+  collectionTiles: LibraryTile[];
   /** 操作带常驻露出的瓦片 key（夹具演示位；真实模式为空 —— 露出交给悬停）。 */
   demoActionKeys: string[];
   onTilePress: (tile: LibraryTile) => void;
@@ -76,6 +78,7 @@ export const LibraryView = ({
   qualityPillText,
   createdTiles,
   collectedTiles,
+  collectionTiles,
   demoActionKeys,
   onTilePress,
   onTileAction,
@@ -126,6 +129,14 @@ export const LibraryView = ({
             onTileAction={onTileAction}
           />
         )}
+        {collectionTiles.length > 0 && (
+          <LibrarySection
+            title={`合集与系列 · ${collectionTiles.length}`}
+            tiles={collectionTiles}
+            onTilePress={onTilePress}
+            onTileAction={onTileAction}
+          />
+        )}
       </div>
     </ScrollContainer>
   ) : (
@@ -161,6 +172,16 @@ export const LibraryView = ({
           <Section title={`我收藏的 · ${collectedTiles.length} 个播放列表`}>
             <MediaGrid columns={4}>
               {collectedTiles.map(tile =>
+                renderTile(tile, demoActionKeys.includes(tile.key), onTilePress, onTileAction),
+              )}
+            </MediaGrid>
+          </Section>
+        )}
+
+        {collectionTiles.length > 0 && (
+          <Section title={`合集与系列 · ${collectionTiles.length} 个播放列表`}>
+            <MediaGrid columns={4}>
+              {collectionTiles.map(tile =>
                 renderTile(tile, demoActionKeys.includes(tile.key), onTilePress, onTileAction),
               )}
             </MediaGrid>
