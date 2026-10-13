@@ -167,9 +167,9 @@ describe("路由壳层契约", () => {
     expect(activeContextKey).toBe("");
   });
 
-  test("一级导航覆盖五处一级入口，且互相不重复", () => {
+  test("一级导航覆盖六处一级入口，且互相不重复", () => {
     const hrefs = PRIMARY_NAV_ITEMS.map(item => item.href);
-    expect(hrefs).toEqual(["/", "/library", "/later", "/local-music", "/download-list"]);
+    expect(hrefs).toEqual(["/", "/chart", "/library", "/later", "/local-music", "/download-list"]);
     expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 

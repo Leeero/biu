@@ -10,6 +10,7 @@ import {
   RiMusic2Line,
   RiSettings3Line,
   RiTimeLine,
+  RiTrophyLine,
   type RemixiconComponentType,
 } from "@remixicon/react";
 import clx from "classnames";
@@ -36,6 +37,7 @@ interface NavItem {
  */
 const NAV_ICONS: Record<string, RemixiconComponentType> = {
   "/": RiMusic2Line,
+  "/chart": RiTrophyLine,
   "/library": RiHeart3Line,
   "/later": RiTimeLine,
   "/local-music": RiFolderMusicLine,

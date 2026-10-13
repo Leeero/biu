@@ -8,6 +8,7 @@ import NotFound from "./pages/not-found";
 
 const DesignSystemPage = lazy(() => import("./pages/design-system"));
 const DownloadList = lazy(() => import("./pages/download-list"));
+const Chart = lazy(() => import("./pages/chart"));
 const History = lazy(() => import("./pages/history"));
 const Later = lazy(() => import("./pages/later"));
 const Library = lazy(() => import("./pages/library"));
@@ -29,6 +30,10 @@ const routes: RouteObject[] = [
       {
         index: true,
         element: <MusicRecommend />,
+      },
+      {
+        path: "chart",
+        element: <Chart />,
       },
       {
         path: "library",
