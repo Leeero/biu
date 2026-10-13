@@ -1,8 +1,8 @@
-/** 4188 排版、尺寸、圆角和层级。2026-10-13 换肤：字体对齐原型（Noto Sans SC + DM Mono）。 */
+/** 4188 排版、尺寸、圆角和层级。2026-10-13 换肤：字体对齐原型（Noto Sans SC + 系统等宽）。 */
 .lili-theme-4188 {
   --lili-4188-font-sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui,
     sans-serif;
-  --lili-4188-font-numeric: "DM Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --lili-4188-font-numeric: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --lili-4188-type-page-size: 38px;
   --lili-4188-type-page-weight: 700;
   --lili-4188-type-page-leading: 1.12;
