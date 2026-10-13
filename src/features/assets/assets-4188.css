@@ -1,7 +1,19 @@
 /* stylelint-disable no-descending-specificity -- 资产页卡片、列表与操作区共享原生元素。 */
+
+/**
+ * 资产页（我的音乐 / 稍后播放 / 本地音乐 / 观看历史 / 播放列表详情）的滚动内容根。
+ *
+ * **右侧 14px 是给 overlay 滚动条让位的**，与 `.discover4188` 同一个口径：
+ * `ScrollContainer` 的滚动条（`os-theme-lili`）是 absolute 覆盖式的（轨道 10px），
+ * 不占布局宽度；左右都为 0 时，最右一列卡片/瓦片、以及页头右侧的动作按钮组会被
+ * 滚动条压掉 10px。留 14 = 轨道 10 + 呼吸 4（悬停加粗时仍不贴边）。
+ *
+ * 这五处根节点都是 `ScrollContainer` 的直接子级，同源同病，所以修在这一条共享规则里，
+ * 而不是每个视图各写一遍 —— 与发现音乐把 14px 写在 `.discover4188` 是同一做法。
+ */
 .asset4188-page {
   width: 100%;
-  padding: 8px 0 48px;
+  padding: 8px 14px 48px 0;
 }
 
 .asset4188-head {
