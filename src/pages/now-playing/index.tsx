@@ -16,6 +16,8 @@ import {
 
 import { PlayMode } from "@/common/constants/audio";
 import { formatDuration } from "@/common/utils/time";
+import { getActiveLyricIndex } from "@/components/lyrics/model";
+import { useTrackLyrics } from "@/components/lyrics/use-track-lyrics";
 import { buildQueueViewModel } from "@/features/player/queue";
 import { usePlayList } from "@/store/play-list";
 import { usePlayProgress } from "@/store/play-progress";
@@ -56,13 +58,21 @@ const NowPlayingPage = () => {
   const currentTime = usePlayProgress(s => s.currentTime);
   const item = useMemo(() => list.find(row => row.id === playId), [list, playId]);
   const queue = useMemo(() => buildQueueViewModel(list, playId, nextId), [list, nextId, playId]);
+  const {
+    lines: lyricLines,
+    source: lyricSource,
+    loading: lyricsLoading,
+  } = useTrackLyrics(isFixture ? undefined : item);
   const title = isFixture ? SCREEN_10_NOW_PLAYING_FIXTURE.title : item?.pageTitle || item?.title || "尚未播放";
   const artist = isFixture ? SCREEN_10_NOW_PLAYING_FIXTURE.meta.join(" · ") : item?.ownerName || "未知来源";
-  const lyrics = isFixture ? SCREEN_10_NOW_PLAYING_FIXTURE.lyrics : [];
+  const lyrics = isFixture ? SCREEN_10_NOW_PLAYING_FIXTURE.lyrics : lyricLines.map(line => line.text);
   const resolvedDuration = isFixture ? 242 : duration,
     resolvedTime = isFixture ? 108 : currentTime,
     progress = resolvedDuration > 0 ? Math.min(100, (resolvedTime / resolvedDuration) * 100) : 0,
     disabled = !isFixture && !item;
+  const activeLyricIndex = isFixture
+    ? SCREEN_10_NOW_PLAYING_FIXTURE.currentLine
+    : getActiveLyricIndex(lyricLines, Math.round(resolvedTime * 1000));
   const handleSeek = (event: MouseEvent<HTMLButtonElement>) => {
     if (disabled || resolvedDuration <= 0) return;
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -133,12 +143,14 @@ const NowPlayingPage = () => {
           {sideView === "lyrics" ? (
             <div className="np4188-lyrics">
               <span>歌词同步 · 自动滚动</span>
-              {lyrics.length ? (
+              {!isFixture && lyricSource && <span>{lyricSource === "standard" ? "标准歌词" : "视频字幕"}</span>}
+              {lyricsLoading && lyrics.length === 0 ? (
+                <div className="np4188-side-empty">
+                  <strong>歌词加载中…</strong>
+                </div>
+              ) : lyrics.length ? (
                 lyrics.map((line, index) => (
-                  <p
-                    key={`${line}-${index}`}
-                    className={index === SCREEN_10_NOW_PLAYING_FIXTURE.currentLine ? "is-active" : ""}
-                  >
+                  <p key={`${line}-${index}`} className={index === activeLyricIndex ? "is-active" : ""}>
                     {line}
                   </p>
                 ))
