@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import {
@@ -41,6 +41,11 @@ const NowPlayingPage = () => {
   const [mainView, setMainView] = useState<MainView>("cover");
   const [sideView, setSideView] = useState<SideView>("lyrics");
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lyricsRef = useRef<HTMLDivElement>(null);
+  // 用户手动滚动后暂停自动跟随 5 秒，避免跟用户抢滚动条。
+  const userScrollPauseUntil = useRef(0);
+  // 程序化滚动时屏蔽 onScroll，避免误判为用户手动滚动。
+  const programmaticScroll = useRef(false);
   const list = usePlayList(s => s.list),
     playId = usePlayList(s => s.playId),
     nextId = usePlayList(s => s.nextId),
@@ -82,6 +87,22 @@ const NowPlayingPage = () => {
   const activeLyricIndex = isFixture
     ? SCREEN_10_NOW_PLAYING_FIXTURE.currentLine
     : getActiveLyricIndex(lyricLines, Math.round(resolvedTime * 1000));
+
+  // 歌词自动滚动：高亮行变化时将其滚动到容器中央；用户手动滚动后 5 秒内不抢。
+  useEffect(() => {
+    if (sideView !== "lyrics" || activeLyricIndex < 0) return;
+    if (Date.now() < userScrollPauseUntil.current) return;
+    const container = lyricsRef.current;
+    const active = container?.querySelector("p.is-active") as HTMLElement | null;
+    if (!container || !active) return;
+    const targetTop = active.offsetTop - container.clientHeight / 2 + active.clientHeight / 2;
+    programmaticScroll.current = true;
+    container.scrollTo({ top: targetTop, behavior: "smooth" });
+    // smooth 滚动结束后解除屏蔽（取一个保守的超时）。
+    window.setTimeout(() => {
+      programmaticScroll.current = false;
+    }, 600);
+  }, [activeLyricIndex, sideView]);
   // 无歌词降级：歌词加载完成且为空时，才拉简介与同 UP 主投稿。
   const showFallback = !isFixture && !lyricsLoading && lyrics.length === 0;
   const fallback = useTrackFallback(showFallback ? item : undefined);
@@ -177,7 +198,14 @@ const NowPlayingPage = () => {
               ))}
             </div>
           ) : sideView === "lyrics" ? (
-            <div className="np4188-lyrics">
+            <div
+              className="np4188-lyrics"
+              ref={lyricsRef}
+              onScroll={() => {
+                if (programmaticScroll.current) return;
+                userScrollPauseUntil.current = Date.now() + 5000;
+              }}
+            >
               <span>歌词同步 · 自动滚动</span>
               {!isFixture && lyricSource && <span>{lyricSource === "standard" ? "标准歌词" : "视频字幕"}</span>}
               {lyricsLoading && lyrics.length === 0 ? (
