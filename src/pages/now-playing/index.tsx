@@ -25,7 +25,7 @@ import { NOW_PLAYING_PAGE_FIXTURE_NAME, SCREEN_10_NOW_PLAYING_FIXTURE } from "@/
 import { Artwork } from "@/ui/primitives/artwork";
 
 type MainView = "cover" | "video";
-type SideView = "lyrics" | "queue";
+type SideView = "lyrics" | "parts" | "queue";
 const MODE_LABEL: Record<PlayMode, string> = {
   [PlayMode.Sequence]: "顺序",
   [PlayMode.Loop]: "列表循环",
@@ -58,6 +58,14 @@ const NowPlayingPage = () => {
   const currentTime = usePlayProgress(s => s.currentTime);
   const item = useMemo(() => list.find(row => row.id === playId), [list, playId]);
   const queue = useMemo(() => buildQueueViewModel(list, playId, nextId), [list, nextId, playId]);
+  // 分P：多 P 视频播放时所有分 P 都在队列里（store/play-list 的 getMVData），
+  // 按 bvid 聚拢即分 P 列表。单 P 视频不展示该页签。
+  const parts = useMemo(() => {
+    if (!item?.hasMultiPart || !item.bvid) return [];
+    return list
+      .filter(row => row.type === "mv" && row.bvid === item.bvid)
+      .toSorted((a, b) => (a.pageIndex ?? 0) - (b.pageIndex ?? 0));
+  }, [list, item]);
   const {
     lines: lyricLines,
     source: lyricSource,
@@ -132,6 +140,15 @@ const NowPlayingPage = () => {
             >
               歌词
             </button>
+            {parts.length > 1 && (
+              <button
+                type="button"
+                className={sideView === "parts" ? "is-active" : ""}
+                onClick={() => setSideView("parts")}
+              >
+                分P · {parts.length}
+              </button>
+            )}
             <button
               type="button"
               className={sideView === "queue" ? "is-active" : ""}
@@ -140,7 +157,22 @@ const NowPlayingPage = () => {
               播放队列 · {queue.length}
             </button>
           </div>
-          {sideView === "lyrics" ? (
+          {sideView === "parts" ? (
+            <div className="np4188-queue">
+              <span>分P 列表</span>
+              {parts.map(row => (
+                <button key={row.id} type="button" onClick={() => void usePlayList.getState().playListItem(row.id)}>
+                  <b>{String(row.pageIndex ?? 0).padStart(2, "0")}</b>
+                  {row.pageCover || row.cover ? <img src={row.pageCover || row.cover} alt="" /> : <i />}
+                  <span>
+                    <strong>{row.pageTitle || row.title}</strong>
+                    <small>{row.ownerName}</small>
+                  </span>
+                  <time>{typeof row.duration === "number" ? formatDuration(row.duration) : ""}</time>
+                </button>
+              ))}
+            </div>
+          ) : sideView === "lyrics" ? (
             <div className="np4188-lyrics">
               <span>歌词同步 · 自动滚动</span>
               {!isFixture && lyricSource && <span>{lyricSource === "standard" ? "标准歌词" : "视频字幕"}</span>}
