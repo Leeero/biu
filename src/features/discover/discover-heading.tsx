@@ -42,16 +42,6 @@ interface DiscoverHeadingProps {
   title: string;
   lead: ReactNode;
   filters: DiscoverFilter[];
-  /**
-   * 语义筛选控件。**传了它就用它替代 `filters` 的默认渲染。**
-   *
-   * 真实路径传 `SegmentedControl`（「音乐分区 / 新碟与新歌」是互斥二选一的数据源）；
-   * 夹具路径不传，走 `filters` 的静态药丸 —— 那一屏的 5 枚是状态标记与模式选择，
-   * 本来就不是互斥选项。
-   */
-  filterControl?: ReactNode;
-  /** 展示模式切换控件（「卡片 / 列表」）。真实路径传 `SegmentedControl`。 */
-  viewSwitcher?: ReactNode;
   onPillPress: (filter: DiscoverFilter) => void;
 }
 
@@ -62,44 +52,32 @@ interface DiscoverHeadingProps {
  * spec-lock 也明确要求取 `aligned` 而非原型类名里的 `flat` —— `PageHeader` 缺省
  * 就是这个，不必再发明一遍。屏级像素靠 `leadOffsetPx` / `gapPx` 两个显式入参下发。
  *
- * `viewSwitcher` 排在导语之后、筛选条之前：它是**页面级**偏好，与「显示什么内容」
- * 的筛选是两回事，放进 `FilterBar` 会错变成第三种数据源。
+ * **`filterControl` / `viewSwitcher` 两个槽位已随 2026-10-12 的产品决策移除**：
+ * 数据源收敛为单一的「音乐分区」后，页头没有互斥二选一可表达；视图切换也一并砍掉
+ * （本页永久卡片模式）。两处都别再以「真实路径要传」为由接回 —— 现在没有任何调用方
+ * 需要它们，`filters` 是页头唯一的筛选渲染源。
  */
-export const DiscoverHeading = ({
-  title,
-  lead,
-  filters,
-  filterControl,
-  viewSwitcher,
-  onPillPress,
-}: DiscoverHeadingProps) => (
+export const DiscoverHeading = ({ title, lead, filters, onPillPress }: DiscoverHeadingProps) => (
   <PageHeader title={title} lead={lead} leadOffsetPx={DISCOVER_HEAD_RHYTHM.leadMarginTop}>
-    {viewSwitcher && (
-      <div className="flex justify-end" aria-label="视图切换">
-        {viewSwitcher}
-      </div>
-    )}
-    {filterControl ?? (
-      <FilterBar label="发现音乐筛选" gapPx={DISCOVER_HEAD_RHYTHM.filterMarginTop}>
-        {filters.map(item =>
-          item.onPress ? (
-            <Button
-              key={item.key}
-              variant={item.variant}
-              icon={item.icon}
-              trailing={item.trailing}
-              disabled={item.disabled}
-              onClick={() => onPillPress(item)}
-            >
-              {item.label}
-            </Button>
-          ) : (
-            <Pill key={item.key} variant={item.variant} icon={item.icon} trailing={item.trailing}>
-              {item.label}
-            </Pill>
-          ),
-        )}
-      </FilterBar>
-    )}
+    <FilterBar label="发现音乐筛选" gapPx={DISCOVER_HEAD_RHYTHM.filterMarginTop}>
+      {filters.map(item =>
+        item.onPress ? (
+          <Button
+            key={item.key}
+            variant={item.variant}
+            icon={item.icon}
+            trailing={item.trailing}
+            disabled={item.disabled}
+            onClick={() => onPillPress(item)}
+          >
+            {item.label}
+          </Button>
+        ) : (
+          <Pill key={item.key} variant={item.variant} icon={item.icon} trailing={item.trailing}>
+            {item.label}
+          </Pill>
+        ),
+      )}
+    </FilterBar>
   </PageHeader>
 );

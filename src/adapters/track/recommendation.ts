@@ -1,7 +1,5 @@
 import type { Track } from "@/domain/track";
 import type { Data as RankItem } from "@/service/music-comprehensive-web-rank";
-import type { List as NewMusicItem } from "@/service/web-interface-new-music";
-import type { List as NewMusicBannerItem } from "@/service/web-interface-new-music-banner";
 import type { Archive as RegionArchive } from "@/service/web-interface-region-feed-rcmd";
 
 const creator = (id?: number | string, name?: string) => {
@@ -17,6 +15,13 @@ const videoTrackId = ({ bvid, aid, fallback }: { bvid?: string; aid?: string | n
   if (aid !== undefined && aid !== "") return `bilibili-video:av${aid}`;
   return `recommendation:${fallback}`;
 };
+
+/**
+ * 本文件只保留**仍被消费**的适配器。「新碟与新歌」相关适配器
+ * （`adaptNewMusicToTrack` / `adaptNewMusicBannerToTrack` / `dedupeTracks`）已随
+ * 2026-10-12 的产品决策移除：发现音乐页收敛为单一的「音乐分区」数据源，
+ * `centralization/interface/new/music` 系接口不再被消费。
+ */
 
 export const adaptRegionArchiveToTrack = (item: RegionArchive, fallback: string): Track => ({
   id: videoTrackId({ bvid: item.bvid, aid: item.aid, fallback }),
@@ -53,43 +58,4 @@ export const adaptRankItemToTrack = (item: RankItem, fallback: string): Track =>
       cid: archive?.cid || item.cid || undefined,
     },
   };
-};
-
-export const adaptNewMusicToTrack = (item: NewMusicItem, fallback: string): Track => ({
-  id: videoTrackId({ bvid: item.bvid, aid: item.aid, fallback }),
-  source: "bilibili-video",
-  title: item.music_title || "未命名内容",
-  cover: item.cover,
-  creator: creator(undefined, item.author),
-  playCount: item.total_vv,
-  publishedAt: item.publish_time,
-  sourceRef: {
-    aid: item.aid,
-    bvid: item.bvid,
-    cid: item.cid,
-  },
-});
-
-export const adaptNewMusicBannerToTrack = (item: NewMusicBannerItem, fallback: string): Track => ({
-  id: videoTrackId({ bvid: item.bvid, aid: item.aid, fallback }),
-  source: "bilibili-video",
-  title: item.archive_title || "未命名内容",
-  cover: item.cover,
-  creator: creator(undefined, item.author),
-  publishedAt: item.publish_time,
-  sourceRef: {
-    aid: item.aid === undefined ? undefined : String(item.aid),
-    bvid: item.bvid,
-    cid: item.cid === undefined ? undefined : String(item.cid),
-  },
-});
-
-/** 合并推荐区块时按领域 ID 去重，并保持服务端原有顺序。 */
-export const dedupeTracks = (tracks: Track[]) => {
-  const seen = new Set<string>();
-  return tracks.filter(track => {
-    if (seen.has(track.id)) return false;
-    seen.add(track.id);
-    return true;
-  });
 };

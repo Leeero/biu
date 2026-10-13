@@ -48,46 +48,33 @@ export interface DiscoverAlbum {
   onPlay?: () => void;
 }
 export interface DiscoverViewProps {
-  title: string;
-  lead: string;
-  filters: DiscoverFilter[];
   /**
-   * 语义筛选控件。**传了它就用它替代 `filters` 的默认渲染。**
+   * 页头标题。**不传则整块页头（H1 + 导语 + 筛选条）不渲染。**
    *
-   * 真实路径用它传入 `SegmentedControl`：「音乐分区 / 新碟与新歌」是**互斥二选一**
-   * 的数据源，分段控件才有这个语义 —— 激活项反色、方向键在两档间循环、
-   * 读屏听到的是「已选中」而不是「又一个按钮」。用一排并列药丸表达互斥关系，
-   * 用户只能靠颜色猜哪个是当前的。
-   *
-   * 夹具路径**不传**，走 `filters` 的静态药丸渲染（那一屏的 5 枚药丸是
-   * 「全部播放 / 随机播放 / 数据源 · … / 去重后合并 27 条 / 显示模式 · 卡片」，
-   * 本来就不是互斥选项，不该被强行改成分段）。
+   * 真实路径（发现音乐）自 2026-10-12 起不再传它：产品要求页面「只展示内容」，
+   * H1「发现音乐」/ 导语 / 「音乐分区推荐」段落标题都已移除 —— 当前所在页面由
+   * 侧栏高亮表达，页头只重复了一遍导航信息，还占掉了首屏一整块高度。
+   * 夹具屏（屏 07 / 08）仍传，它们是**设计稿存档**，页头是那两屏的既有内容。
    */
-  filterControl?: ReactNode;
-  /**
-   * 头部右上角的"视图切换"控件。**与语义筛选刻意分开**：
-   * 语义筛选决定「显示什么内容」，视图切换决定「怎么呈现」。两者被错放在
-   * 同一组 Pill 里时，用户既会以为视图切换是另一种数据源，又会被它与语义
-   * Pill 相同的视觉权重抢走注意力。调用方传入任意 ReactNode（典型是
-   * `SegmentedControl` 或一对图标按钮），不传则头部只有筛选条。
-   */
-  viewSwitcher?: ReactNode;
+  title?: string;
+  lead?: ReactNode;
+  filters?: DiscoverFilter[];
   /**
    * 内容区。**传了它就用它替代 `hero` 与专辑网格两整段。**
    *
-   * 存在的理由：切换数据源（"音乐分区 / 新碟与新歌"）时**页头必须常驻**。
-   * 若像早先那样让页面在 loading / error / empty 时整个早退成 `<PageState>`，
-   * 页头连同分段控件一起被卸载重建 —— 每次点击都闪一下，而且刚点下去的那一档
-   * 在视觉上"消失"了半秒，用户会以为自己点空了。
+   * 存在的理由：加载 / 失败 / 空态时**页头必须常驻**。若像早先那样让页面在
+   * loading / error / empty 时整个早退成 `<PageState>`，页头（H1 / 导语）连同
+   * 筛选条一起被卸载重建 —— 点"重新加载"时会闪一下。
    *
-   * 正确做法是**骨架常驻、只有数据区换状态**：页头（H1 / 导语 / 两个分段控件）
-   * 始终挂载，加载态只落在它下面的内容区。调用方在 loading / error / empty
-   * 时往这里传 `<PageState>`，`ready` 时**不传**（走 `hero` + `albums` 的正常渲染）。
+   * 正确做法是**骨架常驻、只有数据区换状态**：页头始终挂载，加载态只落在它下面的
+   * 内容区。调用方在 loading / error / empty 时往这里传 `<PageState>`，
+   * `ready` 时**不传**（走 `hero` + `albums` 的正常渲染）。
    */
   content?: ReactNode;
-  heroSectionTitle: string;
+  heroSectionTitle?: string;
   hero: DiscoverHero | null;
-  albumSectionTitle: string;
+  /** 段落标题。**不传则不渲染那一行**（真实路径已移除，只展示卡片网格）。 */
+  albumSectionTitle?: string;
   albums: DiscoverAlbum[];
   note?: string;
   children?: ReactNode;
@@ -99,25 +86,23 @@ export const DISCOVER_RHYTHM = {
   sectionHeadMarginBottom: 3,
 } as const;
 
+/**
+ * 页头渲染的几何与取径见 `DiscoverHeading`。本组件只决定**要不要**有页头：
+ * `title` 缺席即整块不渲染（真实路径），见 `DiscoverViewProps.title`。
+ */
 export const DiscoverView = (props: DiscoverViewProps) => {
-  const { title, lead, filters, filterControl, viewSwitcher, content, hero, albumSectionTitle, albums, children } =
-    props;
+  const { title, lead, filters, content, hero, albumSectionTitle, albums, children } = props;
   return (
-    <div className="discover4188">
-      {/* 页头与列表分支**同一个组件**（`DiscoverHeading`）：两个展示模式的页头
-          几何因此只有一处描述，不可能再漂移。 */}
-      <DiscoverHeading
-        title={title}
-        lead={lead}
-        filters={filters}
-        filterControl={filterControl}
-        viewSwitcher={viewSwitcher}
-        onPillPress={filter => filter.onPress?.()}
-      />
+    <div className={title ? "discover4188" : "discover4188 is-headless"}>
+      {title && (
+        /* 页头与列表分支**同一个组件**（`DiscoverHeading`）：两个展示模式的页头
+           几何因此只有一处描述，不可能再漂移。 */
+        <DiscoverHeading title={title} lead={lead} filters={filters ?? []} onPillPress={filter => filter.onPress?.()} />
+      )}
       {/*
         页头之后是内容区。**给了 `content` 就整段替换**（hero + 专辑网格都不渲染），
-        这样加载 / 失败 / 空态只换这一块，页头与两个分段控件始终挂载 —— 切换数据源
-        时不会闪。详见 `DiscoverViewProps.content`。
+        这样加载 / 失败 / 空态只换这一块，页头始终挂载 —— 点"重新加载"时页面不闪。
+        详见 `DiscoverViewProps.content`。
       */}
       {content ?? (
         <>
@@ -147,9 +132,11 @@ export const DiscoverView = (props: DiscoverViewProps) => {
             </section>
           )}
           <section className="discover4188-section">
-            <div className="discover4188-section-head">
-              <h2>{albumSectionTitle}</h2>
-            </div>
+            {albumSectionTitle && (
+              <div className="discover4188-section-head">
+                <h2>{albumSectionTitle}</h2>
+              </div>
+            )}
             <div className="discover4188-grid">
               {albums.map(album => (
                 <article

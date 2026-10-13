@@ -1,13 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { adaptLocalMusicToTrack } from "@/adapters/track/local";
-import {
-  adaptNewMusicBannerToTrack,
-  adaptNewMusicToTrack,
-  adaptRankItemToTrack,
-  adaptRegionArchiveToTrack,
-  dedupeTracks,
-} from "@/adapters/track/recommendation";
+import { adaptRankItemToTrack, adaptRegionArchiveToTrack } from "@/adapters/track/recommendation";
 import { getTrackCapabilities } from "@/domain/track";
 
 describe("track adapters", () => {
@@ -81,12 +75,6 @@ describe("track adapters", () => {
     });
   });
 
-  test("maps new music and banner records to the same stable identity", () => {
-    const listTrack = adaptNewMusicToTrack({ bvid: "BV1", music_title: "A", cover: "a.jpg" }, "list");
-    const bannerTrack = adaptNewMusicBannerToTrack({ bvid: "BV1", archive_title: "A" }, "banner");
-    expect(dedupeTracks([bannerTrack, listTrack])).toEqual([bannerTrack]);
-  });
-
   test("maps local files to playable local tracks", () => {
     const track = adaptLocalMusicToTrack({
       id: "file-1",
@@ -114,7 +102,8 @@ describe("track adapters", () => {
     });
     expect(getTrackCapabilities(video, { isLoggedIn: true }).canFavorite).toBe(true);
 
-    const unavailable = adaptNewMusicToTrack({ music_title: "No source" }, "missing");
+    // 缺 bvid / aid 的分区条目：适配器给的 fallback 身份不足以播放或下载。
+    const unavailable = adaptRegionArchiveToTrack({ title: "No source", cover: "c.jpg" }, "missing");
     expect(getTrackCapabilities(unavailable, { isLoggedIn: true })).toMatchObject({
       canPlay: false,
       canFavorite: false,

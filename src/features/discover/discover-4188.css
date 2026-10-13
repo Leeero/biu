@@ -17,6 +17,17 @@
 }
 
 /**
+ * 无页头形态（真实路径的发现音乐）。
+ *
+ * 页头缺席后，内容网格紧贴壳层 content 区的 8px 上内边距，卡片会像"顶"在顶栏下沿。
+ * 补 24px 让首行卡片有呼吸，同时**不动有页头的分支** —— 夹具屏 07 / 08 是设计稿
+ * 存档，其首屏锚点由 `DISCOVER_HEAD_RHYTHM` 与各自的节距规则闭合，不能被这里改。
+ */
+.lili-theme-4188 .discover4188.is-headless {
+  padding-top: 24px;
+}
+
+/**
  * 页头样式**不在这里**。两个展示分支共用 `DiscoverHeading`（走 `PageHeader` +
  * `FilterBar`），几何由 `discover-heading.tsx` 的 `DISCOVER_HEAD_RHYTHM` 下发，
  * 因此本文件不再有任何 `.discover4188-heading*` / `-filters` 规则 —— 页头只有
