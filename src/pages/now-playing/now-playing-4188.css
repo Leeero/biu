@@ -28,21 +28,66 @@
   min-height: 0;
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(340px, 0.9fr) minmax(420px, 1.1fr);
-  gap: 6vw;
+  /* 原型 .full-player 比例：左 1.05fr / 右 0.95fr */
+  grid-template-columns: minmax(420px, 1.05fr) minmax(390px, 0.95fr);
+  gap: 4vw;
   align-items: center;
-  max-width: 1560px;
+  max-width: 1420px;
   width: 100%;
   margin: 12px auto;
 }
 
+/* 左侧沉浸区光晕：原型 .immersive::before，inset:-25% 让渐变溢出再裁掉，边缘无硬切 */
+.np4188-art-column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.np4188-art-column::before {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(circle at 28% 30%, rgb(128 92 222 / 75%), transparent 28%),
+    radial-gradient(circle at 78% 69%, rgb(255 114 102 / 38%), transparent 24%),
+    #17141c;
+  filter: saturate(0.8);
+  pointer-events: none;
+}
+
+.np4188-art-column > * {
+  position: relative;
+  z-index: 2;
+}
+
 .np4188-art {
-  width: min(30vw, 460px);
+  width: min(30vw, 440px);
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 22px;
+  /* 原型 .stage-art：圆角方形 9%（非正圆），黑胶质感靠同心圆环 */
+  border-radius: 9%;
   background: var(--lili-4188-surface);
-  box-shadow: 0 32px 80px var(--lili-4188-shadow-deep);
+  box-shadow: 0 30px 70px rgb(0 0 0 / 32%);
+  position: relative;
+}
+
+/* 黑胶式光环：48% 同心圆环 */
+.np4188-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 48%;
+  height: 48%;
+  border: 3px solid #17141c;
+  border-radius: 50%;
+  box-shadow: 0 0 0 13px rgb(255 255 255 / 13%);
+  pointer-events: none;
 }
 
 .np4188-art video {
@@ -118,17 +163,28 @@
 
 .np4188-tabs {
   display: flex;
-  gap: 7px;
+  padding: 3px;
+  background: var(--lili-4188-surface-elevated);
+  border-radius: 11px;
+  gap: 0;
   margin-bottom: 26px;
+  width: max-content;
 }
 
 .np4188-tabs button {
-  padding: 8px 14px;
+  padding: 8px 11px;
+  border-radius: 8px;
+  font-size: 11px;
+  border: 0;
+  background: transparent;
+  color: var(--lili-4188-text-secondary);
+  cursor: pointer;
 }
 
 .np4188-tabs button.is-active {
-  color: var(--lili-4188-canvas);
-  background: var(--lili-4188-text-primary);
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-surface);
+  box-shadow: 0 2px 7px rgb(0 0 0 / 8%);
 }
 
 .np4188-lyrics {

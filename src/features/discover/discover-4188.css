@@ -136,33 +136,30 @@
   gap: 22px 16px;
 }
 
+/* 原型 .media-card：本体透明、无边框、无阴影、无位移；hover 仅播放按钮淡入 */
 .discover4188-card {
   min-width: 0;
-  padding: 5px;
-  margin: -5px;
-  border: 1px solid transparent;
-  border-radius: var(--lili-4188-radius-lg);
-  transition:
-    transform var(--lili-4188-duration-normal),
-    background var(--lili-4188-duration-normal);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
 }
 
 .discover4188-card:hover {
-  transform: translateY(-2px);
-  background: var(--lili-4188-surface-hover);
-  border-color: var(--lili-4188-border);
+  transform: none;
+  background: transparent;
+  border-color: transparent;
 }
 
 .discover4188-card.is-playing {
   background: var(--lili-4188-playback-soft);
-  border-color: var(--lili-4188-playback);
 }
 
 .discover4188-art {
   position: relative;
-  aspect-ratio: 1.55;
+  aspect-ratio: 1;
   overflow: hidden;
-  border-radius: var(--lili-4188-radius-md);
+  border-radius: 15px;
   background: var(--lili-4188-surface-elevated);
 }
 
@@ -238,14 +235,14 @@
 }
 
 .discover4188-card > strong {
-  margin-top: 10px;
-  font-size: 14px;
+  margin-top: 9px;
+  font-size: 12px;
 }
 
 .discover4188-card > span {
-  margin-top: 4px;
-  color: var(--lili-4188-text-secondary);
-  font-size: 12px;
+  margin-top: 3px;
+  color: var(--lili-4188-text-muted);
+  font-size: 10px;
 }
 
 .discover4188-card > small {

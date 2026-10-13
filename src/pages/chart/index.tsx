@@ -23,6 +23,8 @@ import { PageHeader } from "@/ui/patterns/page-header";
 import { TrackRow } from "@/ui/patterns/track-row";
 import { PageState } from "@/ui/states/page-state";
 
+import "./chart-4188.css";
+
 const PAGE_SIZE = 20;
 
 const CONTEXT_MENUS = [
@@ -136,7 +138,8 @@ const Chart = () => {
         ) : tracks.length === 0 ? (
           <PageState kind="empty" />
         ) : (
-          <VirtualPageList
+          <div className="chart4188-list">
+            <VirtualPageList
             items={tracks}
             hasMore={hasMore}
             loading={loadingMore}
@@ -154,6 +157,7 @@ const Chart = () => {
               />
             )}
           />
+          </div>
         )}
       </div>
     </ScrollContainer>
