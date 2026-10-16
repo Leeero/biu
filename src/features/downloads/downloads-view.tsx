@@ -51,6 +51,8 @@ export const downloadColumns = (labels: readonly string[]): TrackTableColumn[] =
 interface DownloadsViewProps {
   title: ReactNode;
   lead: ReactNode;
+  /** 页面内分类 tab（全部 / 音频 / 视频），渲染在页头正下方。 */
+  tabs?: ReactNode;
   pills: readonly DownloadPillViewModel[];
   sectionTitle: ReactNode;
   columns: TrackTableColumn[];
@@ -82,6 +84,7 @@ const visibleActions = (row: DownloadRowViewModel) => {
 export const DownloadsView = ({
   title,
   lead,
+  tabs,
   pills,
   sectionTitle,
   columns,
@@ -117,6 +120,7 @@ export const DownloadsView = ({
               ))}
             </div>
           </header>
+          {tabs}
           <section className="manage4188-downloads">
             <h2>{sectionTitle}</h2>
             <div className="manage4188-task-grid">
@@ -188,6 +192,7 @@ export const DownloadsView = ({
               ))}
             </FilterBar>
           </PageHeader>
+          {tabs}
           <Section title={sectionTitle}>
             <TrackTable variant="download" columns={columns}>
               {rows.map(row => (

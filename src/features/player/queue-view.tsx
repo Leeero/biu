@@ -30,6 +30,8 @@ export const queueColumns = (labels: readonly string[]): TrackTableColumn[] =>
 interface Props {
   title: ReactNode;
   lead: ReactNode;
+  /** 页面内分类 tab（全部 / 音乐视频 / 本地文件），渲染在页头正下方。 */
+  tabs?: ReactNode;
   pills: readonly QueuePill[];
   sectionTitle: ReactNode;
   columns: TrackTableColumn[];
@@ -43,6 +45,7 @@ interface Props {
 export const QueueView = ({
   title,
   lead,
+  tabs,
   pills,
   sectionTitle,
   rows,
@@ -76,6 +79,7 @@ export const QueueView = ({
           )}
         </div>
       </header>
+      {tabs}
       <section className="queue4188-list" aria-label={String(sectionTitle)}>
         {rows.length ? (
           <>

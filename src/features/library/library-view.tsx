@@ -17,6 +17,8 @@ import { LIBRARY_TILE_ACTIONS } from "./fixture";
 
 export interface LibraryViewProps {
   lead: ReactNode;
+  /** 页面内分类 tab（我的歌单 / 我收藏的 / 合集与系列），渲染在页头正下方。 */
+  tabs?: ReactNode;
   overviewLines: string[];
   qualityPillText: string;
   createdTiles: LibraryTile[];
@@ -74,6 +76,7 @@ const renderTile = (
  */
 export const LibraryView = ({
   lead,
+  tabs,
   overviewLines,
   qualityPillText,
   createdTiles,
@@ -105,6 +108,7 @@ export const LibraryView = ({
             <span className="asset4188-pill">{qualityPillText}</span>
           </div>
         </header>
+        {tabs}
         <div className="asset4188-stats">
           {overviewLines.slice(0, 4).map(line => (
             <span key={line}>
@@ -159,6 +163,8 @@ export const LibraryView = ({
             <Pill variant="neutral">{qualityPillText}</Pill>
           </FilterBar>
         </PageHeader>
+
+        {tabs}
 
         {createdTiles.length > 0 && (
           <Section title={`我创建的 · ${createdTiles.length} 个播放列表`}>

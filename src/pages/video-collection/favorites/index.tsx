@@ -13,6 +13,8 @@ import { executePlaylistBulkAction } from "@/features/playlist/bulk-actions";
 import { PlaylistDetail } from "@/features/playlist/playlist-detail";
 import { PlaylistTrackView } from "@/features/playlist/playlist-track-view";
 import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
+import SegmentNav from "@/layout/topbar/segment-nav";
+import { useRouteSegments } from "@/layout/use-route-segments";
 import { postFavFolderFav } from "@/service/fav-folder-fav";
 import { getFavFolderInfo } from "@/service/fav-folder-info";
 import { postFavFolderUnfav } from "@/service/fav-folder-unfav";
@@ -51,6 +53,8 @@ const Favorites = () => {
   const scrollRef = useRef<ScrollRefObject>(null);
 
   const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditChange } = useDisclosure();
+  const { segments, activeKey } = useRouteSegments();
+  const tabs = segments.length > 0 ? <SegmentNav segments={segments} activeKey={activeKey} /> : null;
 
   const {
     loading,
@@ -380,6 +384,7 @@ const Favorites = () => {
           onEdit={isCreatedBySelf ? onEditOpen : undefined}
         />
       }
+      tabs={tabs}
       actions={
         <Operations
           loading={loading}

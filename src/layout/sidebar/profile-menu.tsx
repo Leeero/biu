@@ -58,8 +58,10 @@ const ProfileMenu = () => {
     if (res?.code === 0) {
       clearToken();
       clearUser();
+      // 显隐配置记的是账号自己的收藏条目 id；退出后不清掉，换账号登录时
+      // 同 id 的陌生条目会被误伤。与旧的菜单显隐设置同一处置。
       updateSettings({
-        hiddenMenuKeys: [],
+        hiddenLibraryKeys: [],
       });
       usePlayList.getState().clear();
       useFavoritesStore.setState({

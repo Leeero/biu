@@ -10,6 +10,8 @@ import { PlaylistDetail } from "@/features/playlist/playlist-detail";
 import { PlaylistTrackView } from "@/features/playlist/playlist-track-view";
 import { adaptCollectionMediaToTrack } from "@/features/playlist/tracks";
 import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
+import SegmentNav from "@/layout/topbar/segment-nav";
+import { useRouteSegments } from "@/layout/use-route-segments";
 import { postFavSeasonFav } from "@/service/fav-season-fav";
 import { postFavSeasonUnfav } from "@/service/fav-season-unfav";
 import { getUserVideoArchivesList } from "@/service/user-video-archives-list";
@@ -33,6 +35,8 @@ const VideoCollections = () => {
   const [order, setOrder] = useState("pubtime");
 
   const scrollRef = useRef<ScrollRefObject>(null);
+  const { segments, activeKey } = useRouteSegments();
+  const tabs = segments.length > 0 ? <SegmentNav segments={segments} activeKey={activeKey} /> : null;
 
   const { data, loading } = useRequest(
     async () => {
@@ -149,6 +153,7 @@ const VideoCollections = () => {
           mediaCount={data?.info?.media_count}
         />
       }
+      tabs={tabs}
       actions={
         <Operations
           loading={loading}

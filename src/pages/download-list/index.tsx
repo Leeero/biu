@@ -13,6 +13,8 @@ import {
   getDownloadTaskCapabilities,
   type DownloadFilter,
 } from "@/features/downloads/model";
+import SegmentNav from "@/layout/topbar/segment-nav";
+import { useRouteSegments } from "@/layout/use-route-segments";
 import { useModalStore } from "@/store/modal";
 import { useSettings } from "@/store/settings";
 import { PageState } from "@/ui/states/page-state";
@@ -56,6 +58,8 @@ const DownloadList = () => {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const filter = (params.get("type") ?? "all") as DownloadFilter;
+  const { segments, activeKey } = useRouteSegments();
+  const tabs = segments.length > 0 ? <SegmentNav segments={segments} activeKey={activeKey} /> : null;
 
   const load = useCallback(async () => {
     if (fixture) return;
@@ -146,6 +150,7 @@ const DownloadList = () => {
       <DownloadsView
         title={fixture.header.title}
         lead={fixture.header.lead}
+        tabs={tabs}
         pills={fixture.filterPills.map((pill, index) => ({ key: String(index), ...pill, variant: pill.kind }))}
         sectionTitle={fixture.section.title}
         columns={downloadColumns(fixture.section.head)}
@@ -189,6 +194,7 @@ const DownloadList = () => {
     <DownloadsView
       title="下载管理"
       lead="查看下载进度并管理正在进行或已完成的任务。"
+      tabs={tabs}
       pills={pills}
       sectionTitle={`${tasks.length} 个任务 · ${running} 个进行中`}
       columns={downloadColumns(["#", "文件", "状态", "大小"])}

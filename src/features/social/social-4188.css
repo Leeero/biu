@@ -4,7 +4,9 @@
 .social4188-page {
   width: 100%;
   min-height: 100%;
-  padding: 8px 0 48px;
+
+  /* 滚动条预留：搜索页在 ScrollContainer 内，右侧留 14px。 */
+  padding: 8px 14px 48px 0;
 }
 
 .social4188-page--fixed {
@@ -12,6 +14,9 @@
   height: 100%;
   min-height: 0;
   flex-direction: column;
+
+  /* 关注与动态页是固定高度布局，滚动发生在内部，无需预留。 */
+  padding-right: 0;
   padding-bottom: 0;
 }
 
@@ -51,14 +56,14 @@
   font-size: 14px;
 }
 
+/* 下划线 tab（QQ 音乐式）：与 `SegmentedControl variant="underline"` 同一视觉语言。
+   页面内分类导航从「反色药丸」迁到「弱分隔线 + 强调色下划线」。 */
 .social4188-tabs {
   display: flex;
   width: max-content;
   max-width: 100%;
-  gap: 4px;
-  padding: 4px;
-  border-radius: var(--lili-4188-radius-pill);
-  background: var(--lili-4188-surface);
+  gap: 8px;
+  border-bottom: 1px solid var(--lili-4188-border);
   overflow-x: auto;
 }
 
@@ -68,9 +73,10 @@
   align-items: center;
   justify-content: center;
   min-height: 34px;
-  padding: 0 17px;
+  margin-bottom: -1px;
+  padding: 0 10px;
   border: 0;
-  border-radius: var(--lili-4188-radius-pill);
+  border-bottom: 2px solid transparent;
   color: var(--lili-4188-text-secondary);
   background: transparent;
   font-size: 12px;
@@ -81,13 +87,13 @@
 .social4188-tabs button:hover,
 .social4188-tabs a:hover {
   color: var(--lili-4188-text-primary);
-  background: var(--lili-4188-surface-hover);
 }
 
 .social4188-tabs .is-active,
 .social4188-tabs [aria-selected="true"] {
   color: var(--lili-4188-text-primary);
-  background: var(--lili-4188-action);
+  border-bottom-color: var(--lili-4188-action);
+  font-weight: 600;
 }
 
 .search4188-page > .social4188-tabs {
@@ -194,15 +200,30 @@
   background: var(--lili-4188-surface);
 }
 
+/* 关注列表侧栏在窄窗口下收窄，给创作者网格让位。 */
+.social4188-follow-aside {
+  flex-shrink: 0;
+}
+
 .social4188-person-card {
   border-color: var(--lili-4188-border) !important;
   border-radius: var(--lili-4188-radius-md) !important;
   background: var(--lili-4188-surface) !important;
   box-shadow: none !important;
+
+  /* hover 动效收敛：仅轻微提亮，不做位移/阴影，动效预算留给操作菜单。 */
+  transition: background-color 200ms ease;
+
+  &:hover {
+    background: var(--lili-4188-surface-elevated) !important;
+  }
 }
 
 .social4188-profile {
   width: 100%;
+
+  /* 滚动条预留：创作者主页在 ScrollContainer 内，右侧留 14px。 */
+  padding-right: 14px;
   padding-bottom: 48px;
 }
 
@@ -253,6 +274,11 @@
     align-items: flex-start;
     flex-direction: column;
   }
+
+  /* 窄窗口下分组栏收窄为图标宽度级别，避免挤占创作者网格。 */
+  .social4188-follow .social4188-follow-aside {
+    width: 148px;
+  }
 }
 
 @media (width<=640px) {
@@ -264,6 +290,7 @@
     grid-template-columns: 1fr;
   }
 
+  /* 极窄窗口下隐藏分组栏（与既有 feed 行为一致），焦点回到网格本身。 */
   .social4188-follow > div:first-child,
   .social4188-feed > div:first-child {
     display: none;

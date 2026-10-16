@@ -180,14 +180,6 @@ export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
     ],
     activeKey: search => search.get("dir") ?? "all",
   },
-  "/later": {
-    segments: [
-      { key: "all", label: "全部", href: "?range=all" },
-      { key: "7d", label: "近 7 天", href: "?range=7d" },
-      { key: "30d", label: "近 30 天", href: "?range=30d" },
-    ],
-    activeKey: search => search.get("range") ?? "all",
-  },
   "/collection/:id": {
     segments: [
       collectionTypeSegment(CollectionType.Favorite, "收藏夹 · 11"),
@@ -227,14 +219,6 @@ export const ROUTE_SEGMENTS: Readonly<Record<string, RouteSegmentsSpec>> = {
       return "general";
     },
   },
-  "/history": {
-    segments: [
-      { key: "all", label: "全部", href: "?range=all" },
-      { key: "7d", label: "近 7 天", href: "?range=7d" },
-      { key: "30d", label: "近 30 天", href: "?range=30d" },
-    ],
-    activeKey: search => search.get("range") ?? "all",
-  },
   "/follow": {
     segments: [
       { key: "following", label: "关注的创作者", href: "?tab=following" },
@@ -258,6 +242,10 @@ export const DEFERRED_SEGMENTS: Readonly<Record<string, { phase: string; reason:
   "/mini-player": {
     phase: "P5",
     reason: "双形态路由由页面按窗口宽度分流；宽窗口顶栏由系统集成页拥有，小窗保持 bare",
+  },
+  "/history": {
+    phase: "P6",
+    reason: "时间筛选由页面内的日期范围选择器承接，避免与顶栏「全部/近7天/近30天」分段重复",
   },
 };
 
@@ -312,7 +300,6 @@ export const DEFAULT_SEARCH_PLACEHOLDER = "搜索音乐视频或创作者";
  */
 export const SEARCH_PLACEHOLDER_BY_ROUTE: Readonly<Record<string, string>> = {
   "/collection/:id": "搜索收藏夹与合集",
-  "/later": "搜索标题 / UP 主名称",
 };
 
 /** 解析某个路径的搜索占位。未登记的路由回落缺省值。 */

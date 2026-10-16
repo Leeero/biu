@@ -12,6 +12,8 @@ import { PlaylistDetail } from "@/features/playlist/playlist-detail";
 import { PlaylistTrackView } from "@/features/playlist/playlist-track-view";
 import { adaptCollectionMediaToTrack } from "@/features/playlist/tracks";
 import { executeTrackAction, type TrackActionKey } from "@/features/track/actions";
+import SegmentNav from "@/layout/topbar/segment-nav";
+import { useRouteSegments } from "@/layout/use-route-segments";
 import { getSeriesArchives } from "@/service/series-archives";
 import { getSeriesInfo } from "@/service/series-info";
 import { useUser } from "@/store/user";
@@ -28,6 +30,8 @@ const Series = () => {
   const [order, setOrder] = useState("pubtime");
 
   const scrollRef = useRef<ScrollRefObject>(null);
+  const { segments, activeKey } = useRouteSegments();
+  const tabs = segments.length > 0 ? <SegmentNav segments={segments} activeKey={activeKey} /> : null;
 
   const { data: meta, loading: infoLoading } = useRequest(
     async () => {
@@ -154,6 +158,7 @@ const Series = () => {
           mediaCount={meta?.total}
         />
       }
+      tabs={tabs}
       actions={
         <Operations
           loading={initialLoading}

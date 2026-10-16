@@ -20,6 +20,8 @@ export interface LocalMusicCardViewModel {
 interface LocalMusicViewProps {
   title: ReactNode;
   lead: ReactNode;
+  /** 页面内分类 tab（全部目录 / 各真实目录），渲染在页头正下方。 */
+  tabs?: ReactNode;
   cards: readonly LocalMusicCardViewModel[];
   note?: ReactNode;
   busy?: boolean;
@@ -51,6 +53,7 @@ const ROW_ACTIONS = [
 export const LocalMusicView = ({
   title,
   lead,
+  tabs,
   cards,
   note,
   busy,
@@ -86,6 +89,7 @@ export const LocalMusicView = ({
             </button>
           </div>
         </header>
+        {tabs}
         <section className="asset4188-section">
           <div className="asset4188-section-head">
             <h2>本地曲目 · {cards.length}</h2>
@@ -128,6 +132,7 @@ export const LocalMusicView = ({
             </Button>
           </FilterBar>
         </PageHeader>
+        {tabs}
         <FormatGrid>
           {cards.map(card => (
             <ContextMenu key={card.id} items={CARD_ACTIONS} onAction={action => onCardAction(card.id, action)}>
