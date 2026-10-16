@@ -26,6 +26,16 @@
   display: block;
 }
 
+/* 沉浸页全出血：页面自带 6vw 内边距，壳层不再叠一层 gutter。
+   否则页面深底与壳层 canvas 之间会露出一圈可见的「边框」。 */
+.shell4188.is-immersive .shell4188-content {
+  padding: 0;
+}
+
+.shell4188.is-immersive .shell4188-content-inner {
+  max-width: none;
+}
+
 .shell4188-skip-link {
   position: fixed;
   top: -60px;
@@ -61,35 +71,35 @@
 }
 
 .shell4188-brand {
-  padding: 0 12px 26px;
+  padding: 0 12px 28px;
   border: 0;
   color: var(--lili-4188-text-primary);
   background: transparent;
-  font-size: 33px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: -1.5px;
+  letter-spacing: -0.02em;
   text-align: left;
   cursor: pointer;
 }
 
 .shell4188-nav-list {
   display: grid;
-  gap: 5px;
+  gap: 2px;
 }
 
 .shell4188-nav-item {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 54px;
-  padding: 0 16px;
-  gap: 15px;
+  height: 40px;
+  padding: 0 12px;
+  gap: 12px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--lili-4188-text-secondary);
   background: transparent;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   text-align: left;
   white-space: nowrap;
@@ -125,36 +135,27 @@
   background: var(--lili-4188-border);
 }
 
+/* 分组之间的纵向节奏：靠分组标签 + 组间间距，不再用硬分隔线。 */
+.shell4188-nav-section + .shell4188-nav-section {
+  margin-top: 18px;
+}
+
 .shell4188-sidebar-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 32px;
-  padding: 0 12px 10px;
+  padding: 0 12px 8px;
   color: var(--lili-4188-text-muted);
   font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
-.shell4188-sidebar-label button {
-  display: grid;
-  width: 26px;
-  height: 26px;
-  place-items: center;
-  border: 0;
-  border-radius: var(--lili-4188-radius-pill);
-  color: var(--lili-4188-text-secondary);
-  background: transparent;
-  cursor: pointer;
+/* 「设置」从导航分组里抽出，固定在账户卡上方；上缘用一条细分隔线与滚动区断开。 */
+.shell4188-nav-settings {
+  flex: none;
+  padding-top: 4px;
 }
 
-.shell4188-sidebar-label button:hover {
-  color: var(--lili-4188-text-primary);
-  background: var(--lili-4188-action-hover-soft);
-}
-
-.shell4188-nav-secondary .shell4188-nav-item {
-  height: 48px;
+.shell4188-nav-settings .shell4188-sidebar-rule {
+  margin: 0 12px 10px;
 }
 
 .shell4188-profile {

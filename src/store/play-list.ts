@@ -93,6 +93,7 @@ export interface PlayItem {
   audioUrl?: string;
   title: string;
   bvid?: string;
+  cid?: string;
   sid?: number;
   cover?: string;
   ownerName?: string;
@@ -557,7 +558,7 @@ export const usePlayList = create<State & Action>()(
         setShouldKeepPagesOrderInRandomPlayMode: shouldKeep => {
           set({ shouldKeepPagesOrderInRandomPlayMode: shouldKeep });
         },
-        play: async ({ type, bvid, sid, title, cover, ownerName, ownerMid, id, source, audioUrl }: PlayItem) => {
+        play: async ({ type, bvid, cid, sid, title, cover, ownerName, ownerMid, id, source, audioUrl }: PlayItem) => {
           const { list, playId } = get();
           const currentItem = list?.find(item => item.id === playId);
           const sanitizedTitle = sanitizeTitle(title);
@@ -603,6 +604,7 @@ export const usePlayList = create<State & Action>()(
                     id: idGenerator(),
                     type,
                     bvid,
+                    cid,
                     sid,
                     title: sanitizedTitle,
                     cover: cover ? formatUrlProtocol(cover) : undefined,
@@ -746,7 +748,7 @@ export const usePlayList = create<State & Action>()(
             state.playId = list[prevIndex].id;
           });
         },
-        addToNext: async ({ type, title, bvid, sid, cover, ownerName, ownerMid, id, source, audioUrl }) => {
+        addToNext: async ({ type, title, bvid, cid, sid, cover, ownerName, ownerMid, id, source, audioUrl }) => {
           const { playId, nextId: currentNextId, list } = get();
           const currentItem = list.find(item => item.id === playId);
           const sanitizedTitle = sanitizeTitle(title);
@@ -800,6 +802,7 @@ export const usePlayList = create<State & Action>()(
                     id: idGenerator(),
                     type,
                     bvid,
+                    cid,
                     sid,
                     title: sanitizedTitle,
                     cover: cover ? formatUrlProtocol(cover) : undefined,

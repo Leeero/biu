@@ -1,7 +1,9 @@
 /* stylelint-disable no-descending-specificity -- 资产页卡片、列表与操作区共享原生元素。 */
+
+/* 滚动条预留：右侧留 14px（同 discover/chart，ScrollContainer 滚动条覆盖右边缘）。 */
 .asset4188-page {
   width: 100%;
-  padding: 8px 0 48px;
+  padding: 8px 14px 48px 0;
 }
 
 .asset4188-head {
@@ -65,7 +67,7 @@
   background: var(--lili-4188-action-soft);
 }
 
-.asset4188-actions button.is-danger:hover {
+.asset4188-actions button.is-danger {
   color: var(--lili-4188-error);
   border-color: var(--lili-4188-error);
 }
@@ -259,6 +261,7 @@
   border-bottom: 1px solid var(--lili-4188-border);
   border-radius: 10px;
   color: var(--lili-4188-text-secondary);
+  cursor: pointer;
 }
 
 .asset4188-row:hover {
@@ -318,11 +321,15 @@
   justify-content: flex-end;
   gap: 4px;
   opacity: 0;
+
+  /* 未悬停时操作带不可点击，让整行点击落在行本体（播放）。 */
+  pointer-events: none;
 }
 
 .asset4188-row:hover .asset4188-row-actions,
 .asset4188-row:focus-within .asset4188-row-actions {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .asset4188-filter {
@@ -331,21 +338,6 @@
   gap: 8px;
   margin: 0 0 24px;
   flex-wrap: wrap;
-}
-
-.asset4188-filter input {
-  height: 36px;
-  min-width: 220px;
-  padding: 0 14px;
-  border: 1px solid var(--lili-4188-border);
-  border-radius: var(--lili-4188-radius-pill);
-  outline: 0;
-  color: var(--lili-4188-text-primary);
-  background: var(--lili-4188-surface);
-}
-
-.asset4188-filter input:focus {
-  border-color: var(--lili-4188-focus);
 }
 
 @media (width<=980px) {
@@ -388,10 +380,5 @@
   .asset4188-cover {
     width: 48px;
     height: 48px;
-  }
-
-  .asset4188-filter input {
-    width: 100%;
-    min-width: 0;
   }
 }

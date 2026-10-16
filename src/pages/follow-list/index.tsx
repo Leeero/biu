@@ -1,7 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { addToast, Button, Input, Spinner, Tooltip, useDisclosure } from "@heroui/react";
-import { RiAddLine, RiDeleteBinLine, RiEditLine, RiSearchLine } from "@remixicon/react";
+import {
+  addToast,
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
+  Spinner,
+  Tooltip,
+  useDisclosure,
+} from "@heroui/react";
+import { RiAddLine, RiDeleteBinLine, RiEditLine, RiMore2Fill, RiSearchLine } from "@remixicon/react";
 
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
 import VirtualGridPageList from "@/components/virtual-grid-page-list";
@@ -16,6 +27,7 @@ import {
 } from "@/service/relation-tag";
 import { useModalStore } from "@/store/modal";
 import { useUser } from "@/store/user";
+import { PageState } from "@/ui/states/page-state";
 
 import GroupModal from "./group-modal";
 import SetGroupModal from "./set-group-modal";
@@ -32,9 +44,10 @@ const FollowList = () => {
   const [tags, setTags] = useState<RelationTag[]>([]);
   const [allCount, setAllCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<string>("all");
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [inputValue, setInputValue] = useState("");
 
@@ -83,6 +96,7 @@ const FollowList = () => {
 
     let newList: (RelationListItem | RelationTagUser)[] = [];
     let total = 0;
+    let failed = false;
 
     if (activeTab === "all") {
       const res = searchKeyword
@@ -95,17 +109,34 @@ const FollowList = () => {
           total = res?.data?.total ?? 0;
           newList = res?.data?.list ?? [];
         }
+      } else {
+        failed = true;
       }
     } else {
       const tagId = Number(activeTab);
       const res = await getRelationTag({ tagid: tagId, pn, ps: PAGE_SIZE });
-      if (res.code === 0 && res?.data?.length) {
-        newList = res.data;
+      if (res.code === 0) {
+        newList = res.data ?? [];
         const tag = tags.find(t => t.tagid === tagId);
         total = tag?.count ?? 0;
+      } else {
+        failed = true;
       }
     }
 
+    if (failed) {
+      // 请求失败：仅首页失败时展示错误态；加载更多失败保持现有列表并提示。
+      if (pn === 1) {
+        setList([]);
+        setLoadError(true);
+      } else {
+        addToast({ title: "加载失败，请稍后重试", color: "danger" });
+      }
+      setHasMore(pn > 1);
+      return;
+    }
+
+    setLoadError(false);
     if (newList.length > 0) {
       const combinedList = pn === 1 ? newList : [...list, ...newList];
 
@@ -129,6 +160,7 @@ const FollowList = () => {
 
   useEffect(() => {
     if (user?.mid) {
+      setLoadError(false);
       init();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -197,10 +229,41 @@ const FollowList = () => {
     setGroupModalDisclosure.onOpen();
   };
 
+  const renderTagMenu = (tag: RelationTag) => (
+    <Dropdown placement="bottom-end">
+      <DropdownTrigger>
+        <Button
+          isIconOnly
+          radius="md"
+          size="sm"
+          variant="light"
+          aria-label={`分组操作：${tag.name}`}
+          className="data-[hover=true]:bg-transparent"
+        >
+          <RiMore2Fill size={16} />
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu aria-label={`分组操作：${tag.name}`} variant="flat">
+        <DropdownItem key="rename" startContent={<RiEditLine size={18} />} onPress={() => handleOpenRename(tag)}>
+          修改分组名称
+        </DropdownItem>
+        <DropdownItem
+          key="delete"
+          className="text-danger"
+          color="danger"
+          startContent={<RiDeleteBinLine size={18} />}
+          onPress={() => handleOpenDelete(tag)}
+        >
+          删除分组
+        </DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  );
+
   return (
     <>
       <div className="social4188-follow flex h-full w-full">
-        <div className="h-full w-50 pb-4">
+        <div className="social4188-follow-aside h-full w-50 pb-4">
           <div className="border-divider/40 flex h-full flex-col border-r">
             <div className="mb-2 flex items-center justify-between space-x-1 px-4">
               <h1 className="min-w-0 truncate">{activeTab === "all" ? "全部关注" : activeTag?.name || "我的关注"}</h1>
@@ -227,16 +290,33 @@ const FollowList = () => {
                   const key = String(tag.tagid);
                   const isActive = activeTab === key;
                   return (
-                    <Button
+                    <div
                       key={key}
-                      fullWidth
-                      radius="md"
-                      variant={isActive ? "flat" : "light"}
-                      className="justify-between px-3"
-                      onPress={() => setActiveTab(key)}
+                      className={`group/tag flex w-full items-center justify-between gap-1 rounded-md transition-colors ${
+                        isActive ? "bg-default-100" : "hover:bg-default-100/60"
+                      }`}
                     >
-                      <span className="truncate">{`${tag.name}${tag.count ? `(${tag.count})` : ""}`}</span>
-                    </Button>
+                      <Button
+                        fullWidth
+                        radius="md"
+                        variant="light"
+                        className="min-w-0 flex-1 justify-start px-3 data-[hover=true]:bg-transparent"
+                        onPress={() => setActiveTab(key)}
+                      >
+                        <span className="truncate">{`${tag.name}${tag.count ? `(${tag.count})` : ""}`}</span>
+                      </Button>
+                      {/* 操作入口跟分组走：hover / 键盘 focus 时可见，选中时常驻。
+                          视觉背景统一由外层容器承担，内层按钮一律透明，避免多段色块拼接。 */}
+                      <div
+                        className={`flex-none pr-1 transition-opacity duration-200 ${
+                          isActive
+                            ? "opacity-100"
+                            : "opacity-0 group-focus-within/tag:opacity-100 group-hover/tag:opacity-100"
+                        }`}
+                      >
+                        {renderTagMenu(tag)}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -247,37 +327,21 @@ const FollowList = () => {
         <div className="flex min-w-0 flex-1">
           <ScrollContainer ref={scrollRef} enableBackToTop className="h-full w-full px-4">
             <div className="flex h-full flex-col">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center space-x-1">
+              {/* 工具栏位置恒定：搜索框常驻（分组视图下禁用），避免布局跳变。 */}
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center space-x-1">
                   {isCustomTag && activeTag && (
-                    <>
-                      <Tooltip content="修改分组名称" closeDelay={0}>
-                        <Button
-                          onPress={() => handleOpenRename(activeTag)}
-                          isIconOnly
-                          radius="md"
-                          size="sm"
-                          variant="light"
-                        >
-                          <RiEditLine size={18} />
-                        </Button>
-                      </Tooltip>
-                      <Tooltip content="删除分组" closeDelay={0}>
-                        <Button
-                          onPress={() => handleOpenDelete(activeTag)}
-                          isIconOnly
-                          variant="light"
-                          size="sm"
-                          radius="md"
-                          color="danger"
-                        >
-                          <RiDeleteBinLine size={18} />
-                        </Button>
-                      </Tooltip>
-                    </>
+                    <span className="text-default-500 truncate text-sm">
+                      {activeTag.name}
+                      {activeTag.count ? ` · ${activeTag.count} 人` : ""}
+                    </span>
                   )}
                 </div>
-                {activeTab === "all" && (
+                <Tooltip
+                  content={activeTab === "all" ? "" : "分组内暂不支持搜索，切回全部关注可搜索"}
+                  closeDelay={0}
+                  isDisabled={activeTab === "all"}
+                >
                   <div className="flex items-center">
                     <Input
                       classNames={{
@@ -291,6 +355,7 @@ const FollowList = () => {
                       value={inputValue}
                       onValueChange={onSearchChange}
                       isClearable
+                      isDisabled={activeTab !== "all"}
                       onClear={onClear}
                       onKeyDown={e => {
                         if (e.key === "Enter") {
@@ -299,13 +364,21 @@ const FollowList = () => {
                       }}
                     />
                   </div>
-                )}
+                </Tooltip>
               </div>
 
               {loading && !list.length ? (
                 <div className="flex h-[40vh] items-center justify-center">
                   <Spinner label="加载中" />
                 </div>
+              ) : loadError ? (
+                <PageState
+                  kind="error"
+                  title="关注列表加载失败"
+                  description="可能是网络波动或接口限流，稍后重试看看"
+                  actionLabel="重新加载"
+                  onAction={reload}
+                />
               ) : (
                 <VirtualGridPageList
                   items={list}

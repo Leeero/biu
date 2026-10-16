@@ -27,7 +27,14 @@ interface Props<T extends AssetTrackRow> {
 export const AssetTrackList = <T extends AssetTrackRow>({ label, rows, actions, onAction }: Props<T>) => (
   <section className="asset4188-list" aria-label={label}>
     {rows.map(row => (
-      <article key={row.id} className={row.current ? "asset4188-row is-current" : "asset4188-row"}>
+      // 整行点击 = 播放（鼠标便捷）；键盘操作由行内操作带的「播放」按钮提供，
+      // 故不额外加 tabIndex，避免长列表产生大量 Tab 停留点。
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+      <article
+        key={row.id}
+        className={row.current ? "asset4188-row is-current" : "asset4188-row"}
+        onClick={() => onAction(row, "play")}
+      >
         <span className="asset4188-index">{row.current ? "▶" : String(row.index).padStart(2, "0")}</span>
         {row.art ? <img src={row.art} alt="" /> : <span className="asset4188-cover" />}
         <span className="asset4188-copy">
@@ -36,7 +43,7 @@ export const AssetTrackList = <T extends AssetTrackRow>({ label, rows, actions, 
         </span>
         <span className="asset4188-middle">{row.middle}</span>
         <span className="asset4188-end">{row.end}</span>
-        <span className="asset4188-row-actions">
+        <span className="asset4188-row-actions" onClick={event => event.stopPropagation()}>
           <button type="button" aria-label={`播放 ${row.title}`} onClick={() => onAction(row, "play")}>
             <RiPlayLargeFill />
           </button>

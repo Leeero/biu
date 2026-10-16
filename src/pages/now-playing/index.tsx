@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import {
   RiArrowLeftLine,
   RiListCheck2,
+  RiOrderPlayLine,
   RiPauseLargeFill,
   RiPlayLargeFill,
   RiRepeat2Line,
+  RiRepeatOneLine,
   RiShuffleLine,
   RiSkipBackFill,
   RiSkipForwardFill,
@@ -28,10 +30,17 @@ import { Artwork } from "@/ui/primitives/artwork";
 type MainView = "cover" | "video";
 type SideView = "lyrics" | "parts" | "queue";
 const MODE_LABEL: Record<PlayMode, string> = {
-  [PlayMode.Sequence]: "顺序",
+  [PlayMode.Sequence]: "顺序播放",
   [PlayMode.Loop]: "列表循环",
-  [PlayMode.Random]: "随机",
+  [PlayMode.Random]: "随机播放",
   [PlayMode.Single]: "单曲循环",
+};
+// 四种模式各配独立图标，避免顺序/列表循环/单曲循环共用同一个 repeat 图标，当前模式一目了然。
+const MODE_ICON: Record<PlayMode, ReactElement> = {
+  [PlayMode.Sequence]: <RiOrderPlayLine />,
+  [PlayMode.Loop]: <RiRepeat2Line />,
+  [PlayMode.Random]: <RiShuffleLine />,
+  [PlayMode.Single]: <RiRepeatOneLine />,
 };
 
 const NowPlayingPage = () => {
@@ -53,7 +62,8 @@ const NowPlayingPage = () => {
     duration = usePlayList(s => s.duration) ?? 0,
     playMode = usePlayList(s => s.playMode),
     volume = usePlayList(s => s.volume),
-    isMuted = usePlayList(s => s.isMuted);
+    isMuted = usePlayList(s => s.isMuted),
+    rate = usePlayList(s => s.rate);
   const togglePlay = usePlayList(s => s.togglePlay),
     previous = usePlayList(s => s.prev),
     next = usePlayList(s => s.next),
@@ -87,6 +97,37 @@ const NowPlayingPage = () => {
   const activeLyricIndex = isFixture
     ? SCREEN_10_NOW_PLAYING_FIXTURE.currentLine
     : getActiveLyricIndex(lyricLines, Math.round(resolvedTime * 1000));
+  // 视频视图：有视频地址且非夹具时，把封面盘切换成全出血视频。
+  const showVideo = mainView === "video" && Boolean(item?.videoUrl) && !isFixture;
+
+  // 视频只是「画面」，音频由主引擎播放。这里把视频的倍速与播放/暂停状态对齐到引擎：
+  // 起播前先把画面跳到音频当前位置，避免从 0 秒开始，出现「画面与进度条各走各的」。
+  // item?.videoUrl 进依赖：分 P 连播换集时 src 变化，视频元素会重载并停在 0 秒，
+  // 必须重新起播 / 对齐，否则新一集的画面会卡住。
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.playbackRate = rate || 1;
+    if (isPlaying) {
+      const audioTime = usePlayProgress.getState().currentTime || 0;
+      if (Math.abs(video.currentTime - audioTime) > 0.75) {
+        video.currentTime = audioTime;
+      }
+      void video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [isPlaying, rate, showVideo, item?.videoUrl]);
+
+  // 播放中持续对齐：音频引擎 currentTime 每 ~250ms 更新一次，画面漂移超过 0.75s 就拉回；
+  // 暂停态下拖进度条也会经此把画面跳到对应帧。
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !showVideo) return;
+    if (Math.abs(video.currentTime - currentTime) > 0.75) {
+      video.currentTime = currentTime;
+    }
+  }, [currentTime, showVideo, item?.videoUrl]);
 
   // 歌词自动滚动：高亮行变化时将其滚动到容器中央；用户手动滚动后 5 秒内不抢。
   useEffect(() => {
@@ -113,47 +154,81 @@ const NowPlayingPage = () => {
   };
   return (
     <div className="np4188-page">
-      <button type="button" className="np4188-back" onClick={() => navigate(-1)}>
-        <RiArrowLeftLine />
-        返回应用
-      </button>
+      <header className="np4188-dragbar window-drag">
+        <button type="button" className="np4188-back window-no-drag" onClick={() => navigate(-1)}>
+          <RiArrowLeftLine />
+          返回应用
+        </button>
+      </header>
       <main className="np4188-main">
         <section className="np4188-art-column">
-          <div className="np4188-art">
-            {mainView === "video" && item?.videoUrl && !isFixture ? (
-              <video
-                ref={videoRef}
-                src={item.videoUrl}
-                aria-label="当前播放视频画面"
-                muted
-                playsInline
-                autoPlay={isPlaying}
-              />
-            ) : (
-              <Artwork
-                src={isFixture ? undefined : item?.pageCover || item?.cover}
-                alt="当前播放封面"
-                radius="none"
-                gradient="immersive"
-                className="size-full"
-              />
+          <div className="np4188-stage">
+            {!showVideo && (
+              <svg className="np4188-tonearm" viewBox="0 0 100 100" aria-hidden="true">
+                <defs>
+                  <linearGradient id="np4188-metal" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#f2f3f6" />
+                    <stop offset="1" stopColor="#9a9ba3" />
+                  </linearGradient>
+                </defs>
+                {/* 配重块 + 转轴（盘外左上） */}
+                <rect
+                  className="np4188-tonearm-metal"
+                  x="0"
+                  y="2"
+                  width="14"
+                  height="20"
+                  rx="7"
+                  fill="url(#np4188-metal)"
+                />
+                <circle className="np4188-tonearm-metal" cx="12" cy="12" r="5" fill="url(#np4188-metal)" />
+                {/* 唱臂杆 + 唱头（伸向盘面外圈刻痕） */}
+                <line
+                  className="np4188-tonearm-arm"
+                  x1="14"
+                  y1="14"
+                  x2="58"
+                  y2="58"
+                  stroke="url(#np4188-metal)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <circle className="np4188-tonearm-metal" cx="58" cy="58" r="4" fill="url(#np4188-metal)" />
+                <circle className="np4188-tonearm-stylus" cx="65" cy="65" r="1.8" />
+              </svg>
             )}
-          </div>
-          <div className="np4188-badges">
-            <span>正在播放</span>
-            <span>{item?.isLossless ? "无损音质" : "标准音质"}</span>
-            <span>{item?.source === "local" ? "本地音乐" : "来自 Bilibili"}</span>
-          </div>
-          <div className="np4188-title">
-            <div>
-              <h1>{title}</h1>
-              <p>{artist}</p>
-            </div>
             {item?.videoUrl && !isFixture && (
-              <button type="button" onClick={() => setMainView(v => (v === "cover" ? "video" : "cover"))}>
+              <button
+                type="button"
+                className="np4188-view-toggle"
+                onClick={() => setMainView(v => (v === "cover" ? "video" : "cover"))}
+              >
                 {mainView === "cover" ? "视频" : "封面"}
               </button>
             )}
+            <div
+              className={[
+                "np4188-art",
+                showVideo ? "is-video" : "is-cover",
+                !showVideo && isPlaying ? "is-spinning" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              {showVideo ? (
+                <video ref={videoRef} src={item?.videoUrl} aria-label="当前播放视频画面" muted playsInline />
+              ) : (
+                <span className="np4188-cover">
+                  <Artwork
+                    src={isFixture ? undefined : item?.pageCover || item?.cover}
+                    alt="当前播放封面"
+                    radius="none"
+                    gradient="immersive"
+                    className="size-full"
+                  />
+                </span>
+              )}
+            </div>
           </div>
         </section>
         <aside className="np4188-side">
@@ -171,7 +246,7 @@ const NowPlayingPage = () => {
                 className={sideView === "parts" ? "is-active" : ""}
                 onClick={() => setSideView("parts")}
               >
-                分P · {parts.length}
+                分P<em>{parts.length}</em>
               </button>
             )}
             <button
@@ -179,7 +254,7 @@ const NowPlayingPage = () => {
               className={sideView === "queue" ? "is-active" : ""}
               onClick={() => setSideView("queue")}
             >
-              播放队列 · {queue.length}
+              播放队列<em>{queue.length}</em>
             </button>
           </div>
           {sideView === "parts" ? (
@@ -281,17 +356,53 @@ const NowPlayingPage = () => {
       <footer className="np4188-controls">
         <div className="np4188-progress">
           <time>{formatDuration(resolvedTime)}</time>
-          <button type="button" aria-label="调整播放进度" disabled={disabled} onClick={handleSeek}>
-            <i style={{ width: `${progress}%` }} />
+          <button
+            type="button"
+            aria-label={`播放进度 ${formatDuration(resolvedTime)} / ${formatDuration(resolvedDuration)}`}
+            title={`${formatDuration(resolvedTime)} / ${formatDuration(resolvedDuration)}`}
+            disabled={disabled}
+            onClick={handleSeek}
+          >
+            <i style={{ width: `${progress}%` }}>
+              <span />
+            </i>
           </button>
           <time>{formatDuration(resolvedDuration)}</time>
         </div>
         <div className="np4188-control-row">
-          <button type="button" className="np4188-mode" onClick={togglePlayMode}>
-            {playMode === PlayMode.Random ? <RiShuffleLine /> : <RiRepeat2Line />}
-            {MODE_LABEL[playMode]}
-          </button>
+          <div className="np4188-track">
+            <div className="np4188-track-head">
+              <span className="np4188-track-title" title={title}>
+                {title}
+              </span>
+              <span className={isPlaying ? "np4188-badge-status is-playing" : "np4188-badge-status"}>
+                {isPlaying ? "正在播放" : "已暂停"}
+              </span>
+            </div>
+            <div className="np4188-track-sub">
+              <span className="np4188-track-artist">{artist}</span>
+              <span>{item?.isLossless ? "无损音质" : "标准音质"}</span>
+              <span>{item?.source === "local" ? "本地音乐" : "来自 Bilibili"}</span>
+              {!disabled && (
+                <span className="np4188-track-meta">
+                  {formatDuration(resolvedDuration)}
+                  {item?.hasMultiPart && typeof item.totalPage === "number"
+                    ? ` · 第 ${item.pageIndex ?? 1}/${item.totalPage} 集`
+                    : ""}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="np4188-transport">
+            <button
+              type="button"
+              className="np4188-mode"
+              onClick={togglePlayMode}
+              title="点击切换播放模式：顺序播放 → 列表循环 → 随机播放 → 单曲循环"
+              aria-label={`播放模式：${MODE_LABEL[playMode]}，点击切换`}
+            >
+              {MODE_ICON[playMode]}
+            </button>
             <button type="button" aria-label="上一首" disabled={disabled} onClick={() => void previous()}>
               <RiSkipBackFill />
             </button>
@@ -307,6 +418,9 @@ const NowPlayingPage = () => {
             <button type="button" aria-label="下一首" disabled={disabled} onClick={() => void next()}>
               <RiSkipForwardFill />
             </button>
+            <button type="button" aria-label="查看播放队列" onClick={() => setSideView("queue")}>
+              <RiListCheck2 />
+            </button>
           </div>
           <div className="np4188-volume">
             <button type="button" aria-label={isMuted ? "取消静音" : "静音"} onClick={toggleMute}>
@@ -320,9 +434,7 @@ const NowPlayingPage = () => {
               value={Math.round(volume * 100)}
               onChange={event => setVolume(Number(event.target.value) / 100)}
             />
-            <button type="button" aria-label="查看播放队列" onClick={() => setSideView("queue")}>
-              <RiListCheck2 />
-            </button>
+            <span className="np4188-volume-value">{isMuted ? "0%" : `${Math.round(volume * 100)}%`}</span>
           </div>
         </div>
       </footer>

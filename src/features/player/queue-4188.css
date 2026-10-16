@@ -1,6 +1,8 @@
 /* stylelint-disable no-descending-specificity -- 页头与行操作共享按钮元素，但属于独立组件区域。 */
+
+/* 滚动条预留：右侧留 14px（同 discover/chart，ScrollContainer 滚动条覆盖右边缘）。 */
 .queue4188-page {
-  padding: 8px 0 48px;
+  padding: 8px 14px 48px 0;
 }
 
 .queue4188-head {

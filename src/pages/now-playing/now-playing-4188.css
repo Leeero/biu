@@ -4,13 +4,22 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 24px 6vw 18px;
-  /* 原型设计：沉浸播放器固定深底 #17141c，不跟随主题（刻意为之，非 bug） */
+  padding: 24px 3.5vw 18px;
+
+  /* 深底对齐壳层 canvas：沉浸页全出血铺满窗口，底色与全应用一致，避免比窗口更亮的「浮盒」。 */
   background:
     radial-gradient(circle at 24% 22%, var(--lili-4188-action-soft), transparent 36%),
-    #17141c;
+    var(--lili-4188-canvas);
   color: #fff;
   overflow: hidden;
+}
+
+/* 沉浸页没有壳层顶栏，这里补一条透明拖拽条（window-drag），
+   让无边框窗口在「正在播放」页仍能按住顶部拖动。按钮自己 window-no-drag。 */
+.np4188-dragbar {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 .np4188-back {
@@ -28,9 +37,10 @@
   min-height: 0;
   flex: 1;
   display: grid;
+
   /* 原型 .full-player 比例：左 1.05fr / 右 0.95fr */
   grid-template-columns: minmax(420px, 1.05fr) minmax(390px, 0.95fr);
-  gap: 4vw;
+  gap: 2.5vw;
   align-items: center;
   max-width: 1420px;
   width: 100%;
@@ -44,18 +54,20 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  overflow: hidden;
+  padding: 12px;
+
+  /* 不裁切：唱臂转轴要伸出列的上/左侧，overflow:hidden 会把它削掉。
+     列内光晕改用 inset:0 自收敛，不依赖裁剪。 */
 }
 
 .np4188-art-column::before {
   content: "";
   position: absolute;
-  inset: -25%;
+  inset: 0;
   background:
-    radial-gradient(circle at 28% 30%, rgb(128 92 222 / 75%), transparent 28%),
-    radial-gradient(circle at 78% 69%, rgb(255 114 102 / 38%), transparent 24%),
-    #17141c;
+    radial-gradient(circle at 28% 30%, rgb(128 92 222 / 75%), transparent 42%),
+    radial-gradient(circle at 78% 69%, rgb(255 114 102 / 38%), transparent 36%),
+    var(--lili-4188-canvas);
   filter: saturate(0.8);
   pointer-events: none;
 }
@@ -65,29 +77,57 @@
   z-index: 2;
 }
 
-.np4188-art {
-  width: min(30vw, 440px);
-  aspect-ratio: 1;
-  overflow: hidden;
-  /* 原型 .stage-art：圆角方形 9%（非正圆），黑胶质感靠同心圆环 */
-  border-radius: 9%;
-  background: var(--lili-4188-surface);
-  box-shadow: 0 30px 70px rgb(0 0 0 / 32%);
+/* 唱片舞台：与封面同尺寸的定位容器。唱臂超出圆盘的部分从这里伸出去，
+   不被 .np4188-art 的 overflow 裁掉（也避免它跟着整盘一起旋转）。 */
+.np4188-stage {
   position: relative;
 }
 
-/* 黑胶式光环：48% 同心圆环 */
-.np4188-art::before {
+/* 唱片主体。cover 视图 = 正圆黑胶盘；video 视图保持圆角方形全出血视频。 */
+.np4188-art {
+  width: min(32vw, 480px);
+  aspect-ratio: 1;
+  position: relative;
+  box-shadow: 0 30px 70px rgb(0 0 0 / 32%);
+}
+
+/* 黑胶盘面：深色盘底 + 同心刻痕，左上叠一层柔光让盘面有轻微起伏。 */
+.np4188-art.is-cover {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, rgb(255 255 255 / 6%), transparent 52%),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      #19151d 0,
+      #19151d 1px,
+      #110e14 2px,
+      #110e14 3px
+    );
+}
+
+/* 盘面高光：一段偏置的扇形反光，随整盘旋转扫过，让「在转」肉眼可见。 */
+.np4188-art.is-cover::before {
   content: "";
   position: absolute;
   inset: 0;
-  margin: auto;
-  width: 48%;
-  height: 48%;
-  border: 3px solid #17141c;
   border-radius: 50%;
-  box-shadow: 0 0 0 13px rgb(255 255 255 / 13%);
+  background: conic-gradient(
+    from 30deg,
+    transparent 0deg,
+    transparent 290deg,
+    rgb(255 255 255 / 7%) 330deg,
+    rgb(255 255 255 / 12%) 360deg
+  );
   pointer-events: none;
+}
+
+/* 视频视图：16:9 横屏，全出血。宽度比封面盘略大，避免方形裁切把 MV 压成一小块。 */
+.np4188-art.is-video {
+  width: min(44vw, 640px);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 9%;
+  background: var(--lili-4188-surface);
 }
 
 .np4188-art video {
@@ -96,59 +136,164 @@
   object-fit: cover;
 }
 
-.np4188-badges {
-  display: flex;
-  gap: 7px;
-  margin-top: 20px;
+/* 中心封面：占盘面 74%，压住盘心刻痕，边缘一圈细描边 + 投影让封面从盘面浮起。 */
+.np4188-cover {
+  position: absolute;
+  inset: 13%;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 5%),
+    0 12px 32px rgb(0 0 0 / 45%);
 }
 
-.np4188-badges span {
-  padding: 5px 8px;
-  border-radius: 6px;
-  background: var(--lili-4188-surface-elevated);
-  color: var(--lili-4188-text-secondary);
-  font-size: 10px;
+/* 播放时整盘旋转（封面 + 盘面高光一起转）；唱臂在盘外静止。 */
+@keyframes np4188-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.np4188-badges span:first-child {
-  color: var(--lili-4188-action);
-  background: var(--lili-4188-action-soft);
+.np4188-art.is-cover.is-spinning {
+  animation: np4188-spin 24s linear infinite;
 }
 
-.np4188-title {
+/* 唱臂：SVG 绘制，配重块与转轴在盘外左上，唱臂杆伸向盘面外圈刻痕，
+   唱头落在刻痕上（而不是盘心）。整根臂静止，不随盘旋转。 */
+.np4188-tonearm {
+  position: absolute;
+  z-index: 3;
+  top: -14%;
+  left: -12%;
+  width: 64%;
+  height: 64%;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 14px rgb(0 0 0 / 40%));
+}
+
+.np4188-tonearm-arm {
+  /* stroke 由内联 url(#np4188-metal) 渐变承担 */
+}
+
+.np4188-tonearm-stylus {
+  fill: var(--lili-4188-playback);
+}
+
+/* 底部左侧歌曲信息（网易云式：上行歌名 + 状态徽标，下行歌手/音质/来源/时长）。 */
+.np4188-track {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  align-content: center;
+  justify-items: start;
+}
+
+.np4188-track-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.np4188-title > div {
-  flex: 1;
+  gap: 8px;
   min-width: 0;
+  max-width: 100%;
 }
 
-.np4188-title h1 {
-  margin: 0 0 5px;
-  font-size: clamp(32px, 3vw, 42px);
-  line-height: 1.1;
+.np4188-track-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--lili-4188-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.np4188-title p {
-  margin: 0;
+.np4188-track-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
   color: var(--lili-4188-text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
-.np4188-title > button,
-.np4188-tabs button {
-  border: 0;
+/* 歌手名是唯一可收缩项：空间不够时优先截断它，音质/来源/时长·分P 永不截断。 */
+.np4188-track-artist {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np4188-track-sub > span:not(.np4188-track-artist) {
+  flex: none;
+}
+
+.np4188-track-meta {
+  color: var(--lili-4188-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 播放状态徽标：playback 青统一「播放中」语义，带一个呼吸点，暂停时静止。 */
+.np4188-track .np4188-badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  color: var(--lili-4188-playback);
+  background: var(--lili-4188-playback-soft);
+  font-size: 10px;
+  flex: none;
+}
+
+.np4188-track .np4188-badge-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.np4188-track .np4188-badge-status.is-playing::before {
+  animation: np4188-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes np4188-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+/* 媒体区右上角「视频 / 封面」视图切换。
+   不用 backdrop-filter：视频模式下它每帧都要采样背后的动态画面，是 macOS 上
+   最重的一处 GPU 开销。改为更不透明的纯色底，观感几乎不变。 */
+.np4188-view-toggle {
+  position: absolute;
+  z-index: 4;
+  top: 5%;
+  right: 5%;
+  padding: 6px 12px;
+  border: 1px solid var(--lili-4188-border);
   border-radius: var(--lili-4188-radius-pill);
-  color: var(--lili-4188-text-secondary);
-  background: var(--lili-4188-surface-elevated);
+  color: var(--lili-4188-text-primary);
+  background: rgb(28 28 32 / 90%);
   cursor: pointer;
+  font-size: 11px;
 }
 
-.np4188-title > button {
-  padding: 9px 14px;
+.np4188-view-toggle:hover {
+  background: rgb(46 42 54 / 92%);
 }
 
 .np4188-side {
@@ -187,6 +332,17 @@
   box-shadow: 0 2px 7px rgb(0 0 0 / 8%);
 }
 
+/* Tab 名称与计数分离：计数做角标，不再和 Tab 文案混在同一个入口里。 */
+.np4188-tabs button em {
+  margin-left: 5px;
+  padding: 1px 6px;
+  border-radius: var(--lili-4188-radius-pill);
+  background: var(--lili-4188-surface-hover);
+  color: var(--lili-4188-text-secondary);
+  font-size: 10px;
+  font-style: normal;
+}
+
 .np4188-lyrics {
   display: grid;
   gap: 16px;
@@ -216,7 +372,7 @@
 .np4188-side-empty {
   display: grid;
   gap: 8px;
-  padding: 80px 0;
+  padding: 32px 0;
   color: var(--lili-4188-text-muted);
 }
 
@@ -291,23 +447,72 @@
 }
 
 .np4188-progress time {
-  font-size: 10px;
-  color: var(--lili-4188-text-muted);
+  font-size: 11px;
+  color: var(--lili-4188-text-secondary);
 }
 
+/* 视觉轨道保持 4px 细线，但按钮命中区加高到 14px，便于鼠标点按 / 拖拽。 */
 .np4188-progress > button {
-  height: 4px;
+  position: relative;
+  height: 14px;
   padding: 0;
-  overflow: hidden;
   border: 0;
-  background: var(--lili-4188-surface-pressed);
+  background: transparent;
   cursor: pointer;
 }
 
+.np4188-progress > button::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--lili-4188-surface-pressed);
+  transform: translateY(-50%);
+}
+
+.np4188-progress > button:focus-visible {
+  outline: 2px solid var(--lili-4188-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .np4188-progress i {
-  display: block;
-  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 4px;
+  border-radius: 2px;
   background: var(--lili-4188-playback);
+  transform: translateY(-50%);
+  transition: height 120ms ease;
+}
+
+/* 播放头圆点：进度填充右端，随拖动移动。 */
+.np4188-progress i span {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--lili-4188-playback);
+  box-shadow: 0 0 0 3px var(--lili-4188-playback-soft);
+  transform: translate(50%, -50%);
+}
+
+.np4188-progress > button:hover i,
+.np4188-progress > button:focus-visible i {
+  height: 6px;
+}
+
+.np4188-progress > button:disabled {
+  cursor: not-allowed;
+}
+
+.np4188-progress > button:disabled i span {
+  display: none;
 }
 
 .np4188-control-row {
@@ -324,19 +529,15 @@
   cursor: pointer;
 }
 
-.np4188-mode {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
 .np4188-transport {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 
+/* 中段五枚控件统一为圆形图标钮：播放模式 / 上一首 / 播放暂停 / 下一首 / 队列。
+   播放暂停单独放大。 */
 .np4188-transport button,
 .np4188-volume button {
   display: grid;
@@ -367,8 +568,17 @@
 }
 
 .np4188-volume input {
-  width: 120px;
+  width: 96px;
   accent-color: var(--lili-4188-playback);
+}
+
+/* 音量数值：进度条没有数字、音量有数字，一眼区分两个青色控件。 */
+.np4188-volume-value {
+  min-width: 30px;
+  font-size: 11px;
+  color: var(--lili-4188-text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 @media (width <= 900px) {
@@ -378,7 +588,11 @@
   }
 
   .np4188-art {
-    width: min(40vw, 400px);
+    width: min(36vw, 320px);
+  }
+
+  .np4188-art.is-video {
+    width: min(36vw, 320px);
   }
 
   .np4188-side {
@@ -406,6 +620,10 @@
     margin: auto;
   }
 
+  .np4188-art.is-video {
+    width: min(76vw, 480px);
+  }
+
   .np4188-side {
     border-left: 0;
     border-top: 1px solid var(--lili-4188-border);
@@ -417,7 +635,7 @@
   }
 
   .np4188-volume input {
-    width: 88px;
+    width: 72px;
   }
 }
 
@@ -440,8 +658,8 @@
     margin: auto;
   }
 
-  .np4188-title h1 {
-    font-size: 34px;
+  .np4188-art.is-video {
+    width: min(86vw, 480px);
   }
 
   .np4188-side {

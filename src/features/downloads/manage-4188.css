@@ -1,9 +1,10 @@
 /* stylelint-disable no-descending-specificity -- 下载任务与设置表单共享原生控件。 */
 
+/* 滚动条预留：右侧留 14px（同 discover/chart，ScrollContainer 滚动条覆盖右边缘）。 */
 .manage4188-page,
 .settings4188-page {
   width: 100%;
-  padding: 8px 0 48px;
+  padding: 8px 14px 48px 0;
 }
 
 .manage4188-head {

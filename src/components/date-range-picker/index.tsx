@@ -36,6 +36,10 @@ const DateRangePicker = ({ onDateRangeChange }: Props) => {
         start = moment().subtract(7, "days").startOf("day").valueOf();
         end = moment().endOf("day").valueOf();
         break;
+      case "month":
+        start = moment().subtract(30, "days").startOf("day").valueOf();
+        end = moment().endOf("day").valueOf();
+        break;
     }
 
     onDateRangeChange?.(key === "all" ? null : { start, end });
@@ -55,7 +59,7 @@ const DateRangePicker = ({ onDateRangeChange }: Props) => {
   };
 
   return (
-    <div className="-ml-1 flex items-center space-x-4">
+    <div className="-ml-1 flex min-w-0 flex-wrap items-center gap-4">
       <Tabs
         aria-label="时间范围"
         variant="light"
@@ -69,6 +73,7 @@ const DateRangePicker = ({ onDateRangeChange }: Props) => {
         <Tab key="today" title="今天" />
         <Tab key="yesterday" title="昨天" />
         <Tab key="week" title="近一周" />
+        <Tab key="month" title="近 30 天" />
       </Tabs>
 
       <div className="w-64">
