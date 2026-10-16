@@ -42,8 +42,7 @@
   flex-wrap: wrap;
 }
 
-.asset4188-actions button,
-.asset4188-pill {
+.asset4188-actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -54,9 +53,6 @@
   color: var(--lili-4188-text-secondary);
   background: var(--lili-4188-surface);
   font-size: 12px;
-}
-
-.asset4188-actions button {
   cursor: pointer;
 }
 

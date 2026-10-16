@@ -9,7 +9,6 @@ import { PageHeader } from "@/ui/patterns/page-header";
 import { Section } from "@/ui/patterns/section";
 import { Button } from "@/ui/primitives/button";
 import { Icon } from "@/ui/primitives/icon";
-import { Pill } from "@/ui/primitives/pill";
 
 import type { LibraryTile } from "./model";
 
@@ -20,7 +19,6 @@ export interface LibraryViewProps {
   /** 页面内分类 tab（我的歌单 / 我收藏的 / 合集与系列），渲染在页头正下方。 */
   tabs?: ReactNode;
   overviewLines: string[];
-  qualityPillText: string;
   createdTiles: LibraryTile[];
   collectedTiles: LibraryTile[];
   /** 合集与系列（season / series）：从收藏夹里按来源徽标拆出来的第三组。 */
@@ -78,7 +76,6 @@ export const LibraryView = ({
   lead,
   tabs,
   overviewLines,
-  qualityPillText,
   createdTiles,
   collectedTiles,
   collectionTiles,
@@ -105,7 +102,6 @@ export const LibraryView = ({
             <button type="button" disabled={bulkPending} onClick={onShuffleAll}>
               随机播放
             </button>
-            <span className="asset4188-pill">{qualityPillText}</span>
           </div>
         </header>
         {tabs}
@@ -160,7 +156,6 @@ export const LibraryView = ({
             <Button variant="secondary" disabled={bulkPending} onClick={onShuffleAll}>
               随机播放
             </Button>
-            <Pill variant="neutral">{qualityPillText}</Pill>
           </FilterBar>
         </PageHeader>
 

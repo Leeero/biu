@@ -148,7 +148,6 @@ const Library = () => {
             downloadsDone: overview.downloadsDone,
             downloadsActive: overview.downloadsActive,
           })}
-          qualityPillText={`音质偏好 · ${overview.qualityLabel}`}
           createdTiles={created}
           collectedTiles={collected}
           collectionTiles={[]}
@@ -197,7 +196,6 @@ const Library = () => {
           qualityLabel: QUALITY_LABELS[audioQuality] ?? audioQuality,
           localDirs: guestTiles.length,
         })}
-        qualityPillText={`音质偏好 · ${QUALITY_LABELS[audioQuality] ?? audioQuality}`}
         createdTiles={guestTiles}
         collectedTiles={[]}
         collectionTiles={[]}
@@ -262,14 +260,15 @@ const Library = () => {
       ) : (
         <>
           <LibraryView
+            // lead 不再重复概览卡片 1 的「N 个播放列表」—— 那是卡片的首行主业；
+            // 这里保留曲目总数与创建/收藏拆分，两者互补不重复。
             lead={
               hasTrackCounts
-                ? `${createdTiles.length + collectedTiles.length} 个播放列表 · ${trackTotal} 首 · 我创建 ${visibleCreatedFavorites.length} / 我收藏 ${visibleCollectedFavorites.length}`
-                : `${createdTiles.length + collectedTiles.length} 个播放列表 · 我创建 ${visibleCreatedFavorites.length} / 我收藏 ${visibleCollectedFavorites.length}`
+                ? `${trackTotal} 首 · 我创建 ${visibleCreatedFavorites.length} / 我收藏 ${visibleCollectedFavorites.length}`
+                : `我创建 ${visibleCreatedFavorites.length} / 我收藏 ${visibleCollectedFavorites.length}`
             }
             tabs={libraryTabs}
             overviewLines={overviewLines}
-            qualityPillText={`音质偏好 · ${QUALITY_LABELS[audioQuality] ?? audioQuality}`}
             createdTiles={libraryTab === "created" ? createdTiles : []}
             collectedTiles={libraryTab === "collected" ? collectedTiles : []}
             collectionTiles={libraryTab === "collections" ? collectionTiles : []}

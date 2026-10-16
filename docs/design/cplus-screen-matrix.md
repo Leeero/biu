@@ -37,7 +37,7 @@
 
 1. 页头为两栏 `PageHeader`：左列 H1「我的音乐库」+ 导语 + 筛选条；右列 `InfoPanel`（库概览 4 条）。右栏宽 320。
 2. 导语比常规低 6px（`leadOffset="low"`）。
-3. 筛选条 `gap="tight"`（12px），三枚药丸：全部播放（primary）/ 随机播放（secondary）/ 音质偏好 · 无损优先（8 档）（neutral）。
+3. 筛选条 `gap="tight"`（12px），两枚药丸：全部播放（primary）/ 随机播放（secondary）。设计稿原第三枚「音质偏好 · 无损优先（8 档）」已移除（见 spec-lock 1.3.37）：它是纯展示 `<span>` 却长得与可点按钮一致，信息又与库概览卡片重复，全局音质设置的唯一入口收敛到设置页。
 4. 两个 `Section`：`我创建的 · N 个播放列表`、`我收藏的 · N 个播放列表`。分组间距 27px。
 5. 瓦片网格：每行 4 枚，瓦片 16:9 封面 + 来源徽标（收藏夹 / 合集 / 系列 / 本地目录）+ 标题 + 元信息。
 6. 第 3 枚瓦片演示玻璃操作带：`播放 | · | 下一首 | 入队 | 收藏 | 下载音频`（悬停或选中时露出）。
@@ -51,7 +51,7 @@
 | 瓦片跳转            | `features/library/model.ts` → `getFavoriteItemHref`           |
 | 操作带 5 项         | `features/track/actions.ts`                                   |
 | 库概览 4 条         | `useFavoritesStore` + `useSettings`（音质偏好）+ 下载任务统计 |
-| 音质偏好药丸        | `settings.audioQuality`                                       |
+| 音质偏好设置        | `settings.audioQuality`（入口在设置页；库页概览卡片只读展示） |
 
 **验收**
 
