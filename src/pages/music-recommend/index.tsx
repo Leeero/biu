@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import { addToast } from "@heroui/react";
-import { RiGridLine, RiListUnordered } from "@remixicon/react";
 
 import type { Track } from "@/domain/track";
 
@@ -10,84 +9,89 @@ import { toFavoriteSelection, toMediaDownloadInfo, toPlayItem } from "@/adapters
 import {
   adaptNewMusicBannerToTrack,
   adaptNewMusicToTrack,
-  adaptRegionArchiveToTrack,
+  adaptRankItemToTrack,
   dedupeTracks,
 } from "@/adapters/track/recommendation";
-import { formatNumber } from "@/common/utils/number";
 import { formatDuration } from "@/common/utils/time";
 import ScrollContainer from "@/components/scroll-container";
+import { DiscoverListView, discoverListColumns } from "@/features/discover/discover-list-view";
 import {
-  DiscoverListView,
-  discoverListColumns,
-  type DiscoverListTrackRow,
-} from "@/features/discover/discover-list-view";
-import { DiscoverView, type DiscoverAlbum } from "@/features/discover/discover-view";
+  DiscoverBody,
+  DiscoverView,
+  type DiscoverAlbum,
+  type DiscoverHero,
+  type DiscoverSection,
+} from "@/features/discover/discover-view";
 import {
   useDiscoverFixtureData,
   useDiscoverFixtureName,
   useDiscoverListFixtureData,
 } from "@/features/discover/fixture";
 import { DISCOVER_LIST_TRACK_ACTIONS } from "@/features/discover/track-actions";
+import { getMusicComprehensiveWebRank } from "@/service/music-comprehensive-web-rank";
 import { getNewMusic } from "@/service/web-interface-new-music";
 import { getNewMusicBanner } from "@/service/web-interface-new-music-banner";
-import { getRegionFeedRcmd } from "@/service/web-interface-region-feed-rcmd";
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
-import { useSettings } from "@/store/settings";
 import { DISCOVER_CARD_FIXTURE_NAME } from "@/ui/fixtures/screen-07-discover-card";
 import { DISCOVER_LIST_FIXTURE_NAME } from "@/ui/fixtures/screen-08-discover-list";
 import { AnnotationBand } from "@/ui/patterns/annotation-band";
-import { SegmentedControl } from "@/ui/primitives/segmented-control";
 import { PageState } from "@/ui/states/page-state";
 
-const toListRow = (track: Track, index: number): DiscoverListTrackRow => ({
-  id: track.id,
-  index: index + 1,
+/** 卡片副行：歌手 · 专辑；没有专辑时只留歌手。 */
+const albumMeta = (track: Track) => [track.creator?.name, track.album].filter(Boolean).join(" · ") || "未知创作者";
+
+const toHero = (track: Track, onPlay?: () => void): DiscoverHero => ({
+  badge: "B站音乐",
+  ratioNote: "16:9",
+  tag: "新碟推荐",
   title: track.title,
-  subtitle: track.creator?.name ?? "未知创作者",
-  stats: `${formatNumber(track.playCount) ?? "—"} 播放`,
-  duration: typeof track.duration === "number" ? formatDuration(track.duration) : "—",
+  meta: track.creator?.name ?? "未知创作者",
+  tags: [],
   art: track.cover,
   artKey: track.id,
+  onPlay,
 });
-const toAlbum = (
-  track: Track,
-  source: "region" | "module",
-  currentId?: string,
-  onPlay?: () => void,
-): DiscoverAlbum => ({
+
+const toAlbum = (track: Track, currentId: string | undefined, onPlay?: () => void): DiscoverAlbum => ({
   key: track.id,
   badge: "B站音乐",
   title: track.title,
-  meta: track.creator?.name ?? "未知创作者",
+  meta: albumMeta(track),
+  tags: [],
   art: track.cover,
   artKey: track.id,
   duration: typeof track.duration === "number" ? formatDuration(track.duration) : undefined,
   current: track.id === currentId,
   onPlay,
-  tags: [{ key: "source", label: source === "region" ? "音乐分区" : "新歌", variant: "plain" }],
 });
 
+const PAGE_SIZE = 12;
+
+/**
+ * 发现音乐（真实路径）。
+ *
+ * 数据源从「音乐分区视频（rid=1003）+ 新碟新歌」收敛为**音乐中心的三份「歌」数据**：
+ *   · 新碟 banner（`new/music/banner`）→ 首屏 hero；
+ *   · 新歌（`new/music`）→ 「新歌」段；
+ *   · 综合推荐（`music/comprehensive/web/rank` 首页）→ 「综合推荐」段。
+ *
+ * 三者都是 B 站音乐中心的**音乐作品**（歌名 / 歌手 / 专辑 / 方形专辑封面），
+ * 展示口径是「歌」而不是「视频」。`related_archive` / 自身的 bvid·aid·cid 只是
+ * 播放载体，见 `adapters/track/recommendation.ts` 的说明。
+ *
+ * 与音乐榜单页的关系：榜单页用同一接口做「完整榜单 + 分页」，这里只取首页做
+ * 「推荐」段 —— 有意让首页和榜单有重叠，但两处角色不同（推荐 vs 榜）。
+ */
 const MusicRecommendLive = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const source = searchParams.get("source") === "module" ? "module" : "region";
-  const displayMode = useSettings(state => state.displayMode);
-  const updateSettings = useSettings(state => state.update);
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [featuredTrack, setFeaturedTrack] = useState<Track | null>(null);
+  const [bannerTrack, setBannerTrack] = useState<Track | null>(null);
+  const [newTracks, setNewTracks] = useState<Track[]>([]);
+  const [rankTracks, setRankTracks] = useState<Track[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("请稍后重试");
   const playId = usePlayList(state => state.playId);
 
-  /**
-   * 请求序号。**用来丢弃过期响应**，不是用来做 UI 判断。
-   *
-   * 快速连点"音乐分区 / 新碟与新歌"时，两个请求会并发在途；网络抖动下先发的
-   * 那一个可能**后到**，把后发那次的结果盖掉 —— 界面于是停在"上一个数据源"
-   * 的内容上，而分段控件显示的是刚点的这一档。用递增序号在写状态前比对，
-   * 过期响应直接丢弃，不写任何 state。
-   */
+  /** 请求序号，丢弃过期响应（点「重新加载」或路由快速切换时的竞态护栏）。 */
   const requestSeq = useRef(0);
 
   const load = useCallback(async () => {
@@ -95,40 +99,34 @@ const MusicRecommendLive = () => {
     setStatus("loading");
     setErrorMessage("请稍后重试");
     try {
-      if (source === "module") {
-        const [banner, music] = await Promise.all([getNewMusicBanner(), getNewMusic()]);
-        if (seq !== requestSeq.current) return;
-        const banners = (banner.data?.list ?? []).map((item, i) => adaptNewMusicBannerToTrack(item, `banner-${i}`));
-        setFeaturedTrack(banners[0] ?? null);
-        setTracks(
-          dedupeTracks([
-            ...banners.slice(1),
-            ...(music.data?.list ?? []).map((item, i) => adaptNewMusicToTrack(item, `music-${i}`)),
-          ]),
-        );
-      } else {
-        const res = await getRegionFeedRcmd({
-          display_id: 1,
-          request_cnt: 15,
-          from_region: 1003,
-          device: "web",
-          plat: 30,
-          web_location: "333.40138",
-        });
-        if (seq !== requestSeq.current) return;
-        if (res.code !== 0) throw new Error(res.message || `B站接口返回 ${res.code}`);
-        setFeaturedTrack(null);
-        setTracks((res.data?.archives ?? []).map((item, i) => adaptRegionArchiveToTrack(item, String(i))));
-      }
+      const [bannerRes, newMusicRes, rankRes] = await Promise.all([
+        getNewMusicBanner(),
+        getNewMusic(),
+        getMusicComprehensiveWebRank({ pn: 1, ps: PAGE_SIZE }),
+      ]);
       if (seq !== requestSeq.current) return;
+
+      const banner =
+        (bannerRes.data?.list ?? []).map((item, i) => adaptNewMusicBannerToTrack(item, `banner-${i}`))[0] ?? null;
+      const songs = (newMusicRes.data?.list ?? []).map((item, i) => adaptNewMusicToTrack(item, `music-${i}`));
+      const rank = (rankRes.data?.list ?? []).map((item, i) => adaptRankItemToTrack(item, `rank-${i}`));
+
+      // banner 也来自 new/music 一族：hero 的歌不要在「新歌」段再出现一次。
+      const visibleSongs = banner ? dedupeTracks([banner, ...songs]).slice(1) : dedupeTracks(songs);
+
+      setBannerTrack(banner);
+      setNewTracks(visibleSongs);
+      setRankTracks(rank);
       setStatus("ready");
     } catch (error) {
       if (seq !== requestSeq.current) return;
-      setTracks([]);
-      setErrorMessage(error instanceof Error ? error.message : "无法加载 B 站音乐分区");
+      setBannerTrack(null);
+      setNewTracks([]);
+      setRankTracks([]);
+      setErrorMessage(error instanceof Error ? error.message : "无法加载 B 站音乐推荐");
       setStatus("error");
     }
-  }, [source]);
+  }, []);
   useEffect(() => void load(), [load]);
 
   const act = useCallback(async (track: Track, key: string) => {
@@ -148,141 +146,43 @@ const MusicRecommendLive = () => {
   }, []);
 
   /**
-   * 语义筛选控件（"音乐分区 / 新碟与新歌"）。
+   * 内容区状态。三个非 `ready` 态只替换内容区、不换页面框 —— 见 `DiscoverBodyProps.content`。
    *
-   * 用 `SegmentedControl` 而不是一排并列药丸，因为这两者是**互斥二选一的数据源**：
-   *   · 分段控件的激活项反色，用户一眼看得出当前在哪一边 —— 并列药丸只能靠
-   *     描边/底色的细微差别猜；
-   *   · 方向键（←/→）可在两档间循环，Home / End 跳首尾 —— 互斥选项该有这个
-   *     键盘约定，而并列按钮只能逐个 Tab；
-   *   · 读屏听到的是 `aria-pressed` 的「已按下」，语义落在"单选"上。
-   *
-   * 传给 `filterControl` 槽位后，视图**不再渲染** `filters` 那排药丸，故下面
-   * `filters` 传空数组 —— 真实路径的数据源切换只有这两档，没有第三枚药丸可放。
-   * 夹具路径不受影响：它不传 `filterControl`，仍走 `filters` 的静态药丸渲染
-   * （那一屏的 5 枚是「全部播放 / 随机播放 / 数据源 · … / 去重后合并 27 条 /
-   * 显示模式 · 卡片」，本来就不是互斥选项，不该被强行改成分段）。
-   *
-   * 走 `navigate` 改 query 而不是本地 state：`source` 是**路由契约**
-   * （`/?source=region|module`），改 query 才能被前进/后退与分享链接携带。
-   * `SegmentedControl` 有 `href` 形态（渲染 `<Link>`），但那样会丢掉
-   * `aria-pressed` 语义 —— 数据源切换是"面板里的内容整体换掉"，
-   * 用按钮 + navigate 更贴合，也保持与既有实现一致。
-   */
-  const filterControl = useMemo(
-    () => (
-      <SegmentedControl
-        size="default"
-        label="数据源"
-        items={[
-          { key: "region", label: "音乐分区" },
-          { key: "module", label: "新碟与新歌" },
-        ]}
-        activeKey={source}
-        onSelect={key => navigate(`/?source=${key === "module" ? "module" : "region"}`)}
-      />
-    ),
-    [navigate, source],
-  );
-
-  // 视图切换控件。`displayMode === "compact"` 暂未在本页提供对应渲染分支，
-  // 仍然把它放进可选项，避免与全局设置里"列表/网格/紧凑"三档不一致。
-  // 用户在系统设置页选了"紧凑"后，会落到列表分支的紧凑实现 —— 见 spec-lock
-  // `screens[07].rowStateRule` 与 `docs/design/cplus-screen-matrix.md` 的"displayMode
-  // 实为三档"条目。
-  const viewSwitcher = useMemo(
-    () => (
-      <SegmentedControl
-        size="compact"
-        label="显示模式"
-        items={[
-          { key: "card", label: <RiGridLine size={15} aria-hidden="true" /> },
-          { key: "list", label: <RiListUnordered size={15} aria-hidden="true" /> },
-        ]}
-        activeKey={displayMode === "card" ? "card" : "list"}
-        onSelect={key => updateSettings({ displayMode: key === "card" ? "card" : "list" })}
-      />
-    ),
-    [displayMode, updateSettings],
-  );
-
-  /**
-   * 内容区状态。**页头不参与切换** —— 见 `DiscoverViewProps.content`。
-   *
-   * 三个非 `ready` 态从这里传给视图的 `content` 槽位，页头（H1 / 导语 / 两个分段
-   * 控件）始终挂载在 `DiscoverView` / `DiscoverListView` 里，因此切换数据源或点
-   * "重新加载"时**只有下面这块换内容**，页面不闪，刚点下的那一档也不会在视觉上
-   * 消失半秒。
-   *
-   * `min-h-[420px]` 是给加载态的：**别让内容区塌到 256px**（`PageState` 自己的
-   * `min-h-64`）。卡片分支满屏约 12 张卡，切源时若内容区从近千像素缩到 256，
-   * 滚动位置会猛跳一截 —— 那跟"闪一下"一样难受，只是换了个形式。420 让塌陷
-   * 幅度落在可感但不刺眼的区间，且首次加载（页面本来就空）也不会撑出多余留白。
+   * `min-h-[420px]` 是给加载态的：别让内容区塌到 256px（`PageState` 自己的
+   * `min-h-64`），否则加载完成时滚动位置会猛跳一截。
    */
   const content = useMemo(() => {
     if (status === "loading") return <PageState kind="loading" className="min-h-[420px]" />;
     if (status === "error")
       return <PageState kind="error" description={errorMessage} actionLabel="重新加载" onAction={() => void load()} />;
-    if (!tracks.length && !featuredTrack) return <PageState kind="empty" />;
+    if (!bannerTrack && !newTracks.length && !rankTracks.length) return <PageState kind="empty" />;
     return undefined;
-  }, [errorMessage, featuredTrack, load, status, tracks.length]);
+  }, [bannerTrack, errorMessage, load, newTracks.length, rankTracks.length, status]);
 
-  if (displayMode === "list") {
-    const rows = (featuredTrack ? [featuredTrack, ...tracks] : tracks).map(toListRow);
-    return (
-      <DiscoverListView
-        title="发现音乐"
-        lead={source === "region" ? "浏览音乐分区最新内容。" : "浏览新碟与新歌推荐。"}
-        // 空数组：数据源切换改走 `filterControl` 的分段控件，这里没有药丸要渲染。
-        filters={[]}
-        filterControl={filterControl}
-        viewSwitcher={viewSwitcher}
-        content={content}
-        sectionTitle={source === "region" ? "音乐分区推荐" : "新歌推荐"}
-        columns={discoverListColumns(["#", "标题", "播放", "时长"])}
-        tracks={rows}
-        rowActions={DISCOVER_LIST_TRACK_ACTIONS}
-        // 行内操作带只在夹具里常驻展示，用真实数据强制露出会遮住首行标题。
-        demoActionRowIds={[]}
-        onPillPress={filter => filter.onPress?.()}
-        onRowAction={(row, key) => {
-          const track = tracks.find(item => item.id === row.id);
-          if (track) void act(track, key);
-        }}
-      />
-    );
-  }
+  // hero 与两段在渲染时装配（不在 load 里），`playId` 每次都取最新值做「播放中」标记。
+  const hero = bannerTrack ? toHero(bannerTrack, () => void act(bannerTrack, "play")) : null;
+  const sections: DiscoverSection[] = [
+    {
+      title: "新歌",
+      albums: newTracks.slice(0, PAGE_SIZE).map(track => toAlbum(track, playId, () => void act(track, "play"))),
+    },
+    {
+      title: "综合推荐",
+      albums: rankTracks.slice(0, PAGE_SIZE).map(track => toAlbum(track, playId, () => void act(track, "play"))),
+    },
+  ];
 
   return (
     <ScrollContainer enableBackToTop className="h-full w-full">
-      <DiscoverView
-        title="发现音乐"
-        lead="来自 Bilibili 的音乐视频，与本地音乐，一起播放"
-        // 空数组：数据源切换改走 `filterControl` 的分段控件，这里没有药丸要渲染。
-        filters={[]}
-        filterControl={filterControl}
-        viewSwitcher={viewSwitcher}
-        content={content}
-        heroSectionTitle="新碟速递"
-        hero={
-          featuredTrack
-            ? {
-                badge: "B站音乐",
-                ratioNote: "16:9",
-                tag: "新碟推荐",
-                title: featuredTrack.title,
-                meta: featuredTrack.creator?.name ?? "未知创作者",
-                tags: [],
-                art: featuredTrack.cover,
-                artKey: featuredTrack.id,
-                onPlay: () => void act(featuredTrack, "play"),
-              }
-            : null
-        }
-        albumSectionTitle={source === "region" ? "音乐分区推荐" : "新歌推荐"}
-        albums={tracks.slice(0, 12).map(track => toAlbum(track, source, playId, () => void act(track, "play")))}
-        note={undefined}
-      />
+      <div className="discover4188">
+        {/*
+          页头（H1 / 导语 / 药丸行）已移除，首屏直接铺内容。H1 保留为视觉隐藏：
+          内容区段标题是 h2，页面没有 h1 会让读屏的标题树从二级开始，而
+          「每屏有且只有一枚 h1」是壳层既有约定。
+        */}
+        <h1 className="sr-only">发现音乐</h1>
+        <DiscoverBody content={content} hero={hero} sections={sections} />
+      </div>
     </ScrollContainer>
   );
 };

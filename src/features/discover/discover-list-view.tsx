@@ -86,20 +86,12 @@ export interface DiscoverListViewProps {
    */
   filterControl?: ReactNode;
   /**
-   * 头部右上角的"视图切换"控件。**与 `filters`（语义筛选）刻意分开** —— 理由
-   * 与 `DiscoverViewProps.viewSwitcher` 相同：把视图切换塞进筛选条会让它
-   * 与"音乐分区 / 新碟与新歌"等数据源 Pill 抢视觉重心。调用方传入任意
-   * ReactNode（典型是 `SegmentedControl` 或一对图标按钮），不传则头部
-   * 只有筛选条。
-   */
-  viewSwitcher?: ReactNode;
-  /**
    * 内容区。**传了它就用它替代曲目表那一整段。**
    *
-   * 存在的理由与 `DiscoverViewProps.content` 相同：切换数据源时**页头必须常驻**。
-   * 让页面在 loading / error / empty 时整个早退成 `<PageState>` 会把页头连同
-   * 分段控件一起卸载重建 —— 每次点击闪一下，且刚点下的那一档会在视觉上"消失"
-   * 半秒。骨架常驻、只有数据区换状态才是对的。
+   * 存在的理由与 `DiscoverViewProps.content` 相同：切换数据源时**页面框必须常驻**。
+   * 让页面在 loading / error / empty 时整个早退成 `<PageState>` 会把数据源控件一起
+   * 卸载重建 —— 每次点击闪一下，且刚点下的那一档会在视觉上"消失"半秒。
+   * 骨架常驻、只有数据区换状态才是对的。
    */
   content?: ReactNode;
   sectionTitle: string;
@@ -134,7 +126,6 @@ export const DiscoverListView = ({
   lead,
   filters,
   filterControl,
-  viewSwitcher,
   content,
   sectionTitle,
   columns,
@@ -154,7 +145,6 @@ export const DiscoverListView = ({
         lead={lead}
         filters={filters}
         filterControl={filterControl}
-        viewSwitcher={viewSwitcher}
         onPillPress={onPillPress}
       />
 

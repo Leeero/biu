@@ -1,36 +1,14 @@
 /**
- * 榜单页 rank-row 样式。对齐 lili 交互原型：
- * - 行：padding 9px 11px，圆角 12px，hover 切 surface-2
- * - 排名号：11px 等宽，faint 色；前三名 accent 色加粗
- * - 行间距 6px
+ * 滚动条预留（同 `features/discover/discover-4188.css` 的 `.discover4188`）。
  *
- * 注意：TrackRow/MusicListItem 为三处共用组件，此处仅在 .chart4188 作用域内覆盖，
- * 不影响搜索页与歌单页。
+ * `ScrollContainer` 的滚动条是 **absolute 覆盖**在 viewport 右边缘的
+ * （`overlayscrollbars`，`--os-size: 10px`），不占布局宽度；而 shell 的 gutter 在
+ * **滚动容器之外**。页面内容一路铺到 viewport 右边缘时，「播放全部」这类右对齐的
+ * 头按钮会被滚动条压掉 10px。
+ *
+ * 留 14 = 轨道 10 + 呼吸 4：贴合之余留一点余量，免得悬停加粗时又贴上去。
  */
-.chart4188-list {
-  display: grid;
-  gap: 6px;
-}
-
-/* 行本体：圆角 + hover 高亮 */
-.chart4188-list > * {
-  border-radius: 12px;
-  transition: background 0.15s ease;
-}
-
-.chart4188-list > *:hover {
-  background: var(--lili-4188-surface-elevated);
-}
-
-/* 排名号：11px 等宽，faint 色 */
-.chart4188-list .text-foreground-500.min-w-8 {
-  font-family: var(--lili-4188-font-numeric);
-  font-size: 11px;
-  color: var(--lili-4188-text-muted);
-}
-
-/* 前三名：accent 色加粗（原型语义） */
-.chart4188-list > *:nth-child(-n + 3) .text-foreground-500.min-w-8 {
-  color: var(--lili-4188-action);
-  font-weight: 700;
+.lili-theme-4188 .chart4188-page {
+  width: 100%;
+  padding: 8px 14px 48px 0;
 }

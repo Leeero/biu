@@ -5,61 +5,75 @@ import {
   adaptNewMusicBannerToTrack,
   adaptNewMusicToTrack,
   adaptRankItemToTrack,
-  adaptRegionArchiveToTrack,
   dedupeTracks,
 } from "@/adapters/track/recommendation";
 import { getTrackCapabilities } from "@/domain/track";
 
 describe("track adapters", () => {
-  test("maps a region recommendation without leaking its DTO shape", () => {
-    const track = adaptRegionArchiveToTrack(
-      {
-        aid: 100,
-        bvid: "BV100",
-        cid: 200,
-        title: "Song",
-        cover: "cover.jpg",
-        duration: 180,
-        pubdate: 1_700_000_000,
-        author: { mid: 9, name: "Artist" },
-        stat: { view: 99 },
-      },
-      "fallback",
-    );
-
-    expect(track).toEqual({
-      id: "bilibili-video:BV100",
-      source: "bilibili-video",
-      title: "Song",
-      cover: "cover.jpg",
-      creator: { id: "9", name: "Artist" },
-      duration: 180,
-      playCount: 99,
-      publishedAt: new Date(1_700_000_000 * 1000).toISOString(),
-      sourceRef: { aid: "100", bvid: "BV100", cid: "200" },
-    });
-  });
-
-  test("prefers related archive metadata for ranking items", () => {
+  test("榜单项按「歌」口径展示，related_archive 只作为播放载体", () => {
     const track = adaptRankItemToTrack(
       {
         id: 1,
-        music_title: "Music title",
+        music_title: "I Met A Boy",
         music_id: "m1",
         music_corner: "",
         cid: "old-cid",
         jump_url: "",
-        author: "Old artist",
+        author: "Mimi Webb",
+        bvid: "BVOLD",
+        album: "Confessions",
+        aid: "10",
+        cover: "music-cover.jpg",
+        score: 212,
+        related_archive: {
+          aid: "20",
+          bvid: "BVNEW",
+          cid: "new-cid",
+          cover: "video-cover.jpg",
+          title: "【MV】【Mimi Webb】「I Met A Boy」",
+          uid: 2,
+          username: "fallinforjulia",
+          vt_display: "",
+          vv_count: 100,
+          is_vt: 0,
+          fname: "MV",
+          duration: 200,
+        },
+      },
+      "rank-1",
+    );
+
+    // 展示是「歌」：歌名 / 歌手 / 专辑 / 音乐封面；播放源是 related_archive 的 bvid/aid/cid。
+    expect(track).toMatchObject({
+      id: "bilibili-video:BVNEW",
+      title: "I Met A Boy",
+      album: "Confessions",
+      cover: "music-cover.jpg",
+      creator: { name: "Mimi Webb" },
+      sourceRef: { aid: "20", bvid: "BVNEW", cid: "new-cid" },
+    });
+  });
+
+  test("榜单项没有歌名/封面时回落到关联稿件", () => {
+    const track = adaptRankItemToTrack(
+      {
+        id: 1,
+        music_title: "",
+        music_id: "m1",
+        music_corner: "",
+        cid: "old-cid",
+        jump_url: "",
+        author: "",
         bvid: "BVOLD",
         album: "",
         aid: "10",
-        cover: "old.jpg",
+        cover: "",
         score: 1,
         related_archive: {
           aid: "20",
           bvid: "BVNEW",
           cid: "new-cid",
-          cover: "new.jpg",
+          cover: "video-cover.jpg",
           title: "Archive title",
           uid: 2,
           username: "Artist",
@@ -70,19 +84,27 @@ describe("track adapters", () => {
           duration: 200,
         },
       },
-      "rank-1",
+      "rank-2",
     );
+
     expect(track).toMatchObject({
-      id: "bilibili-video:BVNEW",
       title: "Archive title",
-      cover: "new.jpg",
-      creator: { id: "2", name: "Artist" },
-      sourceRef: { aid: "20", bvid: "BVNEW", cid: "new-cid" },
+      cover: "video-cover.jpg",
+      creator: { name: "Artist" },
     });
   });
 
-  test("maps new music and banner records to the same stable identity", () => {
-    const listTrack = adaptNewMusicToTrack({ bvid: "BV1", music_title: "A", cover: "a.jpg" }, "list");
+  test("新歌映射歌名 / 歌手 / 专辑，banner 保持同一稳定身份", () => {
+    const listTrack = adaptNewMusicToTrack(
+      { bvid: "BV1", music_title: "A", author: "歌手", album: "专辑", cover: "a.jpg" },
+      "list",
+    );
+    expect(listTrack).toMatchObject({
+      title: "A",
+      album: "专辑",
+      creator: { name: "歌手" },
+    });
+
     const bannerTrack = adaptNewMusicBannerToTrack({ bvid: "BV1", archive_title: "A" }, "banner");
     expect(dedupeTracks([bannerTrack, listTrack])).toEqual([bannerTrack]);
   });
@@ -105,7 +127,10 @@ describe("track adapters", () => {
   });
 
   test("derives actions only from existing backend and local capabilities", () => {
-    const video = adaptRegionArchiveToTrack({ aid: 100, bvid: "BV100", title: "Song", cover: "cover.jpg" }, "fallback");
+    const video = adaptNewMusicToTrack(
+      { bvid: "BV100", aid: "100", music_title: "Song", cover: "cover.jpg" },
+      "fallback",
+    );
     expect(getTrackCapabilities(video, { isLoggedIn: false })).toMatchObject({
       canPlay: true,
       canFavorite: false,

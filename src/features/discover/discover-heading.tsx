@@ -50,8 +50,6 @@ interface DiscoverHeadingProps {
    * 本来就不是互斥选项。
    */
   filterControl?: ReactNode;
-  /** 展示模式切换控件（「卡片 / 列表」）。真实路径传 `SegmentedControl`。 */
-  viewSwitcher?: ReactNode;
   onPillPress: (filter: DiscoverFilter) => void;
 }
 
@@ -62,23 +60,13 @@ interface DiscoverHeadingProps {
  * spec-lock 也明确要求取 `aligned` 而非原型类名里的 `flat` —— `PageHeader` 缺省
  * 就是这个，不必再发明一遍。屏级像素靠 `leadOffsetPx` / `gapPx` 两个显式入参下发。
  *
- * `viewSwitcher` 排在导语之后、筛选条之前：它是**页面级**偏好，与「显示什么内容」
- * 的筛选是两回事，放进 `FilterBar` 会错变成第三种数据源。
+ * **真实路径（发现音乐）已不用它**：产品要求去页头、首屏直接铺内容，改为
+ * `DiscoverBody` + 一条 `.discover4188-toolbar` 数据源行（见 `pages/music-recommend`）。
+ * 它现在只服务夹具屏 07 / 08 的保真比对 —— 那两屏的设计稿画的正是 H1 + 导语 + 药丸行。
+ * 「卡片 / 列表」的视图切换控件随之删除：真实路径只做卡片，夹具的分段药丸是静态标记。
  */
-export const DiscoverHeading = ({
-  title,
-  lead,
-  filters,
-  filterControl,
-  viewSwitcher,
-  onPillPress,
-}: DiscoverHeadingProps) => (
+export const DiscoverHeading = ({ title, lead, filters, filterControl, onPillPress }: DiscoverHeadingProps) => (
   <PageHeader title={title} lead={lead} leadOffsetPx={DISCOVER_HEAD_RHYTHM.leadMarginTop}>
-    {viewSwitcher && (
-      <div className="flex justify-end" aria-label="视图切换">
-        {viewSwitcher}
-      </div>
-    )}
     {filterControl ?? (
       <FilterBar label="发现音乐筛选" gapPx={DISCOVER_HEAD_RHYTHM.filterMarginTop}>
         {filters.map(item =>

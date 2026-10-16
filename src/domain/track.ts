@@ -17,6 +17,8 @@ export interface Track {
   id: string;
   source: TrackSource;
   title: string;
+  /** 音乐作品所属专辑（B 站音乐中心接口返回；视频 / 本地无此字段）。 */
+  album?: string;
   cover?: string;
   creator?: CreatorSummary;
   duration?: number;
