@@ -1,6 +1,6 @@
 # C+ 逐屏施工矩阵
 
-> 12 屏的施工契约。每屏开工前读这一行，收工时逐项打勾。数值真值在 [`cplus-spec-lock.json`](./cplus-spec-lock.json)，本文只写**怎么改**与**怎么算做完**。
+> 11 屏的施工契约。每屏开工前读这一行，收工时逐项打勾。数值真值在 [`cplus-spec-lock.json`](./cplus-spec-lock.json)，本文只写**怎么改**与**怎么算做完**。
 >
 > 状态图例：`待开工` → `施工中` → `已验收（保真达标）` → `已切换路由` → `旧实现已删除`。总表用的是其中一列，口径见下。
 
@@ -10,7 +10,6 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 01 | 2 | 我的音乐库 | `/library` | `pages/library` + `features/library/model` | 卡片列表 → 满幅瓦片库 | 已验收 |
 | 02 | 3 | 我的收藏 · 详情 | `/collection/:id` | `features/playlist/playlist-detail.tsx`、`pages/video-collection` | 统一壳层，去三分支 | 已验收 |
-| 03 | 4 | 稍后播放 | `/later` | `pages/later` | 视觉重写 | 旧实现已删除 |
 | 04 | 5 | 本地音乐 | `/local-music` | `pages/local-music` | 增加格式卡网格 | 旧实现已删除 |
 | 05 | 6 | 下载管理 | `/download-list` | `pages/download-list` | 视觉重写 + 内联进度条 | 旧实现已删除 |
 | 06 | 7 | 搜索结果 | `/search` | `pages/search` | 大搜索框 + 双 Tab | 已验收 |
@@ -87,23 +86,6 @@
 | 编辑 / 删除 / 封面上传         | `components/favorites-edit-modal`                                             |
 
 **验收**：`h1Top=122`、`leadTop=192`、`filterTop=236`、`noteTop=653`；弹层矩形 ±2px。
-
----
-
-## 03 · 稍后播放　`/later`
-
-- **设计页**：4　**原型**：`screens/03-watch-later.html`
-- **现状**：`pages/later`
-
-**复刻要点**
-
-1. 页头 `asideWidth={320}`（`page-head--narrow`），右栏 `InfoPanel` 展示同步状态：`上次同步 · 2 分钟前` / `37 条 · 已看 12 条`。
-2. 顶栏分段：`全部 | 近 7 天 | 近 30 天`。
-3. 曲目表第四列为观看进度（百分比 + 细条），第五列时长。
-4. 注解带 `note`（top 653）。
-5. 必须保留「同步来源为 B 站稍后再看」的说明文案。
-
-> **屏 03 收口（P4-S1，spec-lock 1.3.27，2026-09-29）** —— 页面装配与真实路径已切换到 `LaterView`：`getHistoryToViewList` 的分页、关键词、时间范围继续保留，条目经 `adaptWatchLaterToTrack` 汇入统一 Track Action API；顶栏「全部 / 近 7 天 / 近 30 天」已接线，旧 `grid-list / list / search / menu` 四个实现已删除。`--target app` **PASS**：L1 硬锚点 4/4、结构与播放栏探针全绿、`list / right / note` 内容带均 100%，平均亮度差 **8.11**。对照图见 [`evidence/screen03-design-vs-render-1.3.27.png`](./evidence/screen03-design-vs-render-1.3.27.png)。
 
 ---
 

@@ -145,7 +145,6 @@ describe("路由壳层契约", () => {
     for (const pathname of [
       "/",
       "/library",
-      "/later",
       "/local-music",
       "/download-list",
       "/search",

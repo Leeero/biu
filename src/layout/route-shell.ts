@@ -70,7 +70,6 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   { label: "发现音乐", href: "/" },
   { label: "音乐榜单", href: "/chart" },
   { label: "我的音乐", href: "/library" },
-  { label: "稍后播放", href: "/later" },
   { label: "本地音乐", href: "/local-music" },
   { label: "下载管理", href: "/download-list" },
 ];

@@ -10,7 +10,6 @@ const DesignSystemPage = lazy(() => import("./pages/design-system"));
 const DownloadList = lazy(() => import("./pages/download-list"));
 const Chart = lazy(() => import("./pages/chart"));
 const History = lazy(() => import("./pages/history"));
-const Later = lazy(() => import("./pages/later"));
 const Library = lazy(() => import("./pages/library"));
 const LocalMusicPage = lazy(() => import("./pages/local-music"));
 const MiniPlayer = lazy(() => import("./pages/mini-player"));
@@ -38,10 +37,6 @@ const routes: RouteObject[] = [
       {
         path: "library",
         element: <Library />,
-      },
-      {
-        path: "later",
-        element: <Later />,
       },
       {
         path: "history",

@@ -1,12 +1,11 @@
 import { useNavigate } from "react-router";
 
-import { RiDownload2Line, RiHeart3Line, RiMusic2Line, RiTimeLine } from "@remixicon/react";
+import { RiDownload2Line, RiHeart3Line, RiMusic2Line } from "@remixicon/react";
 import clx from "classnames";
 
 const ITEMS = [
   { label: "发现", href: "/", icon: RiMusic2Line },
   { label: "音乐库", href: "/library", icon: RiHeart3Line },
-  { label: "稍后", href: "/later", icon: RiTimeLine },
   { label: "下载", href: "/download-list", icon: RiDownload2Line },
 ] as const;
 
