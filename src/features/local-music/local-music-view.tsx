@@ -127,8 +127,9 @@ export const LocalMusicView = ({
             <Button variant="neutral" disabled={busy} onClick={onRescan}>
               重新扫描
             </Button>
+            {/* 按钮名不带「· 二次确认」：确认流程由点击后的弹窗承担（同下载页 1.3.38 的订正）。 */}
             <Button variant="danger" disabled={!selectedId || busy} onClick={onDelete}>
-              从应用删除文件 · 二次确认
+              从应用删除文件
             </Button>
           </FilterBar>
         </PageHeader>
