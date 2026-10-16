@@ -129,6 +129,8 @@
 
 > **屏 05 收口（P4-S3，spec-lock 1.3.29，2026-09-29）** —— 夹具与真实下载队列共用 `DownloadsView`；`/download-list` 顶栏分段已接入全部 / 音频 / 视频真实筛选。五枚页面操作和单任务右键菜单完整映射现有 Electron IPC，清空全部与删除进行中任务保留二次确认；旧 HeroUI 表格及 `actions / progress / status-desc` 三个分散实现已删除。`--target app` **PASS**：L1/L2 全绿，`list / right / note` 内容带均 100%，平均亮度差 **7.30**。对照图见 [`evidence/screen05-design-vs-render-1.3.29.png`](./evidence/screen05-design-vs-render-1.3.29.png)。
 
+> **屏 05 审查修复（spec-lock 1.3.38，2026-10-16）** —— 六项交互 / 视觉修复：① 行操作带门控改由 model 层 `capabilities` 驱动（旧实现按 `status` 展示文案 `includes` 匹配，`canOpen` 的 `savePath` 条件查不到，会出现点击被静默拦截的假按钮）；② 危险按钮「清空记录」**常态**红边红字（原 `:hover` 才变红，扫视时无从预警）；③「· 二次确认」后缀从按钮名移除（确认由弹窗承担；屏 04「从应用删除文件」同款订正）；④ 主按钮路径尾巴截成末段 `…/Downloads`（完整路径由 `title` 悬停揭示，修操作组换行）；⑤ 空态分「全空 / 筛选空」两态 + `PageState` 占位；⑥ 布局开关从 `note` 的有无改为显式 `variant="card" | "table"`。夹具任务补 `rawStatus` 字段（TS+JSON 同步）供 fixture 层计算同一份 capabilities。
+
 ---
 
 ## 06 · 搜索结果　`/search`

@@ -10,6 +10,20 @@
     "note": "本文件是重构的唯一视觉真值。任何数值变更必须先改本文件，再改实现，并重跑 tools/design-fidelity/verify.py。",
     "revisions": [
       {
+        "version": "1.3.38",
+        "at": "2026-10-16",
+        "phase": "下载管理审查修复：门控真源 / 空态 / 危险色 / 二次确认文案",
+        "changes": [
+          "**行操作带门控改由 capabilities 驱动（屏 05）。**旧实现是 `row.status.includes(\"完成\")` 这类**展示文案字符串匹配**——等于把展示字符串当状态机：`canOpen` 还要求 `savePath` 存在（文案匹配查不到，已完成但文件缺失的任务会渲染一个点击后被静默拦截的「定位文件」假按钮），且任何 STATUS_LABEL 文案调整都会静默破坏门控。修法：`DownloadRowViewModel` 增加 `capabilities` 字段（model 层 `getDownloadTaskCapabilities` 的计算结果，该函数原有单测），`visibleActions` 只消费它；夹具任务补 `rawStatus`（原始 MediaDownloadStatus 枚举）供 fixture 层计算同一份 capabilities，TS 镜像与 JSON 同步、由既有逐字一致测试钉住。",
+          "**危险按钮常态显红（屏 05，`.manage4188-actions button.is-danger`）。**旧规则只有 `:hover` 才变红边——用户扫视页面时无法区分「清空记录」与普通批量操作，视觉前置预警不应是 hover 彩蛋。常态红字红边、hover 红底反白、disabled 回落到中性（不误导为可用的红）。",
+          "**「· 二次确认」后缀从按钮文案移除（屏 05「清空记录」与屏 04「从应用删除文件」）。**交互流程不写进按钮名：确认由点击后的弹窗承担，视觉前置预警由上一条的危险色承担。四处同步：页面实现、夹具 TS+JSON、原型 HTML。",
+          "**页头主按钮「打开下载目录」的路径尾巴截成末段（`…/Downloads`）。**完整绝对路径常超 300px，会把五按钮操作组挤成两行；截断后单行稳定，完整路径由原生 `title` 悬停揭示。`DownloadPillViewModel` 增加 `title` 字段透传。",
+          "**空态分两态（屏 05 真实路径）。**全空：「暂无下载任务 — 从任意曲目的操作菜单选择「下载音频」开始」；筛选空（如「视频」tab 无任务）：「当前分类暂无任务 — 切换到「全部」查看全部记录」。与库页「全隐藏 vs 确实没有」同一决策：指错方向的空态比空白更糟。`DownloadsView` 卡片分支在 rows 为空时渲染 `PageState kind=\"empty\"` 占位。",
+          "**`DownloadsView` 布局开关显式化：新增 `variant: \"card\" | \"table\"` prop。**旧开关是 `note` 的有无（「有注解带 ⇒ 表格分支」）——一个渲染属性兼任布局开关，读代码时无从知道这层语义。现在真实路径显式 `variant=\"card\"`（任务卡片网格，用户实际所见）、夹具路径 `variant=\"table\"`（TrackTable，设计稿第 6 页冻结形态，供保真度比对）。表格分支右键菜单同步从全量 ROW_ACTIONS 改为 `visibleActions(row)`（与卡片分支同门控）。",
+          "**像素闸门影响：**上述改动全部落在**真实路径**（card 分支）或纯逻辑层；夹具比对路径（table 分支）唯一的变化是右键菜单按状态门控（右键菜单不在像素探针内）与「清空记录」文案（filter 结构带只判 y 起点与带数，文案变短不改变带的起点）。1.3.36 已声明像素闸门待设计基准更新后复跑，本次未执行。回归：`tests/downloads-view.test.tsx`（新增 7 项：门控 / title / 危险色文案 / 空态 / canOpen 语义）+ 夹具镜像测试 + 全量 vitest。"
+        ]
+      },
+      {
         "version": "1.3.36",
         "at": "2026-10-16",
         "phase": "内容区分类导航：顶栏胶囊 → 下划线 tab",

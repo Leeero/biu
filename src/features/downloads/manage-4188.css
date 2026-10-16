@@ -69,10 +69,21 @@
   background: var(--lili-4188-action-soft);
 }
 
-.manage4188-actions button.is-danger:hover,
-.manage4188-task-actions button:last-child:hover {
+/* 危险操作常态显红边：仅靠 hover 预警太晚 —— 用户扫视页面时就要能区分
+   「清空记录」与普通批量操作。原 :hover 变红的规则已并入常态。 */
+.manage4188-actions button.is-danger {
   color: var(--lili-4188-error);
   border-color: var(--lili-4188-error);
+}
+
+.manage4188-actions button.is-danger:hover {
+  color: var(--lili-4188-text-primary);
+  background: var(--lili-4188-error);
+}
+
+.manage4188-actions button.is-danger:disabled {
+  color: var(--lili-4188-text-muted);
+  border-color: var(--lili-4188-border);
 }
 
 .manage4188-actions button:disabled {
