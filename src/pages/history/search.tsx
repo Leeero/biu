@@ -21,19 +21,22 @@ const HistorySearch = ({ onSearch, onDateRangeChange }: Props) => {
     { wait: 500 },
   );
 
+  // 输入即搜（500ms 防抖），清除也走同一入口，不再等回车。
+  const handleChange = (val: string) => {
+    setKeyword(val);
+    handleSearch(val);
+  };
+
   return (
-    <div className="flex w-full items-center justify-between space-x-2 py-2">
+    <div className="flex w-full flex-wrap items-center justify-between gap-2 py-2">
       <DateRangePicker onDateRangeChange={onDateRangeChange} />
       <Input
         placeholder="搜索标题/UP主名称"
         startContent={<RiSearchLine size={16} />}
         value={keyword}
-        onValueChange={setKeyword}
-        onKeyDown={e => e.key === "Enter" && handleSearch(keyword)}
+        onValueChange={handleChange}
         isClearable
-        onClear={() => {
-          handleSearch("");
-        }}
+        onClear={() => handleChange("")}
         radius="md"
         className="max-w-50 flex-auto"
       />

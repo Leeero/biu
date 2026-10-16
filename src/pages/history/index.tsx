@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
 
 import { addToast } from "@heroui/react";
-import { useShallow } from "zustand/react/shallow";
 
 import { formatDuration, formatSecondsToDate } from "@/common/utils/time";
 import ScrollContainer, { type ScrollRefObject } from "@/components/scroll-container";
@@ -17,16 +15,24 @@ import {
 import { openLoginModal } from "@/store/login-modal";
 import { useModalStore } from "@/store/modal";
 import { usePlayList } from "@/store/play-list";
-import { useSettings } from "@/store/settings";
 import { useUser } from "@/store/user";
 import { Button } from "@/ui/primitives/button";
 import { PageState } from "@/ui/states/page-state";
 
 import HistorySearch from "./search";
 
+/** 历史项 → 可播放项：带上 history.cid，从对应分 P 起播（续播）。 */
+const toHistoryPlayItem = (item: HistoryListItem) => ({
+  type: "mv" as const,
+  title: item.title,
+  cover: item.cover,
+  bvid: item.history.bvid,
+  cid: item.history.cid === undefined ? undefined : String(item.history.cid),
+  ownerName: item.author_name,
+  ownerMid: item.author_mid,
+});
+
 const History = () => {
-  const [searchParams] = useSearchParams();
-  const range = searchParams.get("range") ?? "all";
   const scrollerRef = useRef<ScrollRefObject>(null);
 
   const [loading, setLoading] = useState(false);
@@ -39,12 +45,9 @@ const History = () => {
   const dateRangeRef = useRef<{ start?: number; end?: number } | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const user = useUser(state => state.user);
-  const { reportPlayHistory, updateSettings } = useSettings(
-    useShallow(state => ({
-      reportPlayHistory: state.reportPlayHistory,
-      updateSettings: state.update,
-    })),
-  );
+
+  // 当前播放稿件的 bvid，用于列表行「播放中」标记。
+  const currentBvid = usePlayList(state => state.list.find(item => item.id === state.playId)?.bvid);
 
   // 加载历史记录（只负责请求和数据合并，loading 状态由调用方管理）
   const fetchHistory = useCallback(async () => {
@@ -155,44 +158,19 @@ const History = () => {
   useEffect(() => {
     // 未登录时由登录门禁接管，不再发起必然失败的请求
     if (!user?.isLogin) return;
-    const days = range === "7d" ? 7 : range === "30d" ? 30 : 0;
-    dateRangeRef.current = days ? { start: Date.now() - days * 86_400_000, end: Date.now() } : null;
     void refreshList();
-  }, [range, refreshList, user?.isLogin]);
+  }, [refreshList, user?.isLogin]);
 
   const handleMenuAction = useCallback(async (key: string, item: HistoryListItem) => {
     switch (key) {
       case "play":
-        await usePlayList.getState().play({
-          type: "mv",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.history.bvid,
-          ownerName: item.author_name,
-          ownerMid: item.author_mid,
-        });
+        await usePlayList.getState().play(toHistoryPlayItem(item));
         break;
       case "play-next":
-        usePlayList.getState().addToNext({
-          type: "mv",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.history.bvid,
-          ownerName: item.author_name,
-          ownerMid: item.author_mid,
-        });
+        usePlayList.getState().addToNext(toHistoryPlayItem(item));
         break;
       case "add-to-playlist":
-        usePlayList.getState().addList([
-          {
-            type: "mv",
-            title: item.title,
-            cover: item.cover,
-            bvid: item.history.bvid,
-            ownerName: item.author_name,
-            ownerMid: item.author_mid,
-          },
-        ]);
+        usePlayList.getState().addList([toHistoryPlayItem(item)]);
         break;
       case "download-audio":
         await window.electron.addMediaDownloadTask({
@@ -207,25 +185,9 @@ const History = () => {
           color: "success",
         });
         break;
-      case "download-video":
-        await window.electron.addMediaDownloadTask({
-          outputFileType: "video",
-          title: item.title,
-          cover: item.cover,
-          bvid: item.history.bvid,
-          cid: item.history.cid,
-        });
-        addToast({
-          title: "已添加下载任务",
-          color: "success",
-        });
-        break;
-      case "bililink":
-        window.electron.openExternal(`https://www.bilibili.com/video/${item.history.bvid}`);
-        break;
       case "delete":
         useModalStore.getState().onOpenConfirmModal({
-          title: `删除记录${item.title}`,
+          title: `删除记录「${item.title}」`,
           confirmText: "删除",
           onConfirm: async () => {
             const res = await postHistoryDelete({
@@ -272,13 +234,6 @@ const History = () => {
             <p>这里显示 Bilibili 历史，不等同于 lili 的听歌统计。</p>
           </div>
           <div className="asset4188-actions">
-            <button
-              type="button"
-              className={reportPlayHistory ? "is-primary" : ""}
-              onClick={() => updateSettings({ reportPlayHistory: !reportPlayHistory })}
-            >
-              {reportPlayHistory ? "记录历史 · 开" : "记录历史 · 关"}
-            </button>
             <button type="button" className="is-danger" disabled={!user?.isLogin} onClick={handleClear}>
               清空历史
             </button>
@@ -316,6 +271,7 @@ const History = () => {
                 art: item.cover,
                 middle: `${formatDuration(item.progress ?? 0)} / ${formatDuration(item.duration ?? 0)}`,
                 end: formatSecondsToDate(item.view_at),
+                current: Boolean(currentBvid && item.history.bvid && currentBvid === item.history.bvid),
                 source: item,
               }))}
               actions={[
