@@ -22,7 +22,13 @@ interface AppSettings {
   closeWindowOption: "hide" | "exit";
   autoStart: boolean;
   audioQuality: AudioQuality;
-  hiddenMenuKeys: string[];
+  /**
+   * 「我的音乐」页里不展示的条目键（`${source}:${id}`，与 `LibraryTile.key` 同值）。
+   *
+   * 收藏内容未必都与音乐相关，用户可以把不想要的歌单 / 收藏夹 / 合集 / 系列
+   * 从这里隐去。键的生成与分组见 `@/features/library/grouping`。
+   */
+  hiddenLibraryKeys: string[];
   displayMode: "card" | "list" | "compact";
   ffmpegPath?: string;
   themeMode: ThemeMode;

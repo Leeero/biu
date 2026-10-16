@@ -17,7 +17,7 @@ import ScrollContainer from "@/components/scroll-container";
 import { useAppUpdateStore } from "@/store/app-update";
 import { useSettings } from "@/store/settings";
 
-import MenuSettings from "./menu-settings";
+import LibrarySettings from "./library-settings";
 import ProxySettings from "./proxy-settings";
 import ShortcutSettingsPage from "./shortcut-settings";
 import { SystemSettingsTab } from "./system-settings";
@@ -33,7 +33,7 @@ const useSystemSettingsForm = () => {
     closeWindowOption,
     autoStart,
     audioQuality,
-    hiddenMenuKeys,
+    hiddenLibraryKeys,
     displayMode,
     ffmpegPath,
     themeMode,
@@ -51,7 +51,7 @@ const useSystemSettingsForm = () => {
       closeWindowOption: s.closeWindowOption,
       autoStart: s.autoStart,
       audioQuality: s.audioQuality,
-      hiddenMenuKeys: s.hiddenMenuKeys,
+      hiddenLibraryKeys: s.hiddenLibraryKeys,
       displayMode: s.displayMode,
       ffmpegPath: s.ffmpegPath,
       themeMode: s.themeMode,
@@ -79,7 +79,7 @@ const useSystemSettingsForm = () => {
       closeWindowOption,
       autoStart,
       audioQuality,
-      hiddenMenuKeys,
+      hiddenLibraryKeys,
       displayMode,
       ffmpegPath,
       themeMode,
@@ -130,7 +130,7 @@ const useSystemSettingsForm = () => {
     downloadPath,
     ffmpegPath,
     fontFamily,
-    hiddenMenuKeys,
+    hiddenLibraryKeys,
     pageTransition,
     primaryColor,
     proxySettings,
@@ -178,7 +178,7 @@ const SettingsDetails = ({ selectedTab }: { selectedTab: SettingsTab }) => {
             <CardBody className="gap-8 p-6">
               <SystemSettingsTab {...system} section="general" />
               <div className="border-divider border-t pt-6">
-                <MenuSettings control={system.control} />
+                <LibrarySettings control={system.control} />
               </div>
             </CardBody>
           </Card>

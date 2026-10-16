@@ -65,15 +65,34 @@ export interface LibraryTile {
   favorite?: FavoriteItem;
 }
 
-const badgeOf = (type: number | undefined): { badge: string; source: LibraryTileSource } => {
+/**
+ * 收藏项的瓦片来源。`season` / `series` 之外的一切（含普通收藏夹的 `type = 0`）
+ * 都归 `favorite-folder`。
+ *
+ * 它是 `LibraryTile.key` 前缀与 `badgeOf` 的共同来源，也是设置页显隐配置键
+ * （`${source}:${id}`）的生成依据 —— 见 `features/library/grouping.ts`。
+ */
+export const favoriteTileSource = (type: number | undefined): LibraryTileSource => {
   switch (type) {
     case CollectionType.VideoCollections:
-      return { badge: "合集", source: "season" };
+      return "season";
     case CollectionType.VideoSeries:
-      return { badge: "系列", source: "series" };
+      return "series";
     default:
-      return { badge: "收藏夹", source: "favorite-folder" };
+      return "favorite-folder";
   }
+};
+
+const BADGE_BY_SOURCE: Record<LibraryTileSource, string> = {
+  "favorite-folder": "收藏夹",
+  season: "合集",
+  series: "系列",
+  "local-dir": "本地目录",
+};
+
+const badgeOf = (type: number | undefined): { badge: string; source: LibraryTileSource } => {
+  const source = favoriteTileSource(type);
+  return { badge: BADGE_BY_SOURCE[source], source };
 };
 
 export const adaptFavoriteItemToTile = (item: FavoriteItem, isOwnedByCurrentUser: boolean): LibraryTile => {
