@@ -77,11 +77,14 @@
   opacity: 0.6;
 }
 
-/* 原型 .library-stats / .stat：4 列，卡片 15px 内边距/14px 圆角，数字 19px 等宽 */
+/* 原型 .library-stats / .stat：4 列，卡片 15px 内边距/14px 圆角，数字 19px 等宽。
+   margin-top：tabs 下划线槽与卡片上缘之间留 10px 呼吸感（下划线容器自带 mb-5，
+   但其底边线到卡片边框原间距不足，见审查记录）。 */
 .asset4188-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
+  margin-top: 10px;
   margin-bottom: 22px;
 }
 
