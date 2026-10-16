@@ -166,9 +166,9 @@ describe("路由壳层契约", () => {
     expect(activeContextKey).toBe("");
   });
 
-  test("一级导航覆盖六处一级入口，且互相不重复", () => {
+  test("一级导航覆盖五处一级入口，且互相不重复", () => {
     const hrefs = PRIMARY_NAV_ITEMS.map(item => item.href);
-    expect(hrefs).toEqual(["/", "/chart", "/library", "/later", "/local-music", "/download-list"]);
+    expect(hrefs).toEqual(["/", "/chart", "/library", "/local-music", "/download-list"]);
     expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 
@@ -274,20 +274,6 @@ describe("/collection/:id 顶栏分段组", () => {
   });
 });
 
-describe("/later 顶栏时间范围分段", () => {
-  test("三段与设计真值一致且都可导航", () => {
-    const shell = resolveRouteShell("/later");
-    expect(shell.contextSegments.map(segment => segment.label)).toEqual(["全部", "近 7 天", "近 30 天"]);
-    expect(shell.contextSegments.map(segment => segment.href)).toEqual(["?range=all", "?range=7d", "?range=30d"]);
-  });
-
-  test("缺省激活全部，并保留夹具 query 下的激活语义", () => {
-    expect(resolveRouteShell("/later").activeContextKey).toBe("all");
-    expect(resolveRouteShell("/later", "?range=7d").activeContextKey).toBe("7d");
-    expect(resolveRouteShell("/later", "?fixture=03-watch-later&range=30d").activeContextKey).toBe("30d");
-  });
-});
-
 describe("/local-music 顶栏目录分段", () => {
   test("夹具保持设计稿标签，真实路径替换为实际目录名", () => {
     const declared = resolveRouteShell("/local-music").contextSegments;
@@ -359,7 +345,6 @@ describe("顶栏搜索占位与真值对齐", () => {
 
   test("按路由解析占位，未登记的路由回落缺省值", () => {
     expect(resolveSearchPlaceholder("/collection/123")).toBe("搜索收藏夹与合集");
-    expect(resolveSearchPlaceholder("/later")).toBe("搜索标题 / UP 主名称");
     expect(resolveSearchPlaceholder("/library")).toBe(DEFAULT_SEARCH_PLACEHOLDER);
     expect(resolveSearchPlaceholder("/")).toBe(DEFAULT_SEARCH_PLACEHOLDER);
   });
